@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#05070f">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="아이폰 사파리에서 바로 즐기는 미니게임 2종 — 로켓 타이쿤, 스타 랜덤 디펜스">
+<title>🎮 미니게임 아케이드</title>
+<style>
+  :root{
+    --bg:#05070f;
+    --txt:#eaf1ff;
+    --dim:#8ea1c4;
+    --gold:#ffc93c;
+    --green:#39d98a;
+    --blue:#5b8cff;
+    --violet:#a97bff;
+    --line:rgba(122,162,255,.18);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);}
+  body{
+    color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;
+    padding:
+      max(28px, env(safe-area-inset-top))
+      20px
+      max(32px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(1200px 700px at 50% -10%, rgba(91,140,255,.22), transparent 60%),
+      radial-gradient(900px 600px at 100% 100%, rgba(169,123,255,.16), transparent 65%),
+      radial-gradient(900px 600px at 0% 60%, rgba(57,217,138,.10), transparent 60%),
+      var(--bg);
+    background-attachment:fixed;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  /* 별 배경 */
+  .stars{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.75;}
+  .stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.5;
+    animation:tw 3s ease-in-out infinite;}
+  @keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
+  main{position:relative;z-index:1;}
+
+  header{text-align:center;padding:8px 0 22px;}
+  .badge{
+    display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--blue);border:1px solid rgba(91,140,255,.35);
+    background:rgba(91,140,255,.08);border-radius:999px;padding:6px 12px;margin-bottom:14px;
+  }
+  h1{
+    font-size:30px;line-height:1.25;margin:0 0 10px;font-weight:800;letter-spacing:-.02em;
+    background:linear-gradient(100deg,#fff 10%,var(--gold) 45%,var(--violet) 85%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  header p{margin:0;color:var(--dim);font-size:14px;line-height:1.6;}
+
+  .cards{display:grid;gap:16px;margin-top:24px;}
+
+  a.card{
+    display:block;position:relative;text-decoration:none;color:inherit;overflow:hidden;
+    border:1px solid var(--line);border-radius:22px;padding:22px 20px 20px;
+    background:linear-gradient(180deg,rgba(26,37,66,.92),rgba(15,23,44,.94));
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);
+    transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+  a.card:active{transform:scale(.978);}
+  a.card::after{
+    content:"";position:absolute;right:-40px;top:-60px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.10), transparent 68%);pointer-events:none;
+  }
+  .card .icon{font-size:38px;line-height:1;display:block;margin-bottom:14px;}
+  .card h2{margin:0 0 6px;font-size:20px;font-weight:800;letter-spacing:-.01em;}
+  .card .sub{margin:0;color:var(--dim);font-size:13.5px;line-height:1.55;}
+  .card .row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{
+    font-size:11px;padding:5px 9px;border-radius:999px;
+    border:1px solid rgba(122,162,255,.22);color:#c3d4f2;background:rgba(122,162,255,.07);
+  }
+  .go{
+    flex:0 0 auto;font-size:13px;font-weight:700;padding:9px 14px;border-radius:999px;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .card.rocket{border-color:rgba(255,201,60,.26);}
+  .card.rocket .icon{filter:drop-shadow(0 6px 18px rgba(255,201,60,.35));}
+  .card.rocket .go{color:#231a02;background:linear-gradient(180deg,var(--gold),#ff9f1c);}
+  .card.star{border-color:rgba(79,227,255,.26);}
+  .card.star .go{color:#03181f;background:linear-gradient(180deg,#4fe3ff,#39b8ff);}
+
+  footer{margin-top:26px;text-align:center;color:#647fa0;font-size:12px;line-height:1.7;}
+  footer b{color:#9db6d6;font-weight:600;}
+  .hint{
+    margin-top:22px;border:1px solid var(--line);border-radius:16px;padding:14px 16px;
+    background:rgba(12,20,36,.6);color:#93aacb;font-size:12.5px;line-height:1.65;
+  }
+  .hint b{color:#cfe0f7;}
+</style>
+</head>
+<body>
+<div class="stars" id="stars" aria-hidden="true"></div>
+<main>
+  <div class="wrap">
+    <header>
+      <div class="badge">iPhone Safari · Mini Games</div>
+      <h1>🎮 미니게임 아케이드</h1>
+      <p>아이폰 사파리에서 바로 즐기는 게임 2종.<br>아래 카드를 터치하면 바로 시작됩니다.</p>
+    </header>
+
+    <div class="cards">
+      <a class="card rocket" href="./rocket-tycoon/">
+        <span class="icon">🚀</span>
+        <h2>로켓 타이쿤</h2>
+        <p class="sub">광석 생산 → 컨베이어 → 수거 → 업그레이드 → 로켓 발사까지, 30초 안에 손에 익는 타이쿤.</p>
+        <div class="row">
+          <div class="tags">
+            <span class="tag">타이쿤</span>
+            <span class="tag">업그레이드</span>
+            <span class="tag">한 손 플레이</span>
+          </div>
+          <span class="go">플레이 ▶</span>
+        </div>
+      </a>
+
+      <a class="card star" href="./star-defense/">
+        <span class="icon">👾</span>
+        <h2>스타 랜덤 디펜스</h2>
+        <p class="sub">랜덤 유닛을 뽑아 4×4 기지에 배치하고, 20웨이브를 막아내세요. 매 5웨이브마다 보스 등장.</p>
+        <div class="row">
+          <div class="tags">
+            <span class="tag">랜타디</span>
+            <span class="tag">디펜스</span>
+            <span class="tag">20 웨이브</span>
+          </div>
+          <span class="go">플레이 ▶</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="hint">
+      <b>팁</b> · 게임 중 화면을 홈으로 보내지 마세요. 소리는 첫 터치 이후에 재생됩니다.
+      세로 화면에 맞춰 만들었으니 아이폰을 세워서 플레이하세요.
+    </div>
+
+    <footer>
+      단일 HTML 파일로 동작 — 외부 라이브러리·이미지·CDN 없음.<br>
+      <b>GitHub Pages</b> · 8n9wtwzdf6-web
+    </footer>
+  </div>
+</main>
+<script>
+  // 가벼운 별 배경 (요소 40개, 애니메이션만)
+  (function(){
+    var box = document.getElementById('stars');
+    if (!box) return;
+    var n = 40, html = '';
+    for (var i = 0; i < n; i++) {
+      var x = (Math.random() * 100).toFixed(2);
+      var y = (Math.random() * 100).toFixed(2);
+      var s = (Math.random() < 0.2) ? 3 : 2;
+      var d = (Math.random() * 3).toFixed(2);
+      html += '<i style="left:' + x + '%;top:' + y + '%;width:' + s + 'px;height:' + s + 'px;animation-delay:' + d + 's"></i>';
+    }
+    box.innerHTML = html;
+  })();
+</script>
+</body>
+</html>

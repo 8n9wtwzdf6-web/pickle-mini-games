@@ -953,13 +953,11 @@
   }
 
   function waveComposition(w){
-    var names = [];
-    if (w <= 2) names.push("저글링");
-    else names.push("저글링·히드라");
-    if (w >= 4) names.push("뮤탈");
-    if (w >= 7) names.push("러커");
-    if (w >= 9) names.push("가디언");
-    return names.join(" · ");
+    if (w <= 2) return "저글링";
+    if (w < 4) return "저글링·히드라";
+    if (w < 7) return "히드라·뮤탈";
+    if (w < 9) return "뮤탈·러커";
+    return "저그 혼성 부대";
   }
 
   function spawnEnemy(s){

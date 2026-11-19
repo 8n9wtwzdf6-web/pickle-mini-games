@@ -1408,26 +1408,40 @@
     circle3(c, x, y, 0.016, 1.55, null, "rgba(94,232,255,0.13)");
     c.setLineDash([]);
 
-    // 본체
-    drawBox3(c, x, y, 0, 2.6, 1.9, 0.62, "#38454f", {shade: 1.0});
-    drawBox3(c, x, y + 0.15, 0.62, 1.9, 1.35, 0.34, "#43525d", {shade: 1.05});
-    // 출입구
-    drawBox3(c, x + 0.15, y - 0.92, 0.02, 0.95, 0.16, 0.5, "#1a2228");
-    // 조명
-    var lp = project(x + 0.15, y - 1.0, 0.42);
-    c.fillStyle = "rgba(255,196,90,0.9)";
-    c.beginPath(); c.arc(lp.x, lp.y, Math.max(1.2, 2.4 * CAM.focal / lp.d * 0.05), 0, 6.283); c.fill();
-    glowSpot(c, x + 0.15, y - 1.05, 0.42, 0.55, "rgba(255,190,90,ALPHA)", 0.35);
+    // 본체 (어두운 강철 + 사면 지붕)
+    drawBox3(c, x, y, 0, 2.4, 1.7, 0.46, "#2a343c", {shade: 1.0});
+    drawBox3(c, x, y, 0.44, 2.0, 1.3, 0.20, "#34414b", {shade: 1.05});
+    drawBox3(c, x, y, 0.62, 1.3, 0.9, 0.12, "#3d4c57", {shade: 1.0});
+    // 앞면 패널 라인
+    var pa = project(x - 1.19, y - 0.86, 0.05), pb = project(x + 1.19, y - 0.86, 0.05);
+    c.strokeStyle = "rgba(8,14,18,0.6)"; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(pa.x, pa.y); c.lineTo(pb.x, pb.y); c.stroke();
+    for (i = 0; i < 3; i++){
+      var px = x - 0.8 + i * 0.8;
+      var p0 = project(px, y - 0.86, 0.06), p1 = project(px, y - 0.86, 0.44);
+      c.beginPath(); c.moveTo(p0.x, p0.y); c.lineTo(p1.x, p1.y); c.stroke();
+    }
+    // 출입구 + 조명
+    drawBox3(c, x + 0.35, y - 0.86, 0.02, 0.8, 0.10, 0.34, "#121a20");
+    var lp = project(x + 0.35, y - 0.92, 0.30);
+    c.fillStyle = "rgba(255,196,90,0.95)";
+    c.beginPath(); c.arc(lp.x, lp.y, Math.max(1.4, 2.6 * CAM.focal / lp.d * 0.05), 0, 6.283); c.fill();
+    glowSpot(c, x + 0.35, y - 0.98, 0.30, 0.62, "rgba(255,190,90,ALPHA)", 0.34);
     // 안테나
-    var a0 = project(x - 0.9, y + 0.5, 0.96), a1 = project(x - 0.9, y + 0.5, 2.4);
+    var a0 = project(x - 0.9, y + 0.4, 0.74), a1 = project(x - 0.9, y + 0.4, 2.1);
     c.strokeStyle = "#5c6d78"; c.lineWidth = 1.6;
     c.beginPath(); c.moveTo(a0.x, a0.y); c.lineTo(a1.x, a1.y); c.stroke();
     c.fillStyle = "rgba(110,255,180,0.9)";
     c.beginPath(); c.arc(a1.x, a1.y, 2, 0, 6.283); c.fill();
-    glowSpot(c, x - 0.9, y + 0.5, 2.4, 0.5, "rgba(110,255,180,ALPHA)", 0.4);
-    // 측면 배럴
+    glowSpot(c, x - 0.9, y + 0.4, 2.1, 0.5, "rgba(110,255,180,ALPHA)", 0.4);
+    // 모래주머니
+    for (i = 0; i < 5; i++){
+      var sx2 = x + 0.9 + i * 0.30;
+      drawBox3(c, sx2, y - 1.06, 0, 0.28, 0.20, 0.16 + (i % 2) * 0.06, "#6b5a3c", {shade: 0.95});
+    }
+    // 배럴
     for (i = 0; i < 3; i++){
-      drawBox3(c, x - 1.7 - i * 0.42, y - 0.6 + i * 0.18, 0, 0.3, 0.3, 0.3, "#5a4a2e", {shade: 0.95});
+      drawBox3(c, x - 1.5 - i * 0.36, y - 0.5 + i * 0.16, 0, 0.26, 0.26, 0.28, "#4a3d24", {shade: 0.95});
     }
   }
 

@@ -2703,6 +2703,10 @@ function openSheet(id){
   if(id==='town'){
     if(townSel==null||S.house.indexOf(townSel)<0) townSel=S.house[0]||null;
     townUiT=0; renderTown();
+    if(!S.townSeen){
+      S.townSeen=true; save();
+      setTimeout(function(){ toast('🏘️ 요정들이 스스로 공부하고 장사해요 · 땅을 사서 가게를 열어 보세요',3000); },420);
+    }
   }
 }
 function closeSheet(){
@@ -5497,7 +5501,7 @@ function renderTown(){
       main.innerHTML=
         '<div class="fn">'+FD[id].name+'<span class="lv">Lv.'+st.lv+'</span>'+
           (mj?'<span class="lv">'+mj.icon+mj.name+'</span>':'<span class="lv">전공 미정</span>')+buffs+'</div>'+
-        '<div class="hpline"><span class="hpi">❤</span><span class="hpbar"><i style="width:'+Math.round(fs.hp)+'%"></i></span>'+
+        '<div class="hpline"><span class="hpi">♥</span><span class="hpbar"><i style="width:'+Math.round(fs.hp)+'%"></i></span>'+
           '<span class="hpnum">'+Math.round(fs.hp)+'</span>'+
           '<span class="wallet">🪙 '+Math.floor(fs.wallet)+'</span>'+
           '<span class="wl">공 '+Math.floor(pct)+'%</span></div>'+

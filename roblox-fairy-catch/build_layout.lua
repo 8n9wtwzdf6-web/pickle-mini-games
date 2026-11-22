@@ -539,6 +539,11 @@ for i, spot in ipairs(houseSpots) do
 	furCyl("Pot", Vector3.new(1.2, 1.4, 1.4), Vector3.new(x - 6.6, 2.2, z + 5.2), Color3.fromRGB(224, 185, 117))
 	furSphere("Plant", 1.5, Vector3.new(x - 6.6, 3.3, z + 5.2), Color3.fromRGB(142, 214, 135))
 
+	-- 참고: 상점 가구 12종(화장대·피아노·목마·욕조·텐트·책장·디저트 진열장)은
+	--   build_layout 이 미리 만들지 않고, 02_CatchAndHouseCore.server.lua 가
+	--   게임 실행 중에 RoomCenter 기준으로 만들어 구매한 것만 보이게 합니다.
+	--   (build_layout 을 다시 실행하지 않아도 새 가구가 추가됩니다)
+
 	-- 스크립트가 읽는 방 기준점 (보이지 않음)
 	local mark = newPart("RoomCenter", Vector3.new(1, 1, 1), Vector3.new(x, 5.4, z),
 		Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, plot)

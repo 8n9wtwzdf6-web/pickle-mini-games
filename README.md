@@ -25,9 +25,11 @@
 | `neon-vault/three.min.js` | Three.js r128 (로컬 번들 — CDN 의존 없음) |
 | `neon-vault/preview-neon-vault.png` | 네온 볼트 미리보기 이미지 |
 | `roblox-neon-vault/` | Roblox Studio 스타터 키트 (가이드·Luau 스크립트 4개·아이콘/썸네일) |
-| `fairy-catch/index.html` | 매직 하트핑 요정 캐치 & 하우스 — 마법 마을 탐험 · 콤팩트 타이밍 포획 · **직접 들어가는 요정의 집(실내 맵)** · 요정 자유 놀이 AI · 육성 · 도감 12종 (단일 HTML, 외부 의존 0) |
+| `fairy-catch/index.html` | 매직 하트핑 요정 캐치 & 하우스 — 마법 마을 탐험 · 콤팩트 타이밍 포획 · **직접 들어가는 요정의 집(실내 맵)** · **가구 12종** · **요정별 옷·악세사리 16종 코디** · 요정 자유 놀이 AI · 육성 · 도감 12종 (단일 HTML, 외부 의존 0) |
 | `fairy-catch/preview-fairy-catch.png` | 매직 하트핑 마을 플레이 미리보기 |
 | `fairy-catch/preview-fairy-house.png` | 요정의 집 실내에서 요정들이 노는 화면 미리보기 |
+| `fairy-catch/preview-fairy-dressup.png` | 새 가구(피아노·욕조·텐트·책장·화장대·목마·디저트 진열장)와 코디한 요정들이 함께 있는 미리보기 |
+| `fairy-catch/preview-fairy-dress.png` | 요정 꾸미기(코디) 화면 — 라이브 프리뷰·슬롯 칩·아이템 목록 |
 | `roblox-fairy-catch/` | 매직 하트핑 Roblox 스타터 키트 (가이드·Luau 4개·아이콘/썸네일) |
 
 ## 배포 방식

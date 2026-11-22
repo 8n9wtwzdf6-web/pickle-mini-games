@@ -66,6 +66,30 @@ local FAIRY_LIST = {
 	{ id = "galaxy",  name = "갤럭시핑",   rarity = "legendary", zone = "cave",   color = Color3.fromRGB(200, 170, 255) },
 }
 
+-- ===== 요정 옷 / 악세사리 카탈로그 (12종 가구와 함께 확장) =====
+local DRESSES = {
+	{ id = "princess", name = "프린세스 드레스", price = 900, color = Color3.fromRGB(255, 194, 224), trim = Color3.fromRGB(255, 209, 102) },
+	{ id = "cloak",    name = "별빛 망토",       price = 1050, color = Color3.fromRGB(215, 220, 255), trim = Color3.fromRGB(143, 107, 240) },
+	{ id = "apron",    name = "달콤 에이프런",   price = 700, color = Color3.fromRGB(255, 240, 214), trim = Color3.fromRGB(255, 143, 194) },
+	{ id = "tutu",     name = "파티 튜튜",       price = 820, color = Color3.fromRGB(255, 217, 236), trim = Color3.fromRGB(183, 156, 255) },
+	{ id = "pajama",   name = "구름 파자마",     price = 650, color = Color3.fromRGB(207, 230, 255), trim = Color3.fromRGB(143, 214, 255) },
+	{ id = "galaxy",   name = "갤럭시 슈트",     price = 1400, color = Color3.fromRGB(59, 47, 107), trim = Color3.fromRGB(143, 240, 255) },
+	{ id = "ladybug",  name = "레이디버그 원피스", price = 740, color = Color3.fromRGB(255, 107, 107), trim = Color3.fromRGB(40, 30, 50) },
+}
+local HEADS = {
+	{ id = "tiara",      name = "티아라",     price = 480, color = Color3.fromRGB(255, 209, 102) },
+	{ id = "ribbon",     name = "빅리본",     price = 320, color = Color3.fromRGB(255, 95, 168) },
+	{ id = "beret",      name = "베레모",     price = 360, color = Color3.fromRGB(183, 156, 255) },
+	{ id = "flowercrown",name = "꽃화관",     price = 420, color = Color3.fromRGB(255, 158, 203) },
+}
+local ACCS = {
+	{ id = "sunglasses", name = "하트 선글라스", price = 400, color = Color3.fromRGB(45, 25, 55) },
+	{ id = "wand",       name = "별빛 지팡이",   price = 560, color = Color3.fromRGB(255, 224, 138) },
+	{ id = "angelwing",  name = "천사 날개",     price = 900, color = Color3.fromRGB(255, 255, 255) },
+	{ id = "bell",       name = "방울 목걸이",   price = 300, color = Color3.fromRGB(255, 209, 102) },
+	{ id = "umbrella",   name = "무지개 우산",   price = 460, color = Color3.fromRGB(255, 158, 203) },
+}
+
 local RARITY = {
 	common = { label = "일반", coins = 18, arc = 70, speed = 150, hits = 3, template = "Fairy_Common" },
 	uncommon = { label = "고급", coins = 32, arc = 56, speed = 166, hits = 3, template = "Fairy_Common" },
@@ -121,6 +145,8 @@ local remotes = {
 	FairyAction = getRemote("FairyAction"), -- 밥/놀기/쓰다듬기
 	Harvest = getRemote("Harvest"),
 	BuyDecor = getRemote("BuyDecor"),
+	BuyWear = getRemote("BuyWear"),     -- 클라이언트 -> 서버 (옷·악세사리 구매)
+	SetWear = getRemote("SetWear"),     -- 클라이언트 -> 서버 (요정별 코디 입기/벗기)
 	Notify = getRemote("Notify"),
 }
 
@@ -131,7 +157,28 @@ local store = DataStoreService:GetDataStore(CONFIG.DATABASE_NAME)
 local PlayerData = {}
 shared.FairyData = PlayerData
 shared.FairyRemotes = remotes
-shared.FairyConfig = { CONFIG = CONFIG, RARITY = RARITY, FAIRY_LIST = FAIRY_LIST }
+shared.FairyConfig = { CONFIG = CONFIG, RARITY = RARITY, FAIRY_LIST = FAIRY_LIST,
+	DRESSES = DRESSES, HEADS = HEADS, ACCS = ACCS }
+
+-- 코디 카탈로그도 ReplicatedStorage 에 올려 HUD 가 읽을 수 있게 합니다
+local wearFolder = ReplicatedStorage:FindFirstChild("FairyWearCatalog")
+if wearFolder == nil then
+	wearFolder = Instance.new("Folder")
+	wearFolder.Name = "FairyWearCatalog"
+	wearFolder.Parent = ReplicatedStorage
+end
+wearFolder:ClearAllChildren()
+for _, group in ipairs({ { kind = "dress", list = DRESSES }, { kind = "head", list = HEADS }, { kind = "acc", list = ACCS } }) do
+	for _, item in ipairs(group.list) do
+		local conf = Instance.new("Configuration")
+		conf.Name = item.id
+		conf:SetAttribute("Kind", group.kind)
+		conf:SetAttribute("DisplayName", item.name)
+		conf:SetAttribute("Price", item.price)
+		conf:SetAttribute("Color", item.color)
+		conf.Parent = wearFolder
+	end
+end
 
 local function defaultData()
 	return {
@@ -140,6 +187,8 @@ local function defaultData()
 		House = {},        -- { "ruby", "cloud", ... } 최대 8
 		Slots = CONFIG.BASE_SLOTS,
 		Decor = {},        -- [decorId] = true
+		Owned = {},        -- [wearId] = true (옷·악세사리 보유)
+		Wear = {},         -- [fairyId] = { dress = id, head = id, acc = id }
 		Pending = 0,
 		Total = 0,
 		FirstPlay = os.time(),
@@ -199,6 +248,8 @@ local function pushHouse(player)
 		house = data.House,
 		slots = data.Slots,
 		decor = data.Decor,
+		owned = data.Owned,
+		wear = data.Wear,
 		pending = data.Pending,
 	})
 end
@@ -224,6 +275,12 @@ local function loadData(player)
 		end
 		if type(data.Decor) ~= "table" then
 			data.Decor = {}
+		end
+		if type(data.Owned) ~= "table" then
+			data.Owned = {}
+		end
+		if type(data.Wear) ~= "table" then
+			data.Wear = {}
 		end
 		data.Slots = math.clamp(data.Slots or CONFIG.BASE_SLOTS, CONFIG.BASE_SLOTS, CONFIG.MAX_SLOTS)
 		return data
@@ -322,4 +379,4 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
-print("[FairyCatch] 데이터/수익화 스크립트 준비 완료")
+print("[FairyCatch] 데이터/수익화 스크립트 준비 완료 (가구 12종 · 옷/악세사리 16종)")

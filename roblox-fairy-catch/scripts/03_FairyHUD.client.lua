@@ -15,6 +15,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local DebrisService = game:GetService("Debris")
+local function Debris_Add(inst, time)
+	DebrisService:AddItem(inst, time)
+end
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -31,6 +35,8 @@ local remotes = {
 	FairyAction = net:WaitForChild("FairyAction"),
 	Harvest = net:WaitForChild("Harvest"),
 	BuyDecor = net:WaitForChild("BuyDecor"),
+	BuyWear = net:WaitForChild("BuyWear"),
+	SetWear = net:WaitForChild("SetWear"),
 	Notify = net:WaitForChild("Notify"),
 }
 
@@ -71,7 +77,51 @@ local DECOR = {
 	{ id = "curtain", name = "무지개 커튼", price = 420 },
 	{ id = "sofa", name = "젤리 소파", price = 680 },
 	{ id = "chandelier", name = "크리스탈 샹들리에", price = 1200 },
+	{ id = "dessert", name = "디저트 진열장", price = 590 },
+	{ id = "horse", name = "유니콘 목마", price = 640 },
+	{ id = "shelf", name = "마법 책장", price = 720 },
+	{ id = "vanity", name = "공주 화장대", price = 780 },
+	{ id = "tub", name = "구름 욕조", price = 860 },
+	{ id = "piano", name = "마법 피아노", price = 980 },
+	{ id = "tent", name = "별빛 텐트", price = 1120 },
 }
+
+-- ==============================================================
+-- 코디 카탈로그 (01 스크립트가 ReplicatedStorage > FairyWearCatalog 에 올려 둔 목록)
+-- ==============================================================
+local WEAR_ICON = {
+	princess = "👑", cloak = "🌌", apron = "🍰", tutu = "🎀", pajama = "☁️", galaxy = "✨", ladybug = "🐞",
+	tiara = "👑", ribbon = "🎀", beret = "🎨", flowercrown = "🌸",
+	sunglasses = "🕶️", wand = "🪄", angelwing = "👼", bell = "🔔", umbrella = "🌂",
+}
+local WEAR_LABEL = { dress = "👗 의상", head = "👑 머리", acc = "🕶️ 소품" }
+local WEAR = {}
+local WEAR_LIST = { dress = {}, head = {}, acc = {} }
+do
+	local wearCatalog = ReplicatedStorage:WaitForChild("FairyWearCatalog", 10)
+	if wearCatalog ~= nil then
+		for _, obj in ipairs(wearCatalog:GetChildren()) do
+			local kind = obj:GetAttribute("Kind")
+			if kind ~= nil and WEAR_LIST[kind] ~= nil then
+				local info = {
+					id = obj.Name,
+					name = obj:GetAttribute("DisplayName") or obj.Name,
+					price = obj:GetAttribute("Price") or 0,
+					color = obj:GetAttribute("Color") or Color3.fromRGB(255, 170, 210),
+					icon = WEAR_ICON[obj.Name] or "✨",
+					kind = kind,
+				}
+				WEAR[obj.Name] = info
+				table.insert(WEAR_LIST[kind], info)
+			end
+		end
+	end
+	for _, list in pairs(WEAR_LIST) do
+		table.sort(list, function(a, b)
+			return a.price < b.price
+		end)
+	end
+end
 
 -- ==============================================================
 -- UI 도우미
@@ -760,14 +810,26 @@ end)
 
 local decorBtn = make("TextButton", {
 	Position = UDim2.fromOffset(16, 426),
-	Size = UDim2.new(1, -32, 0, 40),
+	Size = UDim2.new(0.5, -22, 0, 40),
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-	Text = "하우스 꾸미기 상점 열기",
+	Text = "🛋️ 가구 상점",
 	TextColor3 = Color3.fromRGB(150, 100, 175),
 	Font = Enum.Font.GothamBold,
 	TextScaled = true,
 }, housePanel)
 round(decorBtn, 14, Color3.fromRGB(235, 220, 255), 2)
+
+local wardrobeBtn = make("TextButton", {
+	AnchorPoint = Vector2.new(1, 0),
+	Position = UDim2.new(1, -16, 0, 426),
+	Size = UDim2.new(0.5, -22, 0, 40),
+	BackgroundColor3 = Color3.fromRGB(255, 224, 240),
+	Text = "👗 요정 꾸미기",
+	TextColor3 = Color3.fromRGB(190, 70, 140),
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+}, housePanel)
+round(wardrobeBtn, 14, Color3.fromRGB(255, 170, 210), 2)
 
 closeHouse.MouseButton1Click:Connect(function()
 	housePanel.Visible = false
@@ -947,24 +1009,24 @@ dexButton.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================================
--- 상점 패널
+-- 상점 패널 (가구 12종 · 의상 · 악세사리)
 -- ==============================================================
 local shopPanel = make("Frame", {
 	Name = "ShopPanel",
 	Visible = false,
 	AnchorPoint = Vector2.new(0.5, 0.5),
 	Position = UDim2.fromScale(0.5, 0.5),
-	Size = UDim2.new(0.92, 0, 0.7, 0),
+	Size = UDim2.new(0.92, 0, 0.76, 0),
 	BackgroundColor3 = Color3.fromRGB(255, 246, 252),
 	ZIndex = 40,
 }, gui)
 round(shopPanel, 24, Color3.new(1, 1, 1), 4)
 gradient(shopPanel, Color3.fromRGB(255, 252, 254), Color3.fromRGB(240, 233, 255), 90)
 
-make("TextLabel", {
+local shopTitle = make("TextLabel", {
 	BackgroundTransparency = 1,
-	Position = UDim2.fromOffset(20, 14),
-	Size = UDim2.new(1, -120, 0, 30),
+	Position = UDim2.fromOffset(20, 12),
+	Size = UDim2.new(1, -120, 0, 26),
 	Text = "하우스 꾸미기 상점",
 	TextColor3 = INK,
 	Font = Enum.Font.GothamBold,
@@ -975,8 +1037,8 @@ make("TextLabel", {
 
 local shopClose = make("TextButton", {
 	AnchorPoint = Vector2.new(1, 0),
-	Position = UDim2.new(1, -14, 0, 14),
-	Size = UDim2.fromOffset(38, 32),
+	Position = UDim2.new(1, -14, 0, 12),
+	Size = UDim2.fromOffset(38, 30),
 	BackgroundColor3 = Color3.new(1, 1, 1),
 	Text = "X",
 	TextColor3 = Color3.fromRGB(180, 90, 150),
@@ -989,79 +1051,380 @@ shopClose.MouseButton1Click:Connect(function()
 	shopPanel.Visible = false
 end)
 
+local shopTab = "furn"
+local wardrobeTab = "dress"
+local refreshWardrobe
+local openWardrobe
+local shopTabs = make("Frame", {
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(16, 44),
+	Size = UDim2.new(1, -32, 0, 32),
+	ZIndex = 41,
+}, shopPanel)
+make("UIListLayout", {
+	FillDirection = Enum.FillDirection.Horizontal,
+	Padding = UDim.new(0, 6),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, shopTabs)
+
+local shopTabButtons = {}
+local function styleShopTabs()
+	for tab, btn in pairs(shopTabButtons) do
+		if tab == shopTab then
+			btn.BackgroundColor3 = PINK
+			btn.TextColor3 = Color3.new(1, 1, 1)
+		else
+			btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			btn.TextColor3 = Color3.fromRGB(160, 88, 140)
+		end
+	end
+end
+
 local shopList = make("ScrollingFrame", {
-	Position = UDim2.fromOffset(16, 52),
-	Size = UDim2.new(1, -32, 1, -66),
+	Position = UDim2.fromOffset(16, 82),
+	Size = UDim2.new(1, -32, 1, -94),
 	BackgroundTransparency = 1,
 	ScrollBarThickness = 4,
 	CanvasSize = UDim2.new(0, 0, 0, 0),
+	ZIndex = 41,
 }, shopPanel)
 make("UIListLayout", {
 	Padding = UDim.new(0, 8),
 	SortOrder = Enum.SortOrder.LayoutOrder,
 }, shopList)
 
-local function refreshShop()
-	local owned = houseData and houseData.decor or {}
-	for index, item in ipairs(DECOR) do
-		local row = shopList:FindFirstChild("Item_" .. item.id)
-		if row == nil then
-			row = make("TextButton", {
-				Name = "Item_" .. item.id,
-				Size = UDim2.new(1, 0, 0, 52),
-				BackgroundColor3 = Color3.new(1, 1, 1),
-				LayoutOrder = index,
-				Text = "",
-				AutoButtonColor = true,
-			}, shopList)
-			round(row, 14, Color3.fromRGB(240, 228, 246), 2)
-
-			make("TextLabel", {
-				BackgroundTransparency = 1,
-				Position = UDim2.fromOffset(12, 0),
-				Size = UDim2.new(0.6, 0, 1, 0),
-				Text = item.name,
-				TextColor3 = INK,
-				Font = Enum.Font.GothamBold,
-				TextScaled = true,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			}, row)
-
-			local priceLabel = make("TextLabel", {
-				Name = "Price",
-				BackgroundTransparency = 1,
-				AnchorPoint = Vector2.new(1, 0),
-				Position = UDim2.new(1, -12, 0, 0),
-				Size = UDim2.new(0.35, 0, 1, 0),
-				Text = tostring(item.price) .. " 코인",
-				TextColor3 = Color3.fromRGB(200, 120, 0),
-				Font = Enum.Font.GothamBold,
-				TextScaled = true,
-				TextXAlignment = Enum.TextXAlignment.Right,
-			}, row)
-
-			local itemId = item.id
-			row.MouseButton1Click:Connect(function()
-				remotes.BuyDecor:FireServer(itemId)
-			end)
-		end
-		local priceLabel = row:FindFirstChild("Price")
-		if priceLabel ~= nil then
-			if owned[item.id] then
-				priceLabel.Text = "보유 중"
-				priceLabel.TextColor3 = Color3.fromRGB(80, 170, 140)
-			else
-				priceLabel.Text = tostring(item.price) .. " 코인"
-				priceLabel.TextColor3 = Color3.fromRGB(200, 120, 0)
-			end
+local function clearList(list)
+	for _, child in ipairs(list:GetChildren()) do
+		if child:IsA("GuiObject") then
+			child:Destroy()
 		end
 	end
-	shopList.CanvasSize = UDim2.new(0, 0, 0, #DECOR * 60)
+end
+
+local function shopRow(index, icon, name, priceText, priceColor, onTap)
+	local row = make("TextButton", {
+		Name = "Row" .. index,
+		Size = UDim2.new(1, 0, 0, 52),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		LayoutOrder = index,
+		Text = "",
+		AutoButtonColor = true,
+		ZIndex = 42,
+	}, shopList)
+	round(row, 14, Color3.fromRGB(240, 228, 246), 2)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(10, 0),
+		Size = UDim2.fromOffset(38, 52),
+		Text = icon,
+		TextScaled = true,
+		ZIndex = 43,
+	}, row)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(52, 0),
+		Size = UDim2.new(0.55, 0, 1, 0),
+		Text = name,
+		TextColor3 = INK,
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 43,
+	}, row)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -12, 0, 0),
+		Size = UDim2.new(0.38, 0, 1, 0),
+		Text = priceText,
+		TextColor3 = priceColor,
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		ZIndex = 43,
+	}, row)
+
+	row.MouseButton1Click:Connect(onTap)
+	return row
+end
+
+local function refreshShop()
+	local ownedDecor = (houseData and houseData.decor) or {}
+	local ownedWear = (houseData and houseData.owned) or {}
+	styleShopTabs()
+	clearList(shopList)
+	local count = 0
+
+	if shopTab == "furn" then
+		for index, item in ipairs(DECOR) do
+			count = count + 1
+			local owned = ownedDecor[item.id] == true
+			local priceText = owned and "설치됨 ✓" or (tostring(item.price) .. " 코인")
+			local priceColor = owned and Color3.fromRGB(80, 170, 140) or Color3.fromRGB(200, 120, 0)
+			local itemId = item.id
+			shopRow(index, "🛋️", item.name, priceText, priceColor, function()
+				if not owned then
+					remotes.BuyDecor:FireServer(itemId)
+				else
+					toast("이미 설치된 가구예요")
+				end
+			end)
+		end
+	else
+		local list = WEAR_LIST[shopTab]
+		for index, item in ipairs(list) do
+			count = count + 1
+			local owned = ownedWear[item.id] == true
+			local priceText = owned and "보유 ✓" or (tostring(item.price) .. " 코인")
+			local priceColor = owned and Color3.fromRGB(80, 170, 140) or Color3.fromRGB(200, 120, 0)
+			local itemId = item.id
+			shopRow(index, item.icon, item.name, priceText, priceColor, function()
+				if owned then
+					wardrobeTab = item.kind
+					openWardrobe()
+				else
+					remotes.BuyWear:FireServer(itemId)
+				end
+			end)
+		end
+	end
+	shopList.CanvasSize = UDim2.new(0, 0, 0, count * 60)
+	shopTitle.Text = "하우스 꾸미기 상점 · " ..
+		(shopTab == "furn" and "가구 12종" or (shopTab == "dress" and "의상" or "악세사리"))
+end
+
+local function setShopTab(tab)
+	shopTab = tab
+	refreshShop()
+end
+
+for order, def in ipairs({ { "furn", "🛋️ 가구" }, { "dress", "👗 의상" }, { "acc", "🕶️ 악세사리" } }) do
+	local btn = make("TextButton", {
+		Name = "Tab_" .. def[1],
+		Size = UDim2.new(1 / 3, -4, 1, 0),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		Text = def[2],
+		TextColor3 = Color3.fromRGB(160, 88, 140),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		LayoutOrder = order,
+		ZIndex = 42,
+	}, shopTabs)
+	round(btn, 12, Color3.new(1, 1, 1), 2)
+	local tabId = def[1]
+	btn.MouseButton1Click:Connect(function()
+		setShopTab(tabId)
+	end)
+	shopTabButtons[tabId] = btn
+end
+
+-- ==============================================================
+-- 요정 꾸미기(코디) 창 — 슬롯별 아이콘/색 + 즉시 3D 반영
+-- ==============================================================
+local wardrobePanel = make("Frame", {
+	Name = "WardrobePanel",
+	Visible = false,
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.5),
+	Size = UDim2.new(0.92, 0, 0.74, 0),
+	BackgroundColor3 = Color3.fromRGB(255, 246, 252),
+	ZIndex = 44,
+}, gui)
+round(wardrobePanel, 24, Color3.new(1, 1, 1), 4)
+gradient(wardrobePanel, Color3.fromRGB(255, 252, 254), Color3.fromRGB(246, 233, 255), 90)
+
+local wardrobeTitle = make("TextLabel", {
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(20, 12),
+	Size = UDim2.new(1, -120, 0, 26),
+	Text = "👗 요정 꾸미기",
+	TextColor3 = INK,
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	ZIndex = 45,
+}, wardrobePanel)
+
+local wardrobeClose = make("TextButton", {
+	AnchorPoint = Vector2.new(1, 0),
+	Position = UDim2.new(1, -14, 0, 12),
+	Size = UDim2.fromOffset(38, 30),
+	BackgroundColor3 = Color3.new(1, 1, 1),
+	Text = "X",
+	TextColor3 = Color3.fromRGB(180, 90, 150),
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	ZIndex = 45,
+}, wardrobePanel)
+round(wardrobeClose, 12, Color3.fromRGB(255, 224, 240), 2)
+wardrobeClose.MouseButton1Click:Connect(function()
+	wardrobePanel.Visible = false
+end)
+
+local chipRow = make("Frame", {
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(14, 44),
+	Size = UDim2.new(1, -28, 0, 58),
+	ZIndex = 45,
+}, wardrobePanel)
+make("UIListLayout", {
+	FillDirection = Enum.FillDirection.Horizontal,
+	Padding = UDim.new(0, 6),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, chipRow)
+
+local chipButtons = {}
+for order, slot in ipairs({ "dress", "head", "acc" }) do
+	local chip = make("TextButton", {
+		Name = "Chip_" .. slot,
+		Size = UDim2.new(1 / 3, -4, 1, 0),
+		BackgroundColor3 = Color3.fromRGB(255, 244, 251),
+		Text = "",
+		LayoutOrder = order,
+		ZIndex = 46,
+	}, chipRow)
+	round(chip, 14, Color3.new(1, 1, 1), 2)
+	make("TextLabel", {
+		Name = "SlotName",
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(4, 2),
+		Size = UDim2.new(1, -8, 0, 18),
+		Text = WEAR_LABEL[slot],
+		TextColor3 = Color3.fromRGB(150, 90, 140),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		ZIndex = 47,
+	}, chip)
+	make("TextLabel", {
+		Name = "SlotValue",
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(4, 20),
+		Size = UDim2.new(1, -8, 0, 30),
+		Text = "없음",
+		TextColor3 = Color3.fromRGB(180, 160, 180),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		ZIndex = 47,
+	}, chip)
+	local slotId = slot
+	chip.MouseButton1Click:Connect(function()
+		wardrobeTab = slotId
+		refreshWardrobe()
+	end)
+	chipButtons[slot] = chip
+end
+
+local wardrobeList = make("ScrollingFrame", {
+	Position = UDim2.fromOffset(16, 110),
+	Size = UDim2.new(1, -32, 1, -122),
+	BackgroundTransparency = 1,
+	ScrollBarThickness = 4,
+	CanvasSize = UDim2.new(0, 0, 0, 0),
+	ZIndex = 45,
+}, wardrobePanel)
+make("UIListLayout", {
+	Padding = UDim.new(0, 8),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, wardrobeList)
+
+-- 착용 순간 UI 반짝
+local function wardrobeSparkle()
+	for i = 1, 8 do
+		local star = make("TextLabel", {
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.3 + math.random() * 0.4, 0, 0.35 + math.random() * 0.3, 0),
+			Size = UDim2.fromOffset(30, 30),
+			Text = (i % 2 == 0) and "✨" or "💖",
+			TextScaled = true,
+			ZIndex = 60,
+		}, wardrobePanel)
+		local target = star.Position - UDim2.fromOffset(math.random() * 40 - 20, 60 + math.random() * 40)
+		local tween = TweenService:Create(star, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Position = target,
+			TextTransparency = 1,
+		})
+		tween:Play()
+		Debris_Add(star, 0.8)
+	end
+end
+
+refreshWardrobe = function()
+	if houseData == nil then
+		return
+	end
+	local fairyId = selectedFairy
+	local info = fairyId and FAIRY[fairyId] or nil
+	wardrobeTitle.Text = info and ("👗 " .. info.name .. " 꾸미기") or "👗 요정 꾸미기"
+	local wear = (houseData.wear and fairyId and houseData.wear[fairyId]) or {}
+	local owned = houseData.owned or {}
+
+	for slot, chip in pairs(chipButtons) do
+		local itemId = wear[slot]
+		local item = itemId and WEAR[itemId] or nil
+		local value = chip:FindFirstChild("SlotValue")
+		if value ~= nil then
+			value.Text = item and (item.icon .. " " .. item.name) or "비어 있음"
+			value.TextColor3 = item and INK or Color3.fromRGB(180, 160, 180)
+		end
+		chip.BackgroundColor3 = item and item.color or Color3.fromRGB(255, 244, 251)
+		chip.BackgroundTransparency = item and 0.35 or 0
+	end
+
+	clearList(wardrobeList)
+	local list = WEAR_LIST[wardrobeTab]
+	local wearing = wear[wardrobeTab]
+	for index, item in ipairs(list) do
+		local isOwned = owned[item.id] == true
+		local isOn = wearing == item.id
+		local priceText
+		if isOn then
+			priceText = "착용 중 ✓"
+		elseif isOwned then
+			priceText = "입히기"
+		else
+			priceText = tostring(item.price) .. " 코인"
+		end
+		local priceColor = isOn and Color3.fromRGB(235, 70, 150)
+			or (isOwned and Color3.fromRGB(80, 170, 140) or Color3.fromRGB(200, 120, 0))
+		local row = shopRow(index, item.icon, item.name, priceText, priceColor, function()
+			if selectedFairy == nil then
+				toast("먼저 요정을 선택해 주세요")
+				return
+			end
+			if isOn then
+				remotes.SetWear:FireServer(selectedFairy, wardrobeTab, nil)
+			elseif isOwned then
+				remotes.SetWear:FireServer(selectedFairy, wardrobeTab, item.id)
+				wardrobeSparkle()
+			else
+				remotes.BuyWear:FireServer(item.id)
+			end
+		end)
+		row.Parent = wardrobeList
+	end
+	wardrobeList.CanvasSize = UDim2.new(0, 0, 0, #list * 60)
+end
+
+openWardrobe = function()
+	if selectedFairy == nil then
+		toast("하우스에서 요정을 먼저 선택해 주세요")
+		return
+	end
+	if houseData ~= nil then
+		remotes.RequestHouse:FireServer()
+	end
+	wardrobePanel.Visible = true
+	refreshWardrobe()
 end
 
 shopButton.MouseButton1Click:Connect(function()
 	shopPanel.Visible = not shopPanel.Visible
 	if shopPanel.Visible then
+		wardrobePanel.Visible = false
 		remotes.RequestHouse:FireServer()
 		refreshShop()
 	end
@@ -1070,7 +1433,14 @@ end)
 decorBtn.MouseButton1Click:Connect(function()
 	housePanel.Visible = false
 	shopPanel.Visible = true
-	refreshShop()
+	wardrobePanel.Visible = false
+	setShopTab("furn")
+end)
+
+wardrobeBtn.MouseButton1Click:Connect(function()
+	housePanel.Visible = false
+	shopPanel.Visible = false
+	openWardrobe()
 end)
 
 -- ==============================================================
@@ -1131,9 +1501,15 @@ remotes.HouseData.OnClientEvent:Connect(function(data, open)
 	if housePanel.Visible then
 		refreshHouse()
 	end
-	-- 도감/상점이 열려 있으면 함께 갱신
+	-- 도감/상점/코디가 열려 있으면 함께 갱신
 	if dexPanel.Visible then
 		refreshDex()
+	end
+	if shopPanel.Visible then
+		refreshShop()
+	end
+	if wardrobePanel.Visible then
+		refreshWardrobe()
 	end
 end)
 

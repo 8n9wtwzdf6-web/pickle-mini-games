@@ -38,6 +38,13 @@ local remotes = {
 	BuyWear = net:WaitForChild("BuyWear"),
 	SetWear = net:WaitForChild("SetWear"),
 	Notify = net:WaitForChild("Notify"),
+	RequestTown = net:WaitForChild("RequestTown"),
+	TownData = net:WaitForChild("TownData"),
+	BuyPlot = net:WaitForChild("BuyPlot"),
+	UpgradeBuilding = net:WaitForChild("UpgradeBuilding"),
+	CollectBusiness = net:WaitForChild("CollectBusiness"),
+	SetFairyMode = net:WaitForChild("SetFairyMode"),
+	CareFairy = net:WaitForChild("CareFairy"),
 }
 
 -- ==============================================================
@@ -215,7 +222,7 @@ local buttonRow = make("Frame", {
 	BackgroundTransparency = 1,
 	AnchorPoint = Vector2.new(1, 0),
 	Position = UDim2.new(1, 0, 0, 0),
-	Size = UDim2.fromOffset(190, 40),
+	Size = UDim2.fromOffset(200, 40),
 }, topBar)
 
 make("UIListLayout", {
@@ -244,6 +251,7 @@ end
 
 local dexButton = topButton("도감", 1)
 local shopButton = topButton("상점", 2)
+local townButton = topButton("🏘️ 타운", 3)
 
 local hint = make("TextLabel", {
 	BackgroundTransparency = 1,
@@ -496,7 +504,7 @@ local function showCatch(data)
 	catchTitle.TextColor3 = RARITY_COLOR[data.rarity] or Color3.new(1, 1, 1)
 	setHearts(0, data.need)
 	timerFill.Size = UDim2.fromScale(1, 1)
-	for _, name in ipairs({ "HousePanel", "DexPanel", "ShopPanel" }) do
+	for _, name in ipairs({ "HousePanel", "DexPanel", "ShopPanel", "TownPanel" }) do
 		local panel = gui:FindFirstChild(name)
 		if panel ~= nil then
 			panel.Visible = false
@@ -1517,6 +1525,426 @@ remotes.RequestHouse.OnClientEvent:Connect(function(open)
 	if open then
 		housePanel.Visible = true
 		refreshHouse()
+	end
+end)
+
+-- ==============================================================
+-- 요정 타운 패널 (학업 · 땅 매입 · 건설 · 장사 · 병원/마트/장비점)
+-- ==============================================================
+local townCatalogList = {}
+local townCatalogSlot = {}
+do
+	local folder = ReplicatedStorage:WaitForChild("FairyTownCatalog", 20)
+	if folder ~= nil then
+		for _, conf in ipairs(folder:GetChildren()) do
+			if conf:IsA("Configuration") then
+				local info = {
+					slot = conf:GetAttribute("Slot") or 0,
+					id = conf.Name,
+					name = conf:GetAttribute("DisplayName") or conf.Name,
+					icon = conf:GetAttribute("Icon") or "🏪",
+					kind = conf:GetAttribute("Kind") or "shop",
+					land = conf:GetAttribute("Land") or 0,
+					build = conf:GetAttribute("Build") or 0,
+				}
+				townCatalogSlot[info.slot] = info
+				table.insert(townCatalogList, info)
+			end
+		end
+	end
+	table.sort(townCatalogList, function(a, b)
+		return a.slot < b.slot
+	end)
+end
+
+local MAJOR_LABEL = {
+	pastry = "🥐파티시에",
+	designer = "👗디자이너",
+	barista = "🧪포션바리스타",
+	jeweler = "💎보석세공사",
+}
+
+local townData = nil
+local townSelected = nil
+
+local townPanel = make("Frame", {
+	Name = "TownPanel",
+	Visible = false,
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.5),
+	Size = UDim2.new(0.94, 0, 0.9, 0),
+	BackgroundColor3 = Color3.fromRGB(255, 246, 252),
+	ZIndex = 40,
+}, gui)
+round(townPanel, 24, Color3.new(1, 1, 1), 4)
+gradient(townPanel, Color3.fromRGB(255, 252, 254), Color3.fromRGB(244, 236, 255), 90)
+
+local townTitle = make("TextLabel", {
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(20, 10),
+	Size = UDim2.new(1, -80, 0, 30),
+	Text = "🏘️ 요정 타운",
+	TextColor3 = INK,
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	ZIndex = 41,
+}, townPanel)
+
+local closeTown = make("TextButton", {
+	AnchorPoint = Vector2.new(1, 0),
+	Position = UDim2.new(1, -14, 0, 12),
+	Size = UDim2.fromOffset(38, 32),
+	BackgroundColor3 = Color3.new(1, 1, 1),
+	Text = "X",
+	TextColor3 = Color3.fromRGB(180, 90, 150),
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	ZIndex = 42,
+}, townPanel)
+round(closeTown, 12, Color3.fromRGB(255, 224, 240), 2)
+
+local townStat = make("TextLabel", {
+	BackgroundTransparency = 1,
+	Position = UDim2.fromOffset(20, 42),
+	Size = UDim2.new(1, -40, 0, 26),
+	Text = "초당 0 코인",
+	TextColor3 = Color3.fromRGB(160, 110, 140),
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	ZIndex = 41,
+}, townPanel)
+
+local plotTitle = make("TextLabel", {
+	BackgroundTransparency = 1,
+	Position = UDim2.new(0, 18, 0.115, 0),
+	Size = UDim2.new(1, -36, 0, 20),
+	Text = "🏪 마을 상점가 · 땅 매입 → 건설 → 증축",
+	TextColor3 = Color3.fromRGB(138, 79, 125),
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	ZIndex = 41,
+}, townPanel)
+
+local plotsScroll = make("ScrollingFrame", {
+	BackgroundTransparency = 1,
+	Position = UDim2.new(0, 14, 0.155, 0),
+	Size = UDim2.new(1, -28, 0.35, 0),
+	CanvasSize = UDim2.new(0, 0, 0, 0),
+	ScrollBarThickness = 4,
+	BorderSizePixel = 0,
+	ZIndex = 41,
+}, townPanel)
+make("UIListLayout", {
+	Padding = UDim.new(0, 6),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, plotsScroll)
+
+local fairyTitle = make("TextLabel", {
+	BackgroundTransparency = 1,
+	Position = UDim2.new(0, 18, 0.515, 0),
+	Size = UDim2.new(1, -36, 0, 20),
+	Text = "🧚 요정 상태 · 요정을 누르면 간식·치료·장비 선물",
+	TextColor3 = Color3.fromRGB(138, 79, 125),
+	Font = Enum.Font.GothamBold,
+	TextScaled = true,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	ZIndex = 41,
+}, townPanel)
+
+local fairyScroll = make("ScrollingFrame", {
+	BackgroundTransparency = 1,
+	Position = UDim2.new(0, 14, 0.555, 0),
+	Size = UDim2.new(1, -28, 0.33, 0),
+	CanvasSize = UDim2.new(0, 0, 0, 0),
+	ScrollBarThickness = 4,
+	BorderSizePixel = 0,
+	ZIndex = 41,
+}, townPanel)
+make("UIListLayout", {
+	Padding = UDim.new(0, 6),
+	SortOrder = Enum.SortOrder.LayoutOrder,
+}, fairyScroll)
+
+local townHint = make("TextLabel", {
+	BackgroundTransparency = 1,
+	Position = UDim2.new(0, 18, 0.90, 0),
+	Size = UDim2.new(1, -36, 0, 34),
+	Text = "요정은 스스로 공부하고 장사하고 마트·병원·장비점에서 소비해요. 학업 Lv·건물 Lv·장비가 높을수록 매출이 커집니다.",
+	TextColor3 = Color3.fromRGB(170, 130, 160),
+	Font = Enum.Font.Gotham,
+	TextScaled = true,
+	TextWrapped = true,
+	ZIndex = 41,
+}, townPanel)
+
+local function clearRows(scroll, className)
+	for _, child in ipairs(scroll:GetChildren()) do
+		if child:IsA(className) then
+			child:Destroy()
+		end
+	end
+end
+
+local function townPlotRow(info, plot, order)
+	local row = make("Frame", {
+		Size = UDim2.new(1, -6, 0, 58),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BorderSizePixel = 0,
+		LayoutOrder = order,
+	}, plotsScroll)
+	round(row, 14, Color3.fromRGB(255, 226, 243), 2)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(8, 10),
+		Size = UDim2.fromOffset(30, 32),
+		Text = info.icon,
+		TextScaled = true,
+	}, row)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(42, 5),
+		Size = UDim2.new(1, -140, 0, 18),
+		Text = info.name,
+		TextColor3 = Color3.fromRGB(107, 47, 86),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, row)
+
+	local stateText
+	if plot.bld >= 1 then
+		local workerName = ""
+		if plot.worker ~= nil then
+			for _, f in ipairs(townData.fairies or {}) do
+				if f.id == plot.worker then
+					workerName = " · 점장 " .. f.name
+				end
+			end
+		end
+		stateText = "Lv." .. tostring(plot.bld) .. " · 초당 " .. tostring(string.format("%.1f", plot.rate or 0)) .. workerName
+	elseif plot.owned then
+		stateText = "내 땅 · 건물을 올리면 장사가 시작돼요"
+	else
+		stateText = "매물 · 땅 " .. tostring(info.land) .. " / 건물 " .. tostring(info.build)
+	end
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(42, 23),
+		Size = UDim2.new(1, -140, 0, 16),
+		Text = stateText,
+		TextColor3 = Color3.fromRGB(170, 140, 160),
+		Font = Enum.Font.Gotham,
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, row)
+
+	local actText, actColor
+	local actFn = nil
+	if not plot.owned then
+		actText = "🚩 땅 " .. tostring(info.land)
+		actColor = Color3.fromRGB(255, 200, 90)
+		actFn = function()
+			remotes.BuyPlot:FireServer(info.slot)
+		end
+	elseif plot.bld < 1 then
+		actText = "🏗️ 건설 " .. tostring(info.build)
+		actColor = Color3.fromRGB(255, 200, 90)
+		actFn = function()
+			remotes.UpgradeBuilding:FireServer(info.slot)
+		end
+	elseif plot.bld < 3 then
+		actText = "⬆️ Lv." .. tostring(plot.bld + 1) .. " " .. tostring(plot.upCost or 0)
+		actColor = Color3.fromRGB(255, 200, 90)
+		actFn = function()
+			remotes.UpgradeBuilding:FireServer(info.slot)
+		end
+	else
+		actText = "Lv.3 MAX"
+		actColor = Color3.fromRGB(230, 220, 235)
+	end
+	local actBtn = make("TextButton", {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -8, 0, 5),
+		Size = UDim2.fromOffset(92, 24),
+		BackgroundColor3 = actColor,
+		BorderSizePixel = 0,
+		Text = actText,
+		TextColor3 = Color3.fromRGB(106, 59, 0),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		AutoButtonColor = true,
+	}, row)
+	round(actBtn, 9, Color3.new(1, 1, 1), 2)
+	if actFn ~= nil then
+		actBtn.MouseButton1Click:Connect(actFn)
+	end
+
+	local income = math.floor(plot.income or 0)
+	local colBtn = make("TextButton", {
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -8, 0, 32),
+		Size = UDim2.fromOffset(92, 21),
+		BackgroundColor3 = income > 0 and Color3.fromRGB(204, 245, 232) or Color3.fromRGB(240, 236, 244),
+		BorderSizePixel = 0,
+		Text = "💰 수거 " .. tostring(income),
+		TextColor3 = income > 0 and Color3.fromRGB(47, 127, 108) or Color3.fromRGB(170, 150, 165),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+	}, row)
+	round(colBtn, 9, Color3.new(1, 1, 1), 2)
+	if income > 0 then
+		colBtn.MouseButton1Click:Connect(function()
+			remotes.CollectBusiness:FireServer(info.slot)
+		end)
+	end
+end
+
+local refreshTown
+
+local function townFairyRow(f, order)
+	local selected = (townSelected == f.id)
+	local row = make("TextButton", {
+		Size = UDim2.new(1, -6, 0, selected and 96 or 62),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BorderSizePixel = 0,
+		Text = "",
+		AutoButtonColor = false,
+		LayoutOrder = order,
+	}, fairyScroll)
+	round(row, 14, selected and PINK or Color3.fromRGB(255, 226, 243), 2)
+	row.MouseButton1Click:Connect(function()
+		townSelected = f.id
+		refreshTown()
+	end)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(10, 4),
+		Size = UDim2.new(1, -20, 0, 18),
+		Text = f.name .. "  ·  Lv." .. tostring(f.lv) .. "  " .. (MAJOR_LABEL[f.major] or "전공 미정") .. (f.ring and "  💍" or "") .. (f.charm and "  🍀" or ""),
+		TextColor3 = Color3.fromRGB(107, 47, 86),
+		Font = Enum.Font.GothamBold,
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, row)
+
+	make("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(10, 22),
+		Size = UDim2.new(1, -20, 0, 16),
+		Text = "❤ " .. tostring(f.hp) .. "   🪙 " .. tostring(f.wallet) .. "   " .. tostring(f.status),
+		TextColor3 = Color3.fromRGB(170, 140, 160),
+		Font = Enum.Font.Gotham,
+		TextScaled = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	}, row)
+
+	local modes = { { "auto", "자유" }, { "study", "공부" }, { "work", "장사" } }
+	for index, m in ipairs(modes) do
+		local on = (f.mode or "auto") == m[1]
+		local b = make("TextButton", {
+			Position = UDim2.fromOffset(10 + (index - 1) * 46, 40),
+			Size = UDim2.fromOffset(42, 18),
+			BackgroundColor3 = on and PINK or Color3.fromRGB(255, 244, 250),
+			BorderSizePixel = 0,
+			Text = m[2],
+			TextColor3 = on and Color3.new(1, 1, 1) or Color3.fromRGB(140, 90, 125),
+			Font = Enum.Font.GothamBold,
+			TextScaled = true,
+		}, row)
+		round(b, 8, Color3.new(1, 1, 1), 1)
+		b.MouseButton1Click:Connect(function()
+			remotes.SetFairyMode:FireServer(f.id, m[1])
+		end)
+	end
+
+	if selected then
+		local cares = { { "snack", "🍬 간식" }, { "heal", "🏥 치료" }, { "ring", "💍 반지" }, { "charm", "🍀 부적" } }
+		for index, c in ipairs(cares) do
+			local b = make("TextButton", {
+				Position = UDim2.fromOffset(10 + (index - 1) * 82, 64),
+				Size = UDim2.fromOffset(76, 24),
+				BackgroundColor3 = Color3.fromRGB(255, 236, 190),
+				BorderSizePixel = 0,
+				Text = c[2],
+				TextColor3 = Color3.fromRGB(106, 59, 0),
+				Font = Enum.Font.GothamBold,
+				TextScaled = true,
+			}, row)
+			round(b, 9, Color3.new(1, 1, 1), 1)
+			b.MouseButton1Click:Connect(function()
+				remotes.CareFairy:FireServer(f.id, c[1])
+			end)
+		end
+	end
+end
+
+refreshTown = function()
+	if townData == nil then
+		return
+	end
+	local rate = string.format("%.1f", townData.rate or 0)
+	local income = tostring(math.floor(townData.income or 0))
+	local owned, built = 0, 0
+	for _, p in ipairs(townData.plots or {}) do
+		if p.owned then
+			owned = owned + 1
+		end
+		if p.bld >= 1 then
+			built = built + 1
+		end
+	end
+	townStat.Text = "초당 " .. rate .. " 코인 · 수거 대기 " .. income .. " · 내 땅 " .. tostring(owned) .. "/" .. tostring(#townCatalogList) .. " · 건물 " .. tostring(built)
+
+	clearRows(plotsScroll, "Frame")
+	local order = 0
+	for _, info in ipairs(townCatalogList) do
+		local plot = nil
+		for _, p in ipairs(townData.plots or {}) do
+			if p.slot == info.slot then
+				plot = p
+			end
+		end
+		if plot ~= nil then
+			order = order + 1
+			townPlotRow(info, plot, order)
+		end
+	end
+	plotsScroll.CanvasSize = UDim2.new(0, 0, 0, math.max(0, #townCatalogList * 64))
+
+	clearRows(fairyScroll, "TextButton")
+	local fairyOrder = 0
+	local fairyHeight = 0
+	for _, f in ipairs(townData.fairies or {}) do
+		fairyOrder = fairyOrder + 1
+		townFairyRow(f, fairyOrder)
+		fairyHeight = fairyHeight + ((townSelected == f.id) and 102 or 68)
+	end
+	fairyScroll.CanvasSize = UDim2.new(0, 0, 0, fairyHeight)
+	coinLabel.Text = tostring(math.floor(townData.coins or 0))
+end
+
+townButton.MouseButton1Click:Connect(function()
+	townPanel.Visible = not townPanel.Visible
+	if townPanel.Visible then
+		remotes.RequestTown:FireServer()
+		refreshTown()
+	end
+end)
+
+closeTown.MouseButton1Click:Connect(function()
+	townPanel.Visible = false
+end)
+
+remotes.TownData.OnClientEvent:Connect(function(data)
+	townData = data
+	if townPanel.Visible then
+		refreshTown()
 	end
 end)
 

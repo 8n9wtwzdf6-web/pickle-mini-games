@@ -1632,3 +1632,1112 @@ for i = 1, 6 do
 end
 
 print("[FairyCatch] 캐치 & 하우스 코어 준비 완료")
+
+-- ==============================================================
+-- 13. 요정 타운 (학업 · 땅 매입 · 건설 · 장사 · 병원/마트/장비점)
+--     · 아카데미에서 스스로 공부 → 전공·학업 Lv 상승
+--     · 땅을 사고 건물을 올리면 3D 상점이 세워짐 (Lv.1~3)
+--     · 요정이 스스로 출근해 장사 · 마트 쇼핑 · 병원 치료 · 장비 구매
+-- ==============================================================
+local function startTown()
+	local FAC_LIST = shared.FairyConfig.TOWN or {}
+	local FAC_BY_SLOT = {}
+	local FAC_BY_ID = {}
+	for _, fac in ipairs(FAC_LIST) do
+		FAC_BY_SLOT[fac.slot] = fac
+		FAC_BY_ID[fac.id] = fac
+	end
+	local SLOT_COUNT = #FAC_LIST
+
+	local HOSP, MART, GEAR = 3, 2, 5 -- 병원 / 마트 / 장비점 슬롯
+	local SHOP_X = { -63, -42, -21, 0, 21, 42, 63 }
+	local SHOP_Z = 168
+	local ACADEMY = Vector3.new(0, 0, 138)
+	local STUDY_RATE = 9
+	local STUDY_NEED = { 70, 130, 210, 320, 0 }
+	local SNACK_COST, HEAL_COST = 20, 35
+	local MAJORS = { pastry = "파티시에", designer = "디자이너", barista = "포션바리스타", jeweler = "보석세공사" }
+	local MAJOR_KEYS = { "pastry", "designer", "barista", "jeweler" }
+	local GEAR = {
+		ring = { name = "마법 반지", price = 120, desc = "공부 +25%" },
+		charm = { name = "행운 부적", price = 90, desc = "장사 +30%" },
+	}
+
+	local TOWN_ROOT = WORLD:FindFirstChild("Town")
+	if TOWN_ROOT == nil then
+		TOWN_ROOT = Instance.new("Folder")
+		TOWN_ROOT.Name = "Town"
+		TOWN_ROOT.Parent = WORLD
+	end
+	local modelFolder = TOWN_ROOT:FindFirstChild("Models")
+	if modelFolder == nil then
+		modelFolder = Instance.new("Folder")
+		modelFolder.Name = "Models"
+		modelFolder.Parent = TOWN_ROOT
+	end
+	local staticsFolder = TOWN_ROOT:FindFirstChild("Buildings")
+	if staticsFolder == nil then
+		staticsFolder = Instance.new("Folder")
+		staticsFolder.Name = "Buildings"
+		staticsFolder.Parent = TOWN_ROOT
+	end
+
+	-- ---------- 파트 도우미 ----------
+	local function tPart(name, size, pos, color, material, parent, transparency)
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Size = size
+		p.Position = pos
+		p.Anchored = true
+		p.CanCollide = false
+		p.Color = color
+		p.Material = material or Enum.Material.SmoothPlastic
+		p.Transparency = transparency or 0
+		p.Parent = parent
+		return p
+	end
+	local function tLabel(part, text, color, offsetY, width)
+		local gui = Instance.new("BillboardGui")
+		gui.Name = "SignGui"
+		gui.Size = UDim2.new(0, width or 170, 0, 36)
+		gui.StudsOffset = Vector3.new(0, offsetY or 0, 0)
+		gui.AlwaysOnTop = true
+		gui.Parent = part
+		local lbl = Instance.new("TextLabel")
+		lbl.Size = UDim2.fromScale(1, 1)
+		lbl.BackgroundColor3 = Color3.new(1, 1, 1)
+		lbl.BackgroundTransparency = 0.06
+		lbl.Text = text
+		lbl.TextScaled = true
+		lbl.Font = Enum.Font.GothamBold
+		lbl.TextColor3 = color or Color3.fromRGB(120, 70, 140)
+		lbl.Parent = gui
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 12)
+		corner.Parent = lbl
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.fromRGB(255, 255, 255)
+		stroke.Thickness = 2
+		stroke.Parent = lbl
+		return gui
+	end
+	local function shopPos(slot)
+		return Vector3.new(SHOP_X[slot] or 0, 0, SHOP_Z)
+	end
+
+	-- ---------- 아카데미 ----------
+	local academy = Instance.new("Model")
+	academy.Name = "Academy"
+	academy.Parent = staticsFolder
+	tPart("Floor", Vector3.new(30, 0.6, 20), ACADEMY + Vector3.new(0, 0.3, 0), Color3.fromRGB(255, 247, 230), Enum.Material.SmoothPlastic, academy)
+	tPart("Body", Vector3.new(26, 14, 15), ACADEMY + Vector3.new(0, 7.3, 0), Color3.fromRGB(248, 234, 255), Enum.Material.SmoothPlastic, academy)
+	tPart("Trim", Vector3.new(27, 1, 16), ACADEMY + Vector3.new(0, 13.6, 0), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, academy)
+	tPart("Roof", Vector3.new(29, 2.2, 17.5), ACADEMY + Vector3.new(0, 15, 0), Color3.fromRGB(154, 124, 224), Enum.Material.SmoothPlastic, academy)
+	tPart("Tower", Vector3.new(5.5, 6, 5.5), ACADEMY + Vector3.new(0, 19, 0), Color3.fromRGB(255, 250, 255), Enum.Material.SmoothPlastic, academy)
+	tPart("TowerRoof", Vector3.new(7, 1.6, 7), ACADEMY + Vector3.new(0, 22.6, 0), Color3.fromRGB(143, 107, 240), Enum.Material.SmoothPlastic, academy)
+	tPart("Door", Vector3.new(5, 7, 0.6), ACADEMY + Vector3.new(0, 3.6, 7.6), Color3.fromRGB(107, 74, 156), Enum.Material.SmoothPlastic, academy)
+	tPart("WindowL", Vector3.new(4, 5, 0.4), ACADEMY + Vector3.new(-8, 9, 7.6), Color3.fromRGB(215, 240, 255), Enum.Material.Neon, academy, 0.25)
+	tPart("WindowR", Vector3.new(4, 5, 0.4), ACADEMY + Vector3.new(8, 9, 7.6), Color3.fromRGB(215, 240, 255), Enum.Material.Neon, academy, 0.25)
+	local acadSign = tPart("AcademySign", Vector3.new(12, 3.4, 0.5), ACADEMY + Vector3.new(0, 11.2, 7.8), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, academy)
+	tLabel(acadSign, "🏫 마법 아카데미", Color3.fromRGB(122, 74, 168), 0, 200)
+	-- 책상 7개
+	local DESKS = {}
+	for i = 1, 7 do
+		local dx = -18 + (i - 1) * 6
+		local z = (i <= 4) and 149 or 154
+		local desk = tPart("Desk" .. i, Vector3.new(3.4, 0.4, 2.4), Vector3.new(dx, 2.4, z), Color3.fromRGB(224, 180, 137), Enum.Material.SmoothPlastic, academy)
+		tPart("DeskLeg" .. i, Vector3.new(3, 2.2, 0.4), Vector3.new(dx, 1.3, z), Color3.fromRGB(201, 154, 109), Enum.Material.SmoothPlastic, academy)
+		tPart("Book" .. i, Vector3.new(2, 0.3, 1.4), Vector3.new(dx, 2.75, z), Color3.fromRGB(255, 158, 203), Enum.Material.SmoothPlastic, academy)
+		DESKS[i] = Vector3.new(dx, 0, z)
+	end
+	-- 타운 표지
+	local gate = tPart("TownGate", Vector3.new(18, 5, 1), Vector3.new(0, 6, 122), Color3.fromRGB(255, 246, 230), Enum.Material.SmoothPlastic, staticsFolder)
+	tLabel(gate, "🏘️ 요정 타운 · 학업 → 땅 → 건물 → 장사 → 쇼핑", Color3.fromRGB(150, 90, 60), 0, 320)
+
+	-- ---------- 부지 · 건물 ----------
+	local plotParts = {}   -- [slot] = { model, sign }
+	local onPlotClick = nil
+	local function clearPlot(slot)
+		local rec = plotParts[slot]
+		if rec ~= nil and rec.model ~= nil then
+			rec.model:Destroy()
+		end
+		plotParts[slot] = { model = nil, sign = nil }
+	end
+	local function buildPlot(slot)
+		local data = nil
+		local fac = FAC_BY_SLOT[slot]
+		if fac == nil then
+			return
+		end
+		clearPlot(slot)
+		local model = Instance.new("Model")
+		model.Name = "Plot_" .. fac.id
+		model.Parent = staticsFolder
+		local base = shopPos(slot)
+		plotParts[slot] = { model = model }
+		return model, base
+	end
+	-- 부지/건물은 플레이어별 상태가 아니라 "가장 높은 레벨"을 보여 줍니다.
+	-- (혼자 하는 게임 기준: 첫 플레이어의 타운을 공용으로 렌더)
+	local function renderPlot(slot, owned, bld)
+		local fac = FAC_BY_SLOT[slot]
+		if fac == nil then
+			return
+		end
+		clearPlot(slot)
+		local model = Instance.new("Model")
+		model.Name = "Plot_" .. fac.id
+		model.Parent = staticsFolder
+		local base = shopPos(slot)
+		local rec = { model = model }
+		plotParts[slot] = rec
+
+		local padColor = owned and Color3.fromRGB(206, 240, 190) or Color3.fromRGB(226, 232, 214)
+		tPart("Lawn", Vector3.new(16, 0.4, 16), base + Vector3.new(0, 0.2, 0), padColor, Enum.Material.Grass, model)
+		for side = -1, 1, 2 do
+			tPart("Fence" .. side, Vector3.new(16, 0.4, 0.4), base + Vector3.new(0, 1.4, side * 7.6), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, model)
+		end
+		if not owned then
+			local post = tPart("ForSalePost", Vector3.new(0.5, 4, 0.5), base + Vector3.new(5, 2.2, 6), Color3.fromRGB(194, 148, 107), Enum.Material.SmoothPlastic, model)
+			local board = tPart("ForSale", Vector3.new(5, 2.4, 0.3), base + Vector3.new(5, 4.4, 6), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, model)
+			tLabel(board, "🚩 매물 " .. tostring(fac.land), Color3.fromRGB(226, 71, 156), 0, 120)
+			rec.sign = board
+			return
+		end
+		if bld < 1 then
+			local board = tPart("MyLand", Vector3.new(5, 2.4, 0.3), base + Vector3.new(0, 4.4, 5), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, model)
+			tLabel(board, "내 땅 · 건설 대기", Color3.fromRGB(47, 143, 191), 0, 140)
+			rec.sign = board
+			return
+		end
+
+		-- 건물
+		local H = 9 + (bld - 1) * 3
+		local bodyColor = {
+			bakery = Color3.fromRGB(255, 226, 236),
+			mart = Color3.fromRGB(214, 246, 210),
+			hospital = Color3.fromRGB(232, 244, 255),
+			cafe = Color3.fromRGB(202, 245, 235),
+			gear = Color3.fromRGB(232, 220, 255),
+			boutique = Color3.fromRGB(232, 216, 255),
+			jewel = Color3.fromRGB(206, 238, 255),
+		}
+		local roofColor = {
+			bakery = Color3.fromRGB(255, 143, 180),
+			mart = Color3.fromRGB(123, 212, 127),
+			hospital = Color3.fromRGB(168, 214, 245),
+			cafe = Color3.fromRGB(99, 220, 201),
+			gear = Color3.fromRGB(169, 139, 245),
+			boutique = Color3.fromRGB(174, 144, 247),
+			jewel = Color3.fromRGB(130, 205, 243),
+		}
+		local trim = {
+			bakery = Color3.fromRGB(255, 127, 164),
+			mart = Color3.fromRGB(79, 179, 86),
+			hospital = Color3.fromRGB(226, 104, 138),
+			cafe = Color3.fromRGB(61, 196, 166),
+			gear = Color3.fromRGB(130, 87, 224),
+			boutique = Color3.fromRGB(157, 124, 245),
+			jewel = Color3.fromRGB(73, 168, 230),
+		}
+		local c1 = bodyColor[fac.id] or Color3.fromRGB(240, 232, 250)
+		local c2 = roofColor[fac.id] or Color3.fromRGB(170, 140, 240)
+		local c3 = trim[fac.id] or Color3.fromRGB(200, 120, 180)
+
+		local bodyPart = tPart("Body", Vector3.new(13, H, 11), base + Vector3.new(0, H / 2 + 0.4, 0), c1, Enum.Material.SmoothPlastic, model)
+		do
+			local click = Instance.new("ClickDetector")
+			click.MaxActivationDistance = 24
+			click.Parent = bodyPart
+			click.MouseClick:Connect(function(pl)
+				if onPlotClick ~= nil then
+					onPlotClick(pl, slot)
+				end
+			end)
+		end
+		tPart("Roof", Vector3.new(15, 1.6, 13), base + Vector3.new(0, H + 1.2, 0), c2, Enum.Material.SmoothPlastic, model)
+		tPart("RoofTop", Vector3.new(11, 1.2, 9), base + Vector3.new(0, H + 2.4, 0), c2, Enum.Material.SmoothPlastic, model)
+		tPart("Awning", Vector3.new(13.4, 0.6, 2.4), base + Vector3.new(0, H - 2.2, 6.4), c3, Enum.Material.SmoothPlastic, model)
+		tPart("Door", Vector3.new(3.4, 5, 0.5), base + Vector3.new(0, 3, 5.7), c3, Enum.Material.SmoothPlastic, model)
+		tPart("WindowL", Vector3.new(2.6, 2.6, 0.4), base + Vector3.new(-4.2, 4.6, 5.7), Color3.fromRGB(255, 246, 214), Enum.Material.Neon, model, 0.15)
+		tPart("WindowR", Vector3.new(2.6, 2.6, 0.4), base + Vector3.new(4.2, 4.6, 5.7), Color3.fromRGB(255, 246, 214), Enum.Material.Neon, model, 0.15)
+		if bld >= 2 then
+			tPart("Floor2", Vector3.new(13.4, 0.5, 11.4), base + Vector3.new(0, H - 4.4, 0), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, model)
+			tPart("Window2", Vector3.new(6, 2.4, 0.4), base + Vector3.new(0, H - 2.4, 5.7), Color3.fromRGB(255, 246, 214), Enum.Material.Neon, model, 0.15)
+		end
+		if bld >= 3 then
+			local star = tPart("Star", Vector3.new(2.4, 2.4, 2.4), base + Vector3.new(0, H + 4.2, 0), Color3.fromRGB(255, 224, 138), Enum.Material.Neon, model)
+			star.Shape = Enum.PartType.Ball
+			tPart("Trim", Vector3.new(13.6, 0.5, 11.6), base + Vector3.new(0, H - 0.4, 0), Color3.fromRGB(255, 209, 102), Enum.Material.Neon, model, 0.1)
+		end
+		-- 업종 표식
+		if fac.kind == "hospital" then
+			tPart("CrossV", Vector3.new(0.9, 3, 0.4), base + Vector3.new(0, H + 1.2, 6.6), Color3.fromRGB(226, 104, 138), Enum.Material.Neon, model)
+			tPart("CrossH", Vector3.new(3, 0.9, 0.4), base + Vector3.new(0, H + 1.2, 6.6), Color3.fromRGB(226, 104, 138), Enum.Material.Neon, model)
+		elseif fac.kind == "mart" then
+			tPart("Cart", Vector3.new(3.4, 2, 2.4), base + Vector3.new(6.4, 1.4, 6.6), Color3.fromRGB(79, 179, 86), Enum.Material.SmoothPlastic, model)
+			tPart("CartTop", Vector3.new(3.4, 0.4, 0.4), base + Vector3.new(6.4, 2.6, 7.8), Color3.fromRGB(79, 179, 86), Enum.Material.SmoothPlastic, model)
+		elseif fac.kind == "gear" then
+			local ring = tPart("Ring", Vector3.new(2.6, 2.6, 2.6), base + Vector3.new(0, H + 1.4, 6.6), Color3.fromRGB(255, 209, 102), Enum.Material.Neon, model)
+			ring.Shape = Enum.PartType.Cylinder
+			ring.Orientation = Vector3.new(0, 0, 90)
+		end
+		local sign = tPart("Sign", Vector3.new(10, 2.6, 0.4), base + Vector3.new(0, H + 3.6, 5), Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, model)
+		tLabel(sign, fac.icon .. " " .. fac.name .. "  Lv." .. tostring(bld), Color3.fromRGB(107, 58, 94), 0, 200)
+		rec.sign = sign
+		tPart("Counter", Vector3.new(8, 1, 1.6), base + Vector3.new(0, 2, 7.4), Color3.fromRGB(255, 246, 234), Enum.Material.SmoothPlastic, model)
+	end
+
+	-- ---------- 데이터 도우미 ----------
+	local function studyData(data, id)
+		data.Study[id] = data.Study[id] or { lv = 1, xp = 0, major = nil }
+		local s = data.Study[id]
+		s.lv = math.clamp(s.lv or 1, 1, 5)
+		s.xp = math.max(0, s.xp or 0)
+		if s.major ~= nil and MAJORS[s.major] == nil then
+			s.major = nil
+		end
+		return s
+	end
+	local function careData(data, id)
+		data.Care[id] = data.Care[id] or { hp = math.random(72, 100), wallet = math.random(24, 56) }
+		local c = data.Care[id]
+		c.hp = math.clamp(c.hp or 100, 0, 100)
+		c.wallet = math.max(0, c.wallet or 0)
+		return c
+	end
+	local function plotData(data, slot)
+		data.Plots[slot] = data.Plots[slot] or { owned = false, bld = 0, income = 0, worker = nil }
+		local plot = data.Plots[slot]
+		plot.owned = plot.owned == true
+		plot.bld = math.clamp(plot.bld or 0, 0, 3)
+		plot.income = math.max(0, plot.income or 0)
+		return plot
+	end
+	local function modeOf(data, id)
+		local m = data.Mode[id]
+		if m == "study" or m == "work" then
+			return m
+		end
+		return "auto"
+	end
+	local function workerSlot(data, id)
+		for slot = 1, SLOT_COUNT do
+			local plot = plotData(data, slot)
+			if plot.worker == id then
+				return slot
+			end
+		end
+		return nil
+	end
+	local function facilityReady(data, slot)
+		local plot = plotData(data, slot)
+		return plot.owned and plot.bld > 0
+	end
+	local function plotRate(data, slot)
+		local plot = plotData(data, slot)
+		local fac = FAC_BY_SLOT[slot]
+		if fac == nil or not plot.owned or plot.bld < 1 then
+			return 0
+		end
+		local r = fac.base * (1 + 0.55 * (plot.bld - 1))
+		if plot.worker ~= nil then
+			local s = studyData(data, plot.worker)
+			local c = careData(data, plot.worker)
+			r = r * (1 + 0.2 * (s.lv - 1))
+			if fac.major ~= nil and s.major == fac.major then
+				r = r * 1.45
+			end
+			if c.charm then
+				r = r * 1.3
+			end
+		else
+			r = r * 0.45
+		end
+		return r
+	end
+	local function totalRate(data)
+		local sum = 0
+		for slot = 1, SLOT_COUNT do
+			sum = sum + plotRate(data, slot)
+		end
+		return sum
+	end
+	local function labcoatMajor(data)
+		local want = {}
+		for slot = 1, SLOT_COUNT do
+			local plot = plotData(data, slot)
+			local fac = FAC_BY_SLOT[slot]
+			if fac ~= nil and fac.major ~= nil and plot.owned and plot.bld > 0 and plot.worker == nil then
+				table.insert(want, fac.major)
+			end
+		end
+		if #want > 0 and math.random() < 0.72 then
+			return want[math.random(#want)]
+		end
+		return MAJOR_KEYS[math.random(#MAJOR_KEYS)]
+	end
+
+	-- ---------- 서버 상태 ----------
+	local agents = {}     -- [player] = { fairies = { agent... }, sig = string, folder = Folder }
+	local openTown = {}   -- [player] = true (타운 창을 연 플레이어만 TownData 푸시)
+	local visitors = {}   -- [player] = { {model, pos, target, shop, timer, t} }
+
+	local function townSpot(slot, idx)
+		local base = shopPos(slot)
+		return base + Vector3.new(((idx % 2 == 0) and -2.2 or 2.2), 0, 8)
+	end
+
+	local function makeAgent(data, id, index, folder)
+		local info = FAIRY[id]
+		if info == nil then
+			return nil
+		end
+		local rarityInfo = RARITY[info.rarity] or RARITY.common
+		local template = templates:FindFirstChild(rarityInfo.template) or templates:FindFirstChild("Fairy_Common")
+		if template == nil then
+			return nil
+		end
+		local model = template:Clone()
+		model.Name = "Town_" .. id
+		model:SetAttribute("FairyId", id)
+		local body = model:FindFirstChild("Body")
+		if body ~= nil then
+			body.Color = info.color
+			local prompt = body:FindFirstChildOfClass("ProximityPrompt")
+			if prompt ~= nil then
+				prompt:Destroy()
+			end
+		end
+		local head = model:FindFirstChild("Head")
+		if head ~= nil then
+			local tag = head:FindFirstChild("NameTag")
+			if tag ~= nil then
+				tag.Size = UDim2.new(0, 130, 0, 30)
+				tag.StudsOffset = Vector3.new(0, 2.2, 0)
+			end
+			local bubble = Instance.new("BillboardGui")
+			bubble.Name = "TownBubble"
+			bubble.Size = UDim2.new(0, 56, 0, 56)
+			bubble.StudsOffset = Vector3.new(0, 3.4, 0)
+			bubble.AlwaysOnTop = true
+			bubble.Enabled = false
+			bubble.Parent = head
+			local lbl = Instance.new("TextLabel")
+			lbl.Name = "BubbleText"
+			lbl.Size = UDim2.fromScale(1, 1)
+			lbl.BackgroundColor3 = Color3.new(1, 1, 1)
+			lbl.BackgroundTransparency = 0.05
+			lbl.Text = ""
+			lbl.TextScaled = true
+			lbl.Font = Enum.Font.GothamBold
+			lbl.TextColor3 = Color3.fromRGB(180, 60, 120)
+			lbl.Parent = bubble
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 18)
+			corner.Parent = lbl
+		end
+		model.Parent = folder
+		local startPos = DESKS[(index - 1) % #DESKS + 1]
+		local agent = {
+			id = id,
+			index = index,
+			model = model,
+			pos = Vector3.new(startPos.X, 0, startPos.Z),
+			target = Vector3.new(startPos.X, 0, startPos.Z),
+			task = "study",
+			job = nil,
+			timer = 0,
+			paid = false,
+			gear = nil,
+			shop = nil,
+			hp = nil,
+			phase = math.random() * math.pi * 2,
+			speed = 5,
+			yaw = 0,
+			bubbleT = 0,
+		}
+		model:PivotTo(CFrame.new(agent.pos + Vector3.new(0, 3.2, 0)) * CFrame.Angles(0, 0, 0))
+		return agent
+	end
+
+	local function agentBubble(a, text)
+		a.bubbleT = 1.8
+		local head = a.model:FindFirstChild("Head")
+		local gui = head and head:FindFirstChild("TownBubble")
+		if gui ~= nil then
+			local lbl = gui:FindFirstChild("BubbleText")
+			if lbl ~= nil then
+				lbl.Text = text
+			end
+			gui.Enabled = true
+		end
+	end
+
+	local function decide(data, a)
+		local c = careData(data, a.id)
+		local wi = workerSlot(data, a.id)
+		a.job = wi
+		a.timer = 0
+		a.paid = false
+		a.gear = nil
+		local gearWanted = nil
+		if not c.ring then
+			gearWanted = "ring"
+		elseif not c.charm then
+			gearWanted = "charm"
+		end
+		if c.hp < 42 and facilityReady(data, HOSP) then
+			a.task = "hospital"
+			a.shop = HOSP
+			a.target = townSpot(HOSP, a.index)
+		elseif gearWanted ~= nil and c.wallet >= GEAR[gearWanted].price and facilityReady(data, GEAR) and math.random() < 0.5 then
+			a.task = "gear"
+			a.shop = GEAR
+			a.gear = gearWanted
+			a.target = townSpot(GEAR, a.index)
+		elseif c.wallet >= SNACK_COST and facilityReady(data, MART) and (c.hp < 70 or math.random() < 0.28) then
+			a.task = "mart"
+			a.shop = MART
+			a.target = townSpot(MART, a.index)
+		elseif wi ~= nil and modeOf(data, a.id) ~= "study" then
+			a.task = "work"
+			a.shop = wi
+			a.target = townSpot(wi, a.index)
+		else
+			a.task = "study"
+			a.shop = nil
+			local d = DESKS[(a.index - 1) % #DESKS + 1]
+			a.target = Vector3.new(d.X + ((a.index % 3) - 1) * 1.2, 0, d.Z)
+		end
+	end
+
+	local function assignWorkers(data)
+		for slot = 1, SLOT_COUNT do
+			local plot = plotData(data, slot)
+			if plot.worker ~= nil then
+				local still = false
+				for _, id in ipairs(data.House) do
+					if id == plot.worker then
+						still = true
+					end
+				end
+				if not still then
+					plot.worker = nil
+				end
+			end
+			if not plot.owned or plot.bld < 1 then
+				plot.worker = nil
+			end
+		end
+		for _, id in ipairs(data.House) do
+			local mode = modeOf(data, id)
+			local cur = workerSlot(data, id)
+			if mode == "study" then
+				if cur ~= nil then
+					plotData(data, cur).worker = nil
+				end
+			elseif cur == nil then
+				local s = studyData(data, id)
+				if s.lv >= 2 then
+					local best, bestScore = nil, -1
+					for slot = 1, SLOT_COUNT do
+						local plot = plotData(data, slot)
+						local fac = FAC_BY_SLOT[slot]
+						if plot.owned and plot.bld > 0 and plot.worker == nil and fac ~= nil then
+							local score = plot.bld * 2
+							if fac.major ~= nil and s.major == fac.major then
+								score = score + 3.5
+							end
+							if mode == "work" then
+								score = score + 1
+							end
+							if score > bestScore then
+								bestScore = score
+								best = slot
+							end
+						end
+					end
+					if best ~= nil then
+						plotData(data, best).worker = id
+					end
+				end
+			end
+		end
+	end
+
+	local function addStudy(data, id, amount, a)
+		local s = studyData(data, id)
+		if s.major == nil then
+			s.major = labcoatMajor(data)
+		end
+		if s.lv >= 5 then
+			s.xp = 0
+			return
+		end
+		s.xp = s.xp + amount
+		while s.lv < 5 and s.xp >= (STUDY_NEED[s.lv] or 0) do
+			s.xp = s.xp - (STUDY_NEED[s.lv] or 0)
+			s.lv = s.lv + 1
+			if a ~= nil then
+				agentBubble(a, "✨")
+			end
+			local player = nil
+			for pl, _ in pairs(PlayerData) do
+				if PlayerData[pl] == data then
+					player = pl
+				end
+			end
+			if player ~= nil then
+				shared.FairyNotify(player, "🎓 " .. (FAIRY[id] and FAIRY[id].name or id) .. " 학업 Lv." .. tostring(s.lv) .. " · " .. (MAJORS[s.major] or ""))
+			end
+			break
+		end
+		if s.lv >= 5 then
+			s.xp = 0
+		end
+	end
+
+	local function fairyPay(data, id, slot, amount)
+		local c = careData(data, id)
+		local pay = math.min(amount, math.max(0, c.wallet))
+		c.wallet = c.wallet - pay
+		local plot = plotData(data, slot)
+		if plot.owned and plot.bld > 0 then
+			plot.income = math.min(9999, plot.income + pay)
+		end
+		return pay
+	end
+
+	-- ---------- 모델 동기화 ----------
+	local function signature(data)
+		local parts = {}
+		for _, id in ipairs(data.House) do
+			local c = careData(data, id)
+			table.insert(parts, id .. ":" .. tostring(c.ring and 1 or 0) .. tostring(c.charm and 1 or 0))
+		end
+		return table.concat(parts, ",")
+	end
+
+	local function syncAgents(player)
+		local data = PlayerData[player]
+		if data == nil then
+			return
+		end
+		local rec = agents[player]
+		local sig = signature(data)
+		if rec ~= nil and rec.sig == sig then
+			return
+		end
+		if rec ~= nil then
+			for _, a in ipairs(rec.fairies) do
+				if a.model ~= nil and a.model.Parent ~= nil then
+					a.model:Destroy()
+				end
+			end
+			if rec.folder ~= nil then
+				rec.folder:Destroy()
+			end
+		end
+		local folder = Instance.new("Folder")
+		folder.Name = "TownFairies_" .. player.Name
+		folder.Parent = modelFolder
+		rec = { fairies = {}, sig = sig, folder = folder }
+		agents[player] = rec
+		local index = 0
+		for _, id in ipairs(data.House) do
+			index = index + 1
+			local a = makeAgent(data, id, index, folder)
+			if a ~= nil then
+				table.insert(rec.fairies, a)
+			end
+		end
+	end
+
+	-- ---------- UI 푸시 ----------
+	local function pushTown(player)
+		local data = PlayerData[player]
+		if data == nil then
+			return
+		end
+		syncAgents(player)
+		local rec = agents[player]
+		local fairyView = {}
+		if rec ~= nil then
+			for _, a in ipairs(rec.fairies) do
+				local s = studyData(data, a.id)
+				local c = careData(data, a.id)
+				local status = "대기 중"
+				if a.task == "hospital" then
+					status = "🏥 병원 치료 중"
+				elseif a.task == "mart" then
+					status = "🛒 마트 쇼핑 중"
+				elseif a.task == "gear" then
+					status = "💍 장비 보는 중"
+				elseif a.task == "work" then
+					status = "🏪 " .. ((a.shop and FAC_BY_SLOT[a.shop] and FAC_BY_SLOT[a.shop].name) or "가게") .. " 장사 중"
+				elseif a.task == "study" then
+					status = "📚 아카데미 공부 중"
+				end
+				table.insert(fairyView, {
+					id = a.id,
+					name = (FAIRY[a.id] and FAIRY[a.id].name) or a.id,
+					lv = s.lv,
+					xp = s.xp,
+					major = s.major,
+					hp = math.floor(c.hp),
+					wallet = math.floor(c.wallet),
+					ring = c.ring == true,
+					charm = c.charm == true,
+					mode = modeOf(data, a.id),
+					status = status,
+				})
+			end
+		end
+		local plots = {}
+		for slot = 1, SLOT_COUNT do
+			local plot = plotData(data, slot)
+			table.insert(plots, {
+				slot = slot,
+				owned = plot.owned,
+				bld = plot.bld,
+				income = math.floor(plot.income),
+				worker = plot.worker,
+				rate = plotRate(data, slot),
+				upCost = (plot.bld >= 1 and plot.bld < 3) and math.floor((FAC_BY_SLOT[slot].build) * ((plot.bld == 1) and 1.8 or 3.2)) or 0,
+			})
+		end
+		remotes.TownData:FireClient(player, {
+			coins = data.Coins,
+			fairies = fairyView,
+			plots = plots,
+			rate = totalRate(data),
+			income = (function()
+				local sum = 0
+				for slot = 1, SLOT_COUNT do
+					sum = sum + plotData(data, slot).income
+				end
+				return math.floor(sum)
+			end)(),
+		})
+	end
+	shared.FairyPushTown = pushTown
+
+	-- 마을 건물은 모든 플레이어 중 가장 높은 상태를 함께 보여 줍니다 (공용 마을)
+	local function refreshStatics()
+		for slot = 1, SLOT_COUNT do
+			local owned, bld = false, 0
+			for _, data in pairs(PlayerData) do
+				local plot = plotData(data, slot)
+				if plot.owned then
+					owned = true
+				end
+				if plot.bld > bld then
+					bld = plot.bld
+				end
+			end
+			renderPlot(slot, owned, bld)
+		end
+	end
+	shared.FairyRefreshTownStatics = refreshStatics
+
+	-- 첫 렌더
+	refreshStatics()
+
+	-- ---------- 원격 이벤트 ----------
+	remotes.RequestTown.OnServerEvent:Connect(function(player)
+		openTown[player] = true
+		local data = PlayerData[player]
+		if data ~= nil then
+			data.TownSeen = true
+		end
+		pushTown(player)
+	end)
+
+	remotes.BuyPlot.OnServerEvent:Connect(function(player, slot)
+		local data = PlayerData[player]
+		local fac = FAC_BY_SLOT[tonumber(slot) or 0]
+		if data == nil or fac == nil then
+			return
+		end
+		local plot = plotData(data, fac.slot)
+		if plot.owned then
+			shared.FairyNotify(player, "이미 내 땅이에요")
+			return
+		end
+		if data.Coins < fac.land then
+			shared.FairyNotify(player, "코인이 모자라요 🪙 " .. tostring(fac.land) .. " 필요")
+			return
+		end
+		addCoins(player, -fac.land)
+		plot.owned = true
+		refreshStatics()
+		shared.FairyNotify(player, "🎉 " .. fac.icon .. " " .. fac.name .. " 부지를 샀어요! 이제 건물을 올려요")
+		savePlayer(player)
+		pushTown(player)
+	end)
+
+	remotes.UpgradeBuilding.OnServerEvent:Connect(function(player, slot)
+		local data = PlayerData[player]
+		local fac = FAC_BY_SLOT[tonumber(slot) or 0]
+		if data == nil or fac == nil then
+			return
+		end
+		local plot = plotData(data, fac.slot)
+		if not plot.owned then
+			shared.FairyNotify(player, "먼저 땅을 사야 해요")
+			return
+		end
+		if plot.bld >= 3 then
+			shared.FairyNotify(player, "이미 최고 레벨(Lv.3)이에요")
+			return
+		end
+		local cost
+		if plot.bld == 0 then
+			cost = fac.build
+		else
+			cost = math.floor(fac.build * ((plot.bld == 1) and 1.8 or 3.2))
+		end
+		if data.Coins < cost then
+			shared.FairyNotify(player, "코인이 모자라요 🪙 " .. tostring(cost) .. " 필요")
+			return
+		end
+		addCoins(player, -cost)
+		plot.bld = plot.bld + 1
+		refreshStatics()
+		shared.FairyNotify(player, "🏗️ " .. fac.name .. " Lv." .. tostring(plot.bld) .. " 완성! 매출이 커져요")
+		savePlayer(player)
+		pushTown(player)
+	end)
+
+	remotes.CollectBusiness.OnServerEvent:Connect(function(player, slot)
+		local data = PlayerData[player]
+		if data == nil then
+			return
+		end
+		if slot == nil or slot == 0 then
+			local sum = 0
+			for i = 1, SLOT_COUNT do
+				local plot = plotData(data, i)
+				local n = math.floor(plot.income)
+				if n > 0 then
+					plot.income = plot.income - n
+					sum = sum + n
+				end
+			end
+			if sum < 1 then
+				shared.FairyNotify(player, "아직 모인 코인이 없어요 · 요정들이 장사 중이에요")
+			else
+				addCoins(player, sum)
+				shared.FairyNotify(player, "💰 마을 상점가에서 +" .. tostring(sum) .. " 코인 수거!")
+			end
+		else
+			local fac = FAC_BY_SLOT[tonumber(slot) or 0]
+			if fac == nil then
+				return
+			end
+			local plot = plotData(data, fac.slot)
+			local n = math.floor(plot.income)
+			if n < 1 then
+				shared.FairyNotify(player, "아직 수거할 코인이 없어요")
+				return
+			end
+			plot.income = plot.income - n
+			addCoins(player, n)
+			shared.FairyNotify(player, "💰 " .. fac.icon .. " +" .. tostring(n) .. " 코인 수거!")
+		end
+		savePlayer(player)
+		pushTown(player)
+	end)
+
+	remotes.SetFairyMode.OnServerEvent:Connect(function(player, fairyId, mode)
+		local data = PlayerData[player]
+		if data == nil or fairyId == nil then
+			return
+		end
+		local m = "auto"
+		if mode == "study" or mode == "work" then
+			m = mode
+		end
+		data.Mode[fairyId] = m
+		if m ~= "work" then
+			local wi = workerSlot(data, fairyId)
+			if wi ~= nil then
+				plotData(data, wi).worker = nil
+			end
+		end
+		local rec = agents[player]
+		if rec ~= nil then
+			for _, a in ipairs(rec.fairies) do
+				if a.id == fairyId then
+					decide(data, a)
+				end
+			end
+		end
+		shared.FairyNotify(player, (FAIRY[fairyId] and FAIRY[fairyId].name or "요정") .. " 모드: " .. (m == "auto" and "자유" or (m == "study" and "공부" or "장사")))
+		savePlayer(player)
+		pushTown(player)
+	end)
+
+	remotes.CareFairy.OnServerEvent:Connect(function(player, fairyId, what)
+		local data = PlayerData[player]
+		if data == nil or fairyId == nil then
+			return
+		end
+		local c = careData(data, fairyId)
+		local name = (FAIRY[fairyId] and FAIRY[fairyId].name) or "요정"
+		if what == "heal" then
+			if not facilityReady(data, HOSP) then
+				shared.FairyNotify(player, "🏥 요정 병원을 먼저 지어 주세요")
+				return
+			end
+			if c.hp >= 99 then
+				shared.FairyNotify(player, name .. "는 지금 아주 건강해요")
+				return
+			end
+			if data.Coins < HEAL_COST then
+				shared.FairyNotify(player, "코인이 모자라요 🪙 " .. tostring(HEAL_COST))
+				return
+			end
+			addCoins(player, -HEAL_COST)
+			plotData(data, HOSP).income = plotData(data, HOSP).income + HEAL_COST
+			c.hp = 100
+			shared.FairyNotify(player, "🏥 " .. name .. " 치료 완료! 체력이 가득 찼어요")
+		elseif what == "snack" then
+			if not facilityReady(data, MART) then
+				shared.FairyNotify(player, "🛒 해피 마트를 먼저 지어 주세요")
+				return
+			end
+			if data.Coins < SNACK_COST then
+				shared.FairyNotify(player, "코인이 모자라요 🪙 " .. tostring(SNACK_COST))
+				return
+			end
+			addCoins(player, -SNACK_COST)
+			plotData(data, MART).income = plotData(data, MART).income + SNACK_COST
+			c.hp = math.min(100, c.hp + 12)
+			shared.FairyNotify(player, "🛒 " .. name .. "에게 간식을 샀어요 · 체력 +12")
+		elseif what == "ring" or what == "charm" then
+			local gear = GEAR[what]
+			if not facilityReady(data, GEAR) then
+				shared.FairyNotify(player, "💍 마법 잡화·장비점을 먼저 지어 주세요")
+				return
+			end
+			if c[what] then
+				shared.FairyNotify(player, name .. "는 이미 " .. gear.name .. "을(를) 갖고 있어요")
+				return
+			end
+			if data.Coins < gear.price then
+				shared.FairyNotify(player, "코인이 모자라요 🪙 " .. tostring(gear.price))
+				return
+			end
+			addCoins(player, -gear.price)
+			plotData(data, GEAR).income = plotData(data, GEAR).income + gear.price
+			c[what] = true
+			shared.FairyNotify(player, "✨ " .. name .. "에게 " .. gear.name .. " 선물! " .. gear.desc)
+		end
+		savePlayer(player)
+		pushTown(player)
+	end)
+
+	-- 상점 건물을 직접 눌러도 매출 수거
+	onPlotClick = function(player, slot)
+		local data = PlayerData[player]
+		if data == nil then
+			return
+		end
+		local fac = FAC_BY_SLOT[slot]
+		local plot = plotData(data, slot)
+		local n = math.floor(plot.income)
+		if n > 0 then
+			plot.income = plot.income - n
+			addCoins(player, n)
+			shared.FairyNotify(player, "💰 " .. ((fac and fac.name) or "가게") .. " +" .. tostring(n) .. " 코인 수거!")
+			savePlayer(player)
+			pushTown(player)
+		else
+			pushTown(player)
+		end
+	end
+
+	-- ---------- 루프 ----------
+	local syncTimer = 0
+	local saveTimer = 0
+	RunService.Heartbeat:Connect(function(dt)
+		syncTimer = syncTimer + dt
+		for player, rec in pairs(agents) do
+			local data = PlayerData[player]
+			if data ~= nil then
+			if syncTimer > 0.8 then
+				syncAgents(player)
+				assignWorkers(data)
+			end
+			for _, a in ipairs(rec.fairies) do
+				if a.model.Parent ~= nil then
+					local c = careData(data, a.id)
+					local s = studyData(data, a.id)
+					a.bubbleT = math.max(0, a.bubbleT - dt)
+					local flat = Vector3.new(a.target.X - a.pos.X, 0, a.target.Z - a.pos.Z)
+					local dist = flat.Magnitude
+					if dist > 0.6 then
+						local step = math.min(dist, a.speed * dt)
+						a.pos = a.pos + flat.Unit * step
+						a.yaw = math.atan2(flat.X, flat.Z)
+					else
+						a.pos = Vector3.new(a.target.X, 0, a.target.Z)
+						if a.task == "study" then
+							local sp = STUDY_RATE * (1 + (c.ring and 0.25 or 0))
+							if s.major == nil then
+								s.major = labcoatMajor(data)
+							end
+							addStudy(data, a.id, sp * dt, a)
+							c.hp = math.max(0, c.hp - 0.3 * dt)
+							c.wallet = c.wallet + 0.05 * dt
+							if math.random() < dt * 0.35 then
+								agentBubble(a, "📚")
+							end
+							if a.timer == 0 then
+								a.timer = 1
+							end
+						elseif a.task == "work" then
+							c.hp = math.max(0, c.hp - 0.45 * dt)
+							c.wallet = c.wallet + 0.7 * dt
+							if math.random() < dt * 0.25 then
+								agentBubble(a, "💰")
+							end
+							if c.hp < 42 and facilityReady(data, HOSP) then
+								decide(data, a)
+							end
+						elseif a.task == "hospital" then
+							if not a.paid then
+								a.paid = true
+								fairyPay(data, a.id, HOSP, 18)
+								agentBubble(a, "🏥")
+							end
+							c.hp = math.min(100, c.hp + 9 * dt)
+							if c.hp >= 99.4 then
+								a.timer = a.timer + dt
+								if a.timer > 1.2 then
+									decide(data, a)
+								end
+							end
+						elseif a.task == "mart" then
+							if not a.paid then
+								a.paid = true
+								fairyPay(data, a.id, MART, SNACK_COST)
+								c.hp = math.min(100, c.hp + 14)
+								agentBubble(a, "🛒")
+							end
+							a.timer = a.timer + dt
+							if a.timer > 2.4 then
+								decide(data, a)
+							end
+						elseif a.task == "gear" then
+							if not a.paid then
+								a.paid = true
+								local gear = GEAR[a.gear]
+								if gear ~= nil then
+									local paid = fairyPay(data, a.id, GEAR, gear.price)
+									if paid >= gear.price - 0.01 then
+										c[a.gear] = true
+										agentBubble(a, "💍")
+										shared.FairyNotify(player, "💍 " .. ((FAIRY[a.id] and FAIRY[a.id].name) or "요정") .. "가 " .. gear.name .. "을(를) 샀어요")
+									end
+								end
+							end
+							a.timer = a.timer + dt
+							if a.timer > 2.4 then
+								decide(data, a)
+							end
+						end
+					end
+					-- 장시간 같은 일 → 가끔 쇼핑/휴식
+					if a.task == "study" or a.task == "work" then
+						a.timer = (a.timer or 0) + dt
+						if a.timer > 22 and math.random() < dt * 0.35 then
+							decide(data, a)
+						end
+					end
+					local hover = 3.2 + math.sin(workspace:GetServerTimeNow() * 2 + a.phase) * 0.22
+					a.model:PivotTo(CFrame.new(Vector3.new(a.pos.X, hover, a.pos.Z)) * CFrame.Angles(0, a.yaw, 0))
+					if a.bubbleT <= 0 then
+						local head = a.model:FindFirstChild("Head")
+						local gui = head and head:FindFirstChild("TownBubble")
+						if gui ~= nil and gui.Enabled then
+							gui.Enabled = false
+						end
+					end
+				end
+			end
+			-- 매출 누적
+			for slot = 1, SLOT_COUNT do
+				local plot = plotData(data, slot)
+				if plot.owned and plot.bld > 0 and plot.income < 9999 then
+					plot.income = math.min(9999, plot.income + plotRate(data, slot) * dt)
+				end
+			end
+			end
+		end
+		if syncTimer > 0.8 then
+			syncTimer = 0
+		end
+		saveTimer = saveTimer + dt
+		if saveTimer > 20 then
+			saveTimer = 0
+			for player, _ in pairs(agents) do
+				savePlayer(player)
+			end
+		end
+		for player, _ in pairs(openTown) do
+			if agents[player] == nil then
+				openTown[player] = nil
+			end
+		end
+	end)
+
+	-- 1초마다 타운 창을 연 플레이어에게 상태 푸시
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			for player, _ in pairs(openTown) do
+				if player.Parent ~= nil then
+					pushTown(player)
+				else
+					openTown[player] = nil
+				end
+			end
+		end
+	end)
+
+	Players.PlayerAdded:Connect(function(player)
+		openTown[player] = nil
+		task.wait(2)
+		local data = PlayerData[player]
+		if data ~= nil then
+			syncAgents(player)
+		end
+		refreshStatics()
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		openTown[player] = nil
+		local rec = agents[player]
+		if rec ~= nil then
+			if rec.folder ~= nil then
+				rec.folder:Destroy()
+			end
+			agents[player] = nil
+		end
+	end)
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		local data = PlayerData[player]
+		if data ~= nil then
+			syncAgents(player)
+		end
+	end
+
+	print("[FairyCatch] 요정 타운 준비 완료 · 부지 " .. tostring(SLOT_COUNT) .. "곳")
+end
+
+task.spawn(startTown)
+

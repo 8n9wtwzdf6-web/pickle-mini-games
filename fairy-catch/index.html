@@ -401,6 +401,62 @@ body.inhouse #houseInfo{display:flex;}
 body.sheetOpen #toasts{top:auto;bottom:calc(env(safe-area-inset-bottom) + 92px);}
 body.sheetOpen .toast{animation:tin2 .3s cubic-bezier(.2,1.2,.4,1);}
 @keyframes tin2{from{transform:translateY(10px) scale(.92);opacity:0}to{transform:none;opacity:1}}
+/* ============ 요정 타운 ============ */
+#btnTown{background:linear-gradient(180deg,#fff9ea,#ffe6ae);}
+#btnTown i{color:#a8752a;}
+.xbtn.wide{width:auto;min-width:70px;flex:0 0 auto;padding:0 10px;font-size:10px;font-weight:900;white-space:nowrap;height:30px;}
+.townStats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 8px;}
+.townStats>div{border-radius:14px;background:linear-gradient(180deg,#fff,#fff6fb);border:2px solid #fff;
+  box-shadow:0 8px 16px -14px rgba(160,70,130,.9);padding:6px 2px;text-align:center;}
+.townStats b{display:block;font-size:8.5px;font-weight:800;color:#b18aa4;}
+.townStats span{display:block;font-size:13.5px;font-weight:900;color:#8a4f7d;letter-spacing:-.4px;}
+.townLoop{display:flex;align-items:center;gap:3px;overflow-x:auto;padding:1px 0 9px;touch-action:pan-x;}
+.townLoop .lp{flex:0 0 auto;font-size:9px;font-weight:900;color:#7d4468;background:rgba(255,255,255,.95);
+  border:1.5px solid #ffe0f0;border-radius:999px;padding:4px 8px;white-space:nowrap;}
+.townLoop .ar{flex:0 0 auto;font-size:9px;color:#e08fc0;font-weight:900;}
+.secT{font-size:11px;font-weight:900;color:#8a4f7d;margin:9px 2px 5px;letter-spacing:-.3px;}
+.plotCard{display:flex;gap:8px;align-items:center;border-radius:16px;padding:8px;margin-bottom:7px;
+  background:linear-gradient(180deg,#fff,#fff6fb);border:2px solid #fff;box-shadow:0 10px 20px -16px rgba(160,70,130,.9);}
+.plotCard.locked{background:linear-gradient(180deg,#fdf9ff,#f5eefb);}
+.plotCard .pi{width:38px;height:38px;flex:0 0 auto;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:linear-gradient(180deg,#fff,#ffeef8);border:1.5px solid #fff;box-shadow:0 6px 12px -10px rgba(160,70,130,.9);}
+.plotCard .pmain{flex:1;min-width:0;}
+.plotCard .pn{font-size:11.5px;font-weight:900;color:#6b2f56;letter-spacing:-.4px;display:flex;gap:4px;align-items:center;}
+.plotCard .tag{font-size:8px;font-weight:900;color:#fff;background:#c9a6ff;border-radius:5px;padding:1px 5px;flex:0 0 auto;}
+.plotCard .tag.land{background:#8fd6ff;} .plotCard .tag.bld{background:#ff9ecb;} .plotCard .tag.none{background:#c9b8c4;}
+.plotCard .pd{font-size:9px;font-weight:700;color:#a2748f;margin-top:2px;line-height:1.35;}
+.plotCard .pbar{height:6px;border-radius:999px;background:#ffe9f6;border:1px solid #fff;overflow:hidden;margin-top:4px;}
+.plotCard .pbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff8fc7);width:0;transition:width .3s;}
+.plotCard .pact{display:flex;flex-direction:column;gap:4px;flex:0 0 auto;}
+.plotCard .pact button{height:27px;border-radius:10px;font-size:9.5px;font-weight:900;padding:0 8px;white-space:nowrap;
+  color:#6a3b00;background:linear-gradient(180deg,#ffe08a,#ffc44d);border:1.5px solid #fff;box-shadow:0 6px 12px -10px rgba(220,150,30,.9);}
+.plotCard .pact button.ghost{color:#8a4f7d;background:linear-gradient(180deg,#fff,#f3e9ff);}
+.plotCard .pact button.got{color:#2f7f6c;background:linear-gradient(180deg,#e6fff8,#c9f5e8);}
+.plotCard .pact button:disabled{color:#b49aae;background:#f0e8f0;box-shadow:none;}
+.fRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-radius:14px;padding:6px 8px;margin-bottom:6px;
+  background:linear-gradient(180deg,#fff,#fff8fd);border:2px solid #fff;box-shadow:0 8px 16px -14px rgba(160,70,130,.9);}
+.fRow.sel{border-color:#ffb3da;box-shadow:0 0 0 2px #ffe1f1 inset,0 8px 16px -14px rgba(160,70,130,.9);}
+.fRow canvas{width:38px;height:42px;flex:0 0 auto;}
+.fRow .fm{flex:1;min-width:0;}
+.fRow .fn{font-size:11px;font-weight:900;color:#6b2f56;display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
+.fRow .fn .lv{font-size:8px;font-weight:900;color:#a4588c;background:#fff0f8;border-radius:5px;padding:1px 4px;}
+.fRow .bf{font-size:9.5px;}
+.fRow .hpline{display:flex;align-items:center;gap:4px;margin-top:4px;}
+.fRow .hpline .hpi{font-size:9px;line-height:1;color:#e24b6d;}
+.fRow .hpbar{flex:0 0 74px;height:7px;border-radius:999px;background:#ffe3f1;border:1px solid #fff;overflow:hidden;}
+.fRow .hpbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffb3d0,#ff5f8f);transition:width .3s;}
+.fRow .hpnum{font-size:8px;font-weight:900;color:#c05a80;width:18px;}
+.fRow .wallet{font-size:8.5px;font-weight:900;color:#c07b00;white-space:nowrap;}
+.fRow .wl{font-size:8.5px;font-weight:900;color:#9a7fb0;white-space:nowrap;}
+.fRow .fs{font-size:8.5px;font-weight:700;color:#a2748f;margin-top:2px;}
+.modes{display:flex;gap:3px;flex:0 0 auto;}
+.modes button{height:23px;border-radius:8px;font-size:8.5px;font-weight:900;padding:0 5px;color:#8a4f7d;background:#fff;border:1.5px solid #ffe0f0;}
+.modes button.on{color:#fff;background:linear-gradient(180deg,#ff9ed0,#f25fa8);border-color:#fff;}
+.carebar{flex:0 0 100%;display:flex;gap:4px;margin-top:2px;}
+.carebar button{flex:1;height:26px;border-radius:9px;font-size:8.5px;font-weight:900;color:#6a3b00;
+  background:linear-gradient(180deg,#fff3d0,#ffe0a0);border:1.5px solid #fff;}
+.carebar button:disabled{color:#b49aae;background:#f2ecf2;}
+@media (max-width:400px){.ibtn{width:42px;height:47px;font-size:16px}.ibtn i{font-size:8.5px}}
 </style>
 </head>
 <body>
@@ -416,6 +472,7 @@ body.sheetOpen .toast{animation:tin2 .3s cubic-bezier(.2,1.2,.4,1);}
     <button class="ibtn" id="btnDex">📖<i>도감</i></button>
     <button class="ibtn" id="btnHouse">🏠<i>하우스</i><span class="dot hide" id="houseDot"></span></button>
     <button class="ibtn" id="btnExitHouse">🚪<i>마을로</i></button>
+    <button class="ibtn" id="btnTown">🏘️<i>타운</i><span class="dot hide" id="townDot"></span></button>
     <button class="ibtn" id="btnShop">🎀<i>상점</i></button>
   </div>
 </div>
@@ -451,6 +508,7 @@ body.sheetOpen .toast{animation:tin2 .3s cubic-bezier(.2,1.2,.4,1);}
       <span class="chip">💗 콤팩트 캐치</span>
       <span class="chip">🛋️ 가구 12종</span>
       <span class="chip">👗 옷·악세사리 16종</span>
+      <span class="chip">🏘️ 요정 타운 경제</span>
     </div>
   </div>
   <canvas id="introCv" width="760" height="420"></canvas>
@@ -586,6 +644,29 @@ body.sheetOpen .toast{animation:tin2 .3s cubic-bezier(.2,1.2,.4,1);}
 
 <div id="toasts"></div>
 
+<!-- ============ 요정 타운 ============ -->
+<div id="townSheet" class="sheet hide">
+  <div class="sheet-in">
+    <div class="sheet-hd">
+      <span style="font-size:22px">🏘️</span>
+      <div><h2>요정 타운</h2><div class="sub" id="townSub">학업 → 땅 → 건물 → 장사 → 쇼핑 → 재투자</div></div>
+      <div class="spacer"></div>
+      <button class="xbtn wide" id="townGo">🗺️ 현장</button>
+      <button class="xbtn" id="townClose">✕</button>
+    </div>
+    <div class="sheet-bd">
+      <div class="townStats" id="townStats"></div>
+      <div class="townLoop" id="townLoop"></div>
+      <div class="secT">🏪 마을 상점가 · 땅 매입 → 건설 → 증축</div>
+      <div id="townPlots"></div>
+      <div class="secT">🧚 요정 상태 · 돌보기 (요정을 탭하면 간식·치료·장비 선물)</div>
+      <div id="townFairyList"></div>
+      <button class="harvest" id="townCollectAll">💰 전부 수거</button>
+      <div class="dexReward">요정은 스스로 아카데미에서 공부하고, 가게에 출근해 장사하고, 마트·병원·장비점에서 소비해요. 학업 Lv·건물 Lv·장비가 높을수록 매출이 커집니다.</div>
+    </div>
+  </div>
+</div>
+
 <script>
 /*__JS__*/
 (function(){
@@ -637,14 +718,15 @@ var FAIRIES=[
 var FD={};FAIRIES.forEach(function(f){FD[f.id]=f;});
 var RAR_RANK={common:0,uncommon:1,rare:2,epic:3,legendary:4};
 
-var WORLD={w:2700,h:2050};
+var WORLD={w:3000,h:2500};
 var ZONES=[
  {id:'cave',name:'크리스탈 동굴',icon:'💎',x:1330,y:340,r:310,col:'#bcd8ff',dark:'#9dc0f0',ring:'#e4f0ff'},
  {id:'grass',name:'풀숲',icon:'🌿',x:500,y:1120,r:340,col:'#aee8a5',dark:'#8ed687',ring:'#dafbd0'},
  {id:'plaza',name:'분수대 광장',icon:'⛲',x:1340,y:1020,r:330,col:'#e9e3ff',dark:'#d3c9f5',ring:'#f6f2ff'},
  {id:'cafe',name:'디저트 카페',icon:'🍰',x:2130,y:720,r:320,col:'#ffdcc4',dark:'#ffc9a8',ring:'#fff0e4'},
  {id:'cloud',name:'구름 정원',icon:'☁️',x:2080,y:1560,r:330,col:'#e6dcff',dark:'#cdbff7',ring:'#f8f3ff'},
- {id:'flower',name:'꽃길',icon:'🌸',x:640,y:1700,r:300,col:'#ffd3e8',dark:'#ffb9da',ring:'#fff0f7'}
+ {id:'flower',name:'꽃길',icon:'🌸',x:640,y:1700,r:300,col:'#ffd3e8',dark:'#ffb9da',ring:'#fff0f7'},
+ {id:'town',name:'요정 타운',icon:'🏘️',x:1604,y:2100,r:390,col:'#ffeccd',dark:'#d9a86a',ring:'#fff8ea',town:true}
 ];
 var ZD={};ZONES.forEach(function(z){ZD[z.id]=z;});
 /* 마을 북서쪽에 자리한 요정의 집(건물) — 문 앞에 가면 실내로 들어갑니다 */
@@ -707,7 +789,7 @@ function slotOf(kind){return kind==='dress'?'dress':(kind==='head'?'head':'acc')
 
 /* ================= 상태 ================= */
 var S={coins:150,caught:{},house:[],slots:4,decor:{},levels:{},aff:{},cool:{},pending:0,total:0,started:false,dexSeen:{},
-  owned:{},wear:{},compOn:true};
+  owned:{},wear:{},compOn:true,study:{},modes:{},fairy:{},plots:[],townSeen:false};
 function wearOf(id){
   if(!id) return {dress:null,head:null,acc:null};
   S.wear=S.wear||{};
@@ -738,13 +820,19 @@ function load(){
     S.owned=(d.owned&&typeof d.owned==='object')?d.owned:{};
     S.wear=(d.wear&&typeof d.wear==='object')?d.wear:{};
     S.compOn=d.compOn!==false;
+    S.study=(d.study&&typeof d.study==='object')?d.study:{};
+    S.modes=(d.modes&&typeof d.modes==='object')?d.modes:{};
+    S.fairy=(d.fairy&&typeof d.fairy==='object')?d.fairy:{};
+    S.plots=Array.isArray(d.plots)?d.plots:[];
+    S.townSeen=!!d.townSeen;
     return true;
   }catch(e){return false;}
 }
 function save(){
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:2,coins:S.coins,caught:S.caught,house:S.house,slots:S.slots,decor:S.decor,
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:3,coins:S.coins,caught:S.caught,house:S.house,slots:S.slots,decor:S.decor,
     levels:S.levels,aff:S.aff,cool:S.cool,pending:S.pending,total:S.total,started:S.started,
-    owned:S.owned,wear:S.wear,compOn:S.compOn}));}catch(e){}
+    owned:S.owned,wear:S.wear,compOn:S.compOn,study:S.study,modes:S.modes,fairy:S.fairy,plots:S.plots,
+    townSeen:S.townSeen}));}catch(e){}
 }
 var coinsShown=0;
 function updateHUD(){
@@ -817,6 +905,7 @@ function buildWorld(){
   }
   // 구역별 소품
   ZONES.forEach(function(zn){
+    if(zn.town) return;
     var n=zn.id==='plaza'?18:22;
     for(i=0;i<n;i++){
       ang=R()*TAU;dist=zn.r*(0.45+R()*0.62);
@@ -862,6 +951,20 @@ function buildWorld(){
   props.push({t:'cafe',x:ZD.cafe.x+40,y:ZD.cafe.y-40,s:1,r:0,h:1,tint:0.5,z:6});
   props.push({t:'cave',x:ZD.cave.x,y:ZD.cave.y-100,s:1,r:0,h:1,tint:0.2,z:6});
   props.push({t:'cloudgarden',x:ZD.cloud.x,y:ZD.cloud.y-60,s:1,r:0,h:1,tint:0.7,z:4});
+  /* 요정 타운: 상점가 자리의 소품을 모두 비우고 가장자리에 나무·벤치를 심음 */
+  for(var tpi=props.length-1;tpi>=0;tpi--){
+    var tpp=props[tpi];
+    if(tpp.x>TOWN.x-600&&tpp.x<TOWN.x+600&&tpp.y>TOWN.y-420&&tpp.y<TOWN.y+380) props.splice(tpi,1);
+  }
+  var TPOS=[[1000,2120],[986,2260],[1006,2000],[2208,2120],[2222,2260],[2202,2000],
+            [1200,1780],[1400,1760],[1810,1760],[2020,1780],
+            [1290,2430],[1920,2430],[1120,2390],[2090,2390]];
+  TPOS.forEach(function(tp,ti){
+    props.push({t:'tree',x:tp[0]+R()*14,y:tp[1]+R()*10,s:0.85+R()*0.35,r:R()*TAU,h:1,tint:R()});
+  });
+  [[1210,2380],[1998,2380]].forEach(function(bp){
+    props.push({t:'bush',x:bp[0],y:bp[1],s:0.9,r:R()*TAU,h:1,tint:R()});
+  });
   props.sort(function(a,b){return (a.y+(a.z||0)*0)-(b.y+(b.z||0)*0);});
   // 길 그리기용 좌표
   makePath();
@@ -2042,6 +2145,7 @@ function updatePlayer(dt,t){
 function drawZoneLabels(g,t){
   for(var i=0;i<ZONES.length;i++){
     var z=ZONES[i];
+    if(z.town) continue;
     var lx=z.x, ly=z.y-z.r*0.78;
     if(lx<cam.x-120||lx>cam.x+W+120||ly<cam.y-80||ly>cam.y+H+80) continue;
     var d=Math.hypot(player.x-lx,player.y-ly);
@@ -2092,6 +2196,7 @@ function render(t){
   ctx.save();
   ctx.translate(-Math.round(cam.x*2)/2,-Math.round(cam.y*2)/2);
   drawGround(ctx,t);
+  drawTownGround(ctx,t);
   drawMotes(ctx,t);
   drawList.length=0;
   var vx0=cam.x-140,vy0=cam.y-160,vx1=cam.x+W+140,vy1=cam.y+H+120;
@@ -2104,12 +2209,41 @@ function render(t){
     var f=wild[j];
     drawList.push({y:f.y+22,kind:'f',o:f});
   }
+  for(var tsi=0;tsi<SHOPS.length;tsi++){
+    var tsx=SHOP_X[tsi];
+    if(tsx<vx0-140||tsx>vx1+140) continue;
+    drawList.push({y:shopYOf(tsi)+2,kind:'shop',o:tsi});
+  }
+  if(TOWN.acad.x>vx0-260&&TOWN.acad.x<vx1+260&&TOWN.acad.y>vy0-300&&TOWN.acad.y<vy1+80)
+    drawList.push({y:TOWN.acad.y,kind:'acad',o:0});
+  if(TOWN.x>vx0-320&&TOWN.x<vx1+320) drawList.push({y:TOWN.squareY,kind:'fount',o:0});
+  for(var dki=0;dki<DESKS.length;dki++){
+    var dk=DESKS[dki];
+    if(dk.x<vx0-40||dk.x>vx1+40||dk.y<vy0-40||dk.y>vy1+60) continue;
+    drawList.push({y:dk.y,kind:'desk',o:dki});
+  }
+  for(var tfi=0;tfi<townFairies.length;tfi++){
+    var tfo=townFairies[tfi];
+    if(tfo.x<vx0-60||tfo.x>vx1+60||tfo.y<vy0-60||tfo.y>vy1+140) continue;
+    drawList.push({y:tfo.y+6,kind:'tf',o:tfo});
+  }
+  for(var tci=0;tci<townCustomers.length;tci++){
+    var tco=townCustomers[tci];
+    if(tco.x<vx0-60||tco.x>vx1+60||tco.y<vy0-60||tco.y>vy1+140) continue;
+    drawList.push({y:tco.y+6,kind:'tc',o:tco});
+  }
   if(comp.on&&comp.init&&FD[comp.id]) drawList.push({y:comp.y+10,kind:'c',o:comp});
   drawList.push({y:player.y+3,kind:'g',o:player});
   drawList.sort(function(a,b){return a.y-b.y;});
   for(var k=0;k<drawList.length;k++){
     var it=drawList[k];
     if(it.kind==='p') drawProp(ctx,it.o,t);
+    else if(it.kind==='shop') drawShopBuilding(ctx,it.o,t);
+    else if(it.kind==='acad') drawAcademy(ctx,t);
+    else if(it.kind==='fount') drawFountain(ctx,TOWN.x,TOWN.squareY,t);
+    else if(it.kind==='desk') drawDesk(ctx,DESKS[it.o],t,it.o);
+    else if(it.kind==='tf') drawTownFairy(ctx,it.o,t);
+    else if(it.kind==='tc') drawCustomer(ctx,it.o,t);
     else if(it.kind==='g'){
       ctx.save();ctx.translate(it.o.x,it.o.y);ctx.scale(1.24,1.24);
       drawGirl(ctx,0,0,t,it.o.moving?it.o.walk:0,it.o.dir);
@@ -2169,6 +2303,7 @@ function frame(ts){
   if(!lastT) lastT=t;
   var dt=Math.min(0.05,t-lastT);
   lastT=t;lastDt=dt;
+  if(showGame&&(!paused||openSheetId==='town')) updateTown(dt,t);
   if(showGame&&!paused){
     updatePlayer(dt,t);
     var rate=0;
@@ -2221,6 +2356,27 @@ cv.addEventListener('pointerdown',function(e){
   SFX.init();
   var wx=e.clientX+cam.x, wy=e.clientY+cam.y;
   if(inside){ roomTap(wx,wy); return; }
+  /* 요정 타운 상점가 */
+  var tsi=townShopAt(wx,wy);
+  if(tsi>=0){
+    var tpl=tsi===90?null:S.plots[tsi];
+    var gotCoins=0;
+    if(tpl&&tpl.bld>0&&tpl.income>=1) gotCoins=collectPlot(tsi);
+    var careShop=(tsi===I_HOSP||tsi===I_MART||tsi===I_GEAR);
+    if(gotCoins>0) return;
+    if(tsi===90||careShop||!tpl||!tpl.owned){
+      if(!S.townSeen){ S.townSeen=true; save(); }
+      openSheet('town');
+      setTimeout(function(){
+        var fel=$('townFairyList');
+        if(fel&&fel.scrollIntoView) fel.scrollIntoView({block:'center'});
+      },90);
+      if(tsi===90) toast('🏫 마법 아카데미 · 요정들이 스스로 공부하고 전공을 골라요',2400);
+      else if(careShop&&facilityReady(tsi)) toast(SHOPS[tsi].icon+' '+SHOPS[tsi].n+' · 요정을 골라 '+SHOPS[tsi].tag+' 이용을 도와주세요',2500);
+      else if(!tpl.owned) toast('🚩 매물 땅이에요 · 타운 창에서 땅을 사고 건물을 올려요',2300);
+    }
+    return;
+  }
   // 요정의 집 건물/문 탭
   if(Math.abs(wx-HOME.x)<100&&wy>HOME.y-230&&wy<HOME.y+34){ if(!fadeBusy) enterHouse(); return; }
   var hit=null,hd=1e9;
@@ -2544,6 +2700,10 @@ function openSheet(id){
   if(id==='dex') renderDex();
   if(id==='shop') renderShop();
   if(id==='dress'){renderDress();startDressAnim();}
+  if(id==='town'){
+    if(townSel==null||S.house.indexOf(townSel)<0) townSel=S.house[0]||null;
+    townUiT=0; renderTown();
+  }
 }
 function closeSheet(){
   if(!openSheetId) return;
@@ -2554,13 +2714,14 @@ function closeSheet(){
   if(typeof stopDressAnim==='function') stopDressAnim();
   save();updateHUD();
 }
-['house','dex','shop'].forEach(function(id){
+['house','dex','shop','town'].forEach(function(id){
   var b=$(id+'Close');
   if(b) b.addEventListener('click',closeSheet);
 });
 $('btnHouse').addEventListener('click',function(){SFX.init();enterHouse();});
 $('btnDex').addEventListener('click',function(){openSheet('dex');});
 $('btnShop').addEventListener('click',function(){openSheet('shop');});
+$('btnTown').addEventListener('click',function(){SFX.init();openSheet('town');});
 $('btnExitHouse').addEventListener('click',function(){exitHouse();});
 function goHouse(){enterHouse();}
 
@@ -4226,6 +4387,1180 @@ function startGame(){
 }
 $('startBtn').addEventListener('click',startGame);
 
+/* ==================================================================
+   요정 타운 · 리니지풍 마을 경제
+   학업 → 땅 매입 → 건설 → 장사 → 소비(마트·병원·장비점) → 재투자
+   ================================================================== */
+var TOWN={x:1604,y:2100,r:390,acad:{x:1604,y:1955},shopY:2255,squareY:2428};
+var SHOP_X=[1196,1364,1532,1700,1868,1348,1860];
+var I_BAKERY=0,I_MART=1,I_HOSP=2,I_CAFE=3,I_GEAR=4,I_BOUTIQUE=5,I_JEWEL=6;
+var SHOPS=[
+  {n:'달콤 베이커리',icon:'🥐',kind:'bakery',major:'pastry',land:160,bld:300,
+   col:'#ffc9d8',col2:'#fff2f6',trim:'#ff7fa4',roof:'#ff8fb4',base:0.9,
+   tag:'🍰 간식·빵'},
+  {n:'해피 마트',icon:'🛒',kind:'mart',major:null,land:240,bld:420,
+   col:'#c9f0c6',col2:'#f4fff2',trim:'#4fb356',roof:'#7bd47f',base:1.1,
+   tag:'🧺 생필품·간식'},
+  {n:'요정 병원',icon:'🏥',kind:'hospital',major:null,land:320,bld:560,
+   col:'#dff0ff',col2:'#f8fcff',trim:'#e2688a',roof:'#a8d6f5',base:1.25,
+   tag:'💗 치료·회복'},
+  {n:'무지개 포션카페',icon:'🧪',kind:'cafe',major:'barista',land:300,bld:520,
+   col:'#bdf1e2',col2:'#f1fffb',trim:'#3dc4a6',roof:'#63dcc9',base:1.35,
+   tag:'🥤 음료·포션'},
+  {n:'마법 잡화·장비점',icon:'💍',kind:'gear',major:null,land:380,bld:640,
+   col:'#e2d3ff',col2:'#f9f4ff',trim:'#8257e0',roof:'#a98bf5',base:1.5,
+   tag:'💍 반지·부적·물약'},
+  {n:'별빛 부티크',icon:'👗',kind:'boutique',major:'designer',land:420,bld:740,
+   col:'#dcc9ff',col2:'#f8f3ff',trim:'#9d7cf5',roof:'#ae90f7',base:1.15,y:1986,
+   tag:'👗 옷·소품'},
+  {n:'크리스탈 보석상',icon:'💎',kind:'jewel',major:'jeweler',land:460,bld:820,
+   col:'#c6e8ff',col2:'#f4fbff',trim:'#49a8e6',roof:'#82cdf3',base:1.6,y:1986,
+   tag:'💎 보석·선물'}
+];
+var MAJORS={
+  pastry:{name:'파티시에',icon:'🥐'},
+  designer:{name:'디자이너',icon:'👗'},
+  barista:{name:'포션바리스타',icon:'🧪'},
+  jeweler:{name:'보석세공사',icon:'💎'}
+};
+var MAJOR_KEYS=['pastry','designer','barista','jeweler'];
+var DESKS=[
+  {x:1508,y:2009},{x:1571,y:2009},{x:1634,y:2009},{x:1697,y:2009},
+  {x:1540,y:2043},{x:1664,y:2043},{x:1602,y:2043}
+];
+var STUDY_RATE=9;
+var STUDY_NEED=[70,130,210,320,0];
+var UP_COST=[0,1.8,3.2];
+var SNACK_COST=20, HEAL_COST=35;
+var GEAR_LIST=[
+  {id:'ring',name:'마법 반지',icon:'💍',price:120,desc:'공부 속도 +25%'},
+  {id:'charm',name:'행운 부적',icon:'🍀',price:90,desc:'장사 수익 +30%'},
+  {id:'potion',name:'회복 물약',icon:'🧪',price:40,desc:'체력 45 회복'}
+];
+var GEAR_D={};GEAR_LIST.forEach(function(g){GEAR_D[g.id]=g;});
+
+/* ---------------- 데이터 ---------------- */
+function defaultPlot(){ return {owned:false,bld:0,income:0,worker:null}; }
+function ensureTown(){
+  S.plots=Array.isArray(S.plots)?S.plots:[];
+  for(var i=0;i<SHOPS.length;i++){
+    var p=S.plots[i];
+    if(!p||typeof p!=='object') p=S.plots[i]=defaultPlot();
+    p.owned=!!p.owned;
+    p.bld=clamp(p.bld|0,0,3);
+    p.income=Math.max(0,+p.income||0);
+    if(p.worker&&!FD[p.worker]) p.worker=null;
+    if(!p.owned) p.worker=null;
+  }
+  S.study=(S.study&&typeof S.study==='object')?S.study:{};
+  S.modes=(S.modes&&typeof S.modes==='object')?S.modes:{};
+  S.fairy=(S.fairy&&typeof S.fairy==='object')?S.fairy:{};
+  for(var h=0;h<S.house.length;h++){ studyOf(S.house[h]); fairyOf(S.house[h]); }
+  if(typeof S.townSeen!=='boolean') S.townSeen=false;
+}
+function studyOf(id){
+  if(!S.study) S.study={};
+  var st=S.study[id];
+  if(!st||typeof st!=='object') st=S.study[id]={lv:1,xp:0,major:null};
+  st.lv=clamp((st.lv|0)||1,1,5);
+  st.xp=Math.max(0,+st.xp||0);
+  if(st.major&&!MAJORS[st.major]) st.major=null;
+  return st;
+}
+function fairyOf(id){
+  if(!S.fairy) S.fairy={};
+  var f=S.fairy[id];
+  if(!f||typeof f!=='object') f=S.fairy[id]={hp:rnd(72,100),wallet:rnd(24,56),items:{},spent:0,buffStudy:0,buffTrade:0};
+  f.hp=clamp(+f.hp||0,0,100);
+  f.wallet=Math.max(0,+f.wallet||0);
+  f.items=f.items||{};
+  f.buffStudy=+f.buffStudy||0;
+  f.buffTrade=+f.buffTrade||0;
+  return f;
+}
+function studyNeed(lv){ return STUDY_NEED[clamp(lv|0,1,5)-1]||0; }
+function modeOf(id){ return (S.modes[id]==='study'||S.modes[id]==='work')?S.modes[id]:'auto'; }
+function shopYOf(i){ return (SHOPS[i]&&SHOPS[i].y)?SHOPS[i].y:TOWN.shopY; }
+function facilityReady(i){ var p=S.plots[i]; return !!(p&&p.owned&&p.bld>0); }
+function totalIncome(){ var n=0; for(var i=0;i<SHOPS.length;i++) n+=S.plots[i].income; return n; }
+function townRateTotal(){ var s=0; for(var i=0;i<SHOPS.length;i++) s+=plotRate(i); return s; }
+function plotRate(i){
+  var p=S.plots[i]; if(!p||!p.owned||p.bld<1) return 0;
+  var s=SHOPS[i], r=s.base*(1+0.55*(p.bld-1));
+  if(p.worker){
+    var st=studyOf(p.worker), fs=fairyOf(p.worker);
+    r*=1+0.2*(st.lv-1);
+    if(s.major&&st.major===s.major) r*=1.45;
+    if(fs.items.charm) r*=1.3;
+    if(fs.buffTrade>nowS()) r*=1.2;
+  } else r*=0.45;
+  return r;
+}
+function workerPlot(id){
+  for(var i=0;i<S.plots.length;i++) if(S.plots[i].worker===id) return i;
+  return -1;
+}
+function pickMajor(){
+  var want=[];
+  for(var i=0;i<SHOPS.length;i++){
+    var p=S.plots[i];
+    if(p.owned&&p.bld>0&&!p.worker&&SHOPS[i].major) want.push(SHOPS[i].major);
+  }
+  if(want.length&&Math.random()<0.72) return pick(want);
+  return pick(MAJOR_KEYS);
+}
+function studySpeed(id){
+  var fs=fairyOf(id), st=studyOf(id);
+  var r=STUDY_RATE*(1+(fs.items.ring?0.25:0)+(fs.buffStudy>nowS()?0.5:0));
+  return r;
+}
+function addStudy(id,amt){
+  var st=studyOf(id);
+  if(!st.major) st.major=pickMajor();
+  if(st.lv>=5){ st.xp=0; return; }
+  st.xp+=amt;
+  while(st.lv<5&&st.xp>=studyNeed(st.lv)){
+    st.xp-=studyNeed(st.lv); st.lv++;
+    var f=townFairyOf(id);
+    if(f){ f.flash=1; f.bubble='✨'; f.bubbleT=2.2; f.jv=250; }
+    burst(f?f.x:TOWN.acad.x,(f?f.y:TOWN.acad.y)-34,12,['#ffd166','#fff','#c9a6ff'],100);
+    SFX.level();
+    var mj=MAJORS[st.major];
+    toast('🎓 '+FD[id].name+' 학업 Lv.'+st.lv+' · '+mj.icon+mj.name,2100);
+    save();
+  }
+  if(st.lv>=5) st.xp=0;
+}
+
+/* ---------------- 요정 AI ---------------- */
+var townFairies=[],townCustomers=[],townKey='',townSel=null;
+var townSyncT=0,townCustT=1.2,townSaveT=0,townUiT=0;
+function townFairyOf(id){
+  for(var i=0;i<townFairies.length;i++) if(townFairies[i].id===id) return townFairies[i];
+  return null;
+}
+function buildTownFairies(){
+  townFairies.length=0;
+  S.house.forEach(function(id,idx){
+    studyOf(id);fairyOf(id);
+    var f={id:id,def:FD[id],idx:idx,
+      x:TOWN.acad.x-60+(idx%4)*34,y:TOWN.acad.y+74+((idx%2)*28),
+      dest:{x:0,y:0},task:'study',st:'idle',job:-1,bubble:'',bubbleT:0,walk:Math.random()*4,
+      ph:Math.random()*TAU,jump:0,jv:0,flash:0,bob:0,desk:idx,timer:0,
+      urgeT:rnd(14,36),paid:0,gearId:null,shop:-1};
+    f.dest={x:f.x,y:f.y};
+    townFairies.push(f);
+    townDecide(f,true);
+  });
+  if(!townSel||S.house.indexOf(townSel)<0) townSel=S.house[0]||null;
+}
+function visitSpot(i,tf){
+  return {x:SHOP_X[i]+(((tf.idx|0)%2)?19:-19),y:shopYOf(i)+10};
+}
+function deskSpot(tf){
+  var d=DESKS[tf.desk%DESKS.length];
+  return {x:d.x+(((tf.idx|0)%3)-1)*7,y:d.y};
+}
+function townDecide(tf,instant){
+  var fs=fairyOf(tf.id), mode=modeOf(tf.id), wi=workerPlot(tf.id);
+  tf.job=wi; tf.timer=0; tf.paid=0;
+  tf.shop=-1;
+  if(fs.hp<42&&facilityReady(I_HOSP)){
+    tf.task='hospital';tf.shop=I_HOSP;tf.dest=visitSpot(I_HOSP,tf);
+  } else {
+    var want=gearWanted(fs);
+    if(want&&fs.wallet>=want.price&&facilityReady(I_GEAR)&&Math.random()<0.5){
+      tf.task='gear';tf.shop=I_GEAR;tf.gearId=want.id;tf.dest=visitSpot(I_GEAR,tf);
+    } else if(fs.wallet>=SNACK_COST&&facilityReady(I_MART)&&(fs.hp<70||Math.random()<0.28)){
+      tf.task='mart';tf.shop=I_MART;tf.dest=visitSpot(I_MART,tf);
+    } else if(wi>=0&&mode!=='study'){
+      tf.task='work';tf.shop=wi;tf.dest=visitSpot(wi,tf);
+    } else if(fs.hp<28&&!facilityReady(I_HOSP)){
+      tf.task='rest';tf.dest={x:TOWN.acad.x-150+((tf.idx%3)*36),y:TOWN.acad.y+120};
+    } else {
+      tf.task='study';tf.dest=deskSpot(tf);
+    }
+  }
+  if(instant){ tf.x=tf.dest.x; tf.y=tf.dest.y; }
+}
+function gearWanted(fs){
+  for(var i=0;i<GEAR_LIST.length;i++){
+    var g=GEAR_LIST[i];
+    if(g.id==='potion') continue;
+    if(!fs.items[g.id]) return g;
+  }
+  return null;
+}
+function assignWorkers(){
+  var i;
+  for(i=0;i<SHOPS.length;i++){
+    var p=S.plots[i];
+    if(p.worker&&S.house.indexOf(p.worker)<0) p.worker=null;
+    if(!p.owned||p.bld<1) p.worker=null;
+  }
+  for(var h=0;h<S.house.length;h++){
+    var id=S.house[h], mode=modeOf(id), cur=workerPlot(id);
+    if(mode==='study'){ if(cur>=0) S.plots[cur].worker=null; continue; }
+    if(cur>=0) continue;
+    var st=studyOf(id);
+    if(st.lv<2) continue;
+    var best=-1,bestScore=-1;
+    for(i=0;i<SHOPS.length;i++){
+      var q=S.plots[i];
+      if(!q.owned||q.bld<1||q.worker) continue;
+      var sc=q.bld*2+(st.major&&st.major===SHOPS[i].major?3.5:0)+(mode==='work'?1:0);
+      if(sc>bestScore){bestScore=sc;best=i;}
+    }
+    if(best>=0) S.plots[best].worker=id;
+  }
+}
+function fairyPay(id,plotIdx,amount){
+  var fs=fairyOf(id);
+  var pay=Math.min(amount,Math.max(0,fs.wallet));
+  fs.wallet-=pay; fs.spent+=pay;
+  var p=S.plots[plotIdx];
+  if(p&&p.owned&&p.bld>0) p.income=Math.min(9999,p.income+pay);
+  return pay;
+}
+function updateTown(dt,t){
+  if(!S.plots) ensureTown();
+  var k=S.house.join(',');
+  if(k!==townKey){ townKey=k; buildTownFairies(); townSyncT=0; }
+  townSyncT-=dt;
+  if(townSyncT<=0){
+    townSyncT=1.1;
+    assignWorkers();
+    for(var i=0;i<townFairies.length;i++){
+      var f0=townFairies[i];
+      if(workerPlot(f0.id)!==f0.job&&f0.task!=='hospital'&&f0.task!=='gear'&&f0.task!=='mart') townDecide(f0);
+    }
+  }
+  for(var j=0;j<townFairies.length;j++){
+    var tf=townFairies[j], fs=fairyOf(tf.id);
+    tf.bubbleT=Math.max(0,tf.bubbleT-dt);
+    tf.flash=Math.max(0,tf.flash-dt);
+    if(tf.jv!==0||tf.jump>0){
+      tf.jv=(tf.jv||0)-620*dt; tf.jump=(tf.jump||0)+tf.jv*dt;
+      if(tf.jump<=0){ tf.jump=0; tf.jv=0; }
+    }
+    var dx=tf.dest.x-tf.x, dy=tf.dest.y-tf.y, d=Math.hypot(dx,dy);
+    if(d>6){
+      tf.x+=dx/d*78*dt; tf.y+=dy/d*78*dt; tf.walk+=dt*6.5;
+      tf.st='move';
+      if(Math.random()<dt*2) addPart(tf.x+rnd(-7,7),tf.y-4,{vx:rnd(-8,8),vy:rnd(-16,-3),
+        col:Math.random()<0.5?'#fff':'#ffe0f0',size:rnd(1.1,2.2),life:rnd(.3,.7),g:12});
+    } else {
+      tf.x=tf.dest.x; tf.y=tf.dest.y;
+      if(tf.task==='work'){
+        tf.st='work';
+        fs.hp=Math.max(0,fs.hp-0.45*dt); fs.wallet+=0.7*dt;
+        if(Math.random()<dt*0.4){ tf.bubble=pick([SHOPS[tf.shop>=0?tf.shop:0].icon,'💁','💰','✨']); tf.bubbleT=1.5; }
+        if(Math.random()<dt*1.6) addPart(tf.x+rnd(-16,16),tf.y-42,{vx:rnd(-8,8),vy:rnd(-22,-8),
+          col:'#ffe08a',size:rnd(1.4,2.8),life:rnd(.5,.9),g:10});
+        tf.urgeT-=dt;
+        if(fs.hp<42&&facilityReady(I_HOSP)) townDecide(tf);
+        else if(tf.urgeT<=0){ tf.urgeT=rnd(22,44); if(Math.random()<0.6) townDecide(tf); }
+      } else if(tf.task==='study'){
+        tf.st='study';
+        addStudy(tf.id,studySpeed(tf.id)*dt);
+        fs.hp=Math.max(0,fs.hp-0.3*dt); fs.wallet+=0.05*dt;
+        if(Math.random()<dt*0.5){ tf.bubble=pick(['📚','💡','✏️','📖']); tf.bubbleT=1.5; }
+        if(Math.random()<dt*2) addPart(tf.x+rnd(-10,10),tf.y-38,{vx:rnd(-6,6),vy:rnd(-20,-6),
+          col:Math.random()<0.5?'#c9a6ff':'#fff',size:rnd(1.2,2.6),life:rnd(.4,.9),g:8});
+        tf.urgeT-=dt;
+        if(fs.hp<42&&facilityReady(I_HOSP)) townDecide(tf);
+        else if(tf.urgeT<=0){ tf.urgeT=rnd(24,50); if(Math.random()<0.5) townDecide(tf); }
+      } else if(tf.task==='hospital'){
+        tf.st='hospital';
+        if(!tf.paid){ tf.paid=1; fairyPay(tf.id,I_HOSP,18); tf.bubble='🏥'; tf.bubbleT=2; }
+        if(fs.hp<99.4){
+          fs.hp=Math.min(100,fs.hp+9*dt);
+          if(Math.random()<dt*5) addPart(tf.x+rnd(-10,10),tf.y-34,{vx:rnd(-8,8),vy:rnd(-26,-10),
+            col:'#8fe0ff',size:rnd(1.6,3),life:rnd(.5,.9),g:8});
+        } else {
+          tf.timer-=dt;
+          if(tf.timer<=0){ tf.bubble='💗'; tf.bubbleT=1.4; townDecide(tf); }
+        }
+        if(!tf.timer) tf.timer=1.2;
+      } else if(tf.task==='mart'){
+        tf.st='mart';
+        if(!tf.paid){
+          tf.paid=1;
+          var paid=fairyPay(tf.id,I_MART,SNACK_COST);
+          fs.hp=Math.min(100,fs.hp+14);
+          fs.buffTrade=nowS()+40;
+          tf.bubble='🛒'; tf.bubbleT=2.2;
+          if(paid>=SNACK_COST) toast('🛒 '+FD[tf.id].name+'가 마트에서 간식을 샀어요',1700);
+        }
+        tf.timer+=dt;
+        if(tf.timer>2.6) townDecide(tf);
+      } else if(tf.task==='gear'){
+        tf.st='gear';
+        if(!tf.paid){
+          tf.paid=1;
+          var g=GEAR_D[tf.gearId];
+          var paid2=fairyPay(tf.id,I_GEAR,g.price);
+          if(paid2>=g.price-0.01){
+            fs.items[tf.gearId]=true;
+            burst(tf.x,tf.y-40,16,['#fff','#ffd166','#c9a6ff'],130);
+            SFX.level();
+            toast('💍 '+FD[tf.id].name+'가 '+g.name+'을(를) 샀어요 · '+g.desc,2200);
+          }
+          tf.bubble='💍'; tf.bubbleT=2.2;
+        }
+        tf.timer+=dt;
+        if(tf.timer>2.8) townDecide(tf);
+      } else if(tf.task==='rest'){
+        tf.st='rest';
+        fs.hp=Math.min(100,fs.hp+1.6*dt);
+        if(fs.hp>=42&&facilityReady(I_HOSP)) townDecide(tf);
+        if(Math.random()<dt*0.5){ tf.bubble='💤'; tf.bubbleT=1.4; }
+        if(fs.hp>55) townDecide(tf);
+      } else {
+        tf.st='idle';
+        tf.timer+=dt;
+        if(tf.timer>1) townDecide(tf);
+      }
+    }
+    tf.bob=Math.sin(t*2.3+tf.ph)*2.2;
+  }
+  for(var q=0;q<SHOPS.length;q++){
+    var p=S.plots[q];
+    if(p.owned&&p.bld>0&&p.income<9999) p.income=Math.min(9999,p.income+plotRate(q)*dt);
+  }
+  /* 손님 */
+  townCustT-=dt;
+  if(townCustT<=0){
+    townCustT=rnd(1.4,3.0);
+    if(townCustomers.length<8){
+      var cands=[];
+      for(var c=0;c<SHOPS.length;c++) if(facilityReady(c)) cands.push(c);
+      if(cands.length){
+        var si=pick(cands), left=Math.random()<0.5;
+        townCustomers.push({shop:si,x:SHOP_X[si]+(left?-240:240),y:shopYOf(si)+rnd(46,86),
+          dest:{x:SHOP_X[si]+rnd(-26,26),y:shopYOf(si)+44},st:'in',tmr:rnd(2,4.2),
+          def:FD[pick(Object.keys(FD))],bubble:'',bubbleT:0,walk:0,ph:Math.random()*TAU,left:left});
+      }
+    }
+  }
+  for(var ci=townCustomers.length-1;ci>=0;ci--){
+    var cu=townCustomers[ci];
+    cu.bubbleT=Math.max(0,cu.bubbleT-dt);
+    var cdx=cu.dest.x-cu.x, cdy=cu.dest.y-cu.y, cd=Math.hypot(cdx,cdy);
+    if(cd>5){ cu.x+=cdx/cd*66*dt; cu.y+=cdy/cd*66*dt; cu.walk+=dt*6; }
+    else if(cu.st==='in'){
+      cu.st='buy'; cu.tmr=rnd(2.2,4.2);
+      var csh=SHOPS[cu.shop];
+      cu.bubble=csh.kind==='hospital'?'🤒':(csh.kind==='mart'?'🛒':(csh.kind==='gear'?'💍':'🛍️'));
+      cu.bubbleT=1.6;
+      var pp=S.plots[cu.shop];
+      if(pp&&pp.owned&&pp.bld>0) pp.income=Math.min(9999,pp.income+3+pp.bld*2);
+    } else if(cu.st==='buy'){
+      cu.tmr-=dt;
+      if(cu.tmr<=0){
+        cu.st='out'; cu.dest={x:cu.x+(cu.left?-250:250),y:cu.y+rnd(-10,24)};
+        cu.bubble='💕'; cu.bubbleT=1.2;
+      }
+    } else if(cu.st==='out') townCustomers.splice(ci,1);
+  }
+  townSaveT-=dt;
+  if(townSaveT<=0){ townSaveT=10; save(); updateTownDot(); }
+  if(openSheetId==='town'){
+    townUiT-=dt;
+    if(townUiT<=0){ townUiT=0.5; renderTown(); }
+  }
+}
+function updateTownDot(){
+  var el=$('townDot');
+  if(!el) return;
+  el.className='dot'+(totalIncome()>=20?'':' hide');
+}
+
+/* ---------------- 매입 · 건설 · 수거 · 돌보기 ---------------- */
+function buyPlot(i){
+  var p=S.plots[i]; if(!p||p.owned) return 'owned';
+  var cost=SHOPS[i].land;
+  if(S.coins<cost){ SFX.fail(); toast('코인이 모자라요 · 🪙 '+cost+' 필요해요'); return 'poor'; }
+  addCoins(-cost); p.owned=true;
+  SFX.win();
+  burst(SHOP_X[i],shopYOf(i)-10,16,['#fff','#ffd166','#8ff0d8'],130);
+  toast('🎉 땅 매입! '+SHOPS[i].icon+' '+SHOPS[i].n+' 부지가 내 땅이 됐어요',2400);
+  save(); renderTown(); updateTownDot();
+  return 'bought';
+}
+function buildShop(i){
+  var p=S.plots[i]; if(!p||!p.owned) return 'noland';
+  if(p.bld>0) return 'built';
+  var cost=SHOPS[i].bld;
+  if(S.coins<cost){ SFX.fail(); toast('코인이 모자라요 · 🪙 '+cost+' 필요해요'); return 'poor'; }
+  addCoins(-cost); p.bld=1;
+  SFX.level();
+  burst(SHOP_X[i],shopYOf(i)-60,22,['#fff','#ffd166','#ff9ecb','#c9a6ff'],160);
+  toast('🏗️ '+SHOPS[i].n+' 오픈! 요정들이 출근하고 손님이 찾아와요',2500);
+  save(); renderTown();
+  return 'built';
+}
+function upCost(i){ var p=S.plots[i]; if(!p||p.bld<1||p.bld>=3) return 0; return Math.round(SHOPS[i].bld*UP_COST[p.bld]); }
+function upgradeShop(i){
+  var p=S.plots[i]; if(!p||p.bld<1) return 'nobld';
+  if(p.bld>=3) return 'max';
+  var cost=upCost(i);
+  if(S.coins<cost){ SFX.fail(); toast('코인이 모자라요 · 🪙 '+cost+' 필요해요'); return 'poor'; }
+  addCoins(-cost); p.bld++;
+  SFX.level();
+  burst(SHOP_X[i],shopYOf(i)-90,24,['#fff','#ffd166','#8ff0d8','#c9a6ff'],170);
+  toast('⬆️ '+SHOPS[i].n+' Lv.'+p.bld+' 증축! 매출이 커졌어요',2300);
+  save(); renderTown();
+  return 'up';
+}
+function collectPlot(i,silent){
+  var p=S.plots[i]; if(!p) return 0;
+  var n=Math.floor(p.income);
+  if(n<1){ if(!silent){ SFX.fail(); toast('아직 모인 코인이 없어요 · 요정들이 장사 중이에요'); } return 0; }
+  p.income-=n; addCoins(n); SFX.coin();
+  burst(SHOP_X[i],shopYOf(i)-70,14,['#ffd166','#fff','#ffe08a'],120);
+  if(!silent) toast('💰 '+SHOPS[i].icon+' '+SHOPS[i].n+' +'+n+' 코인 수거!',2000);
+  save(); renderTown(); updateTownDot();
+  return n;
+}
+function collectAll(){
+  var tot=0;
+  for(var i=0;i<SHOPS.length;i++) tot+=collectPlot(i,true);
+  if(tot>0){
+    SFX.coin();
+    toast('💰 마을 상점가에서 +'+tot+' 코인 수거!',2300);
+    burst(player.x,player.y-40,16,['#ffd166','#fff'],120);
+  } else { SFX.fail(); toast('아직 수거할 코인이 없어요'); }
+  renderTown();
+  return tot;
+}
+function setFairyMode(id,mode){
+  S.modes[id]=(mode==='study'||mode==='work')?mode:'auto';
+  if(S.modes[id]!=='work'){ var wi=workerPlot(id); if(wi>=0) S.plots[wi].worker=null; }
+  townSyncT=0;
+  save(); renderTown();
+  var f=townFairyOf(id);
+  if(f){ f.bubble=mode==='study'?'📚':(mode==='work'?'💼':'✨'); f.bubbleT=1.6; if(mode==='study'||mode==='work') townDecide(f); }
+  if(mode==='work'){
+    var any=false;
+    for(var i=0;i<SHOPS.length;i++) if(facilityReady(i)) any=true;
+    if(!any) toast('먼저 땅을 사고 가게를 지어야 일할 곳이 생겨요');
+  }
+  return S.modes[id];
+}
+function selectFairy(id){ townSel=id; renderTown(); }
+function careFairy(id,what){
+  if(!id){ toast('요정을 먼저 골라 주세요'); return 'no'; }
+  var fs=fairyOf(id), nm=FD[id]?FD[id].name:'요정';
+  if(what==='heal'){
+    if(!facilityReady(I_HOSP)){ toast('🏥 요정 병원을 먼저 지어 주세요'); return 'nofac'; }
+    if(fs.hp>99){ toast(nm+'는 지금 아주 건강해요'); return 'full'; }
+    if(S.coins<HEAL_COST){ SFX.fail(); toast('코인이 모자라요 · 🪙 '+HEAL_COST); return 'poor'; }
+    addCoins(-HEAL_COST);
+    S.plots[I_HOSP].income=Math.min(9999,S.plots[I_HOSP].income+HEAL_COST);
+    fs.hp=100;
+    var f=townFairyOf(id); if(f){ f.bubble='💗'; f.bubbleT=2; f.jump=180; f.jv=250; }
+    SFX.level(); burst(f?f.x:player.x,(f?f.y:player.y)-40,14,['#ff9ecb','#fff','#8fe0ff'],120);
+    toast('🏥 '+nm+' 치료 완료! 체력이 가득 찼어요',2100);
+  } else if(what==='snack'){
+    if(!facilityReady(I_MART)){ toast('🛒 해피 마트를 먼저 지어 주세요'); return 'nofac'; }
+    if(S.coins<SNACK_COST){ SFX.fail(); toast('코인이 모자라요 · 🪙 '+SNACK_COST); return 'poor'; }
+    addCoins(-SNACK_COST);
+    S.plots[I_MART].income=Math.min(9999,S.plots[I_MART].income+SNACK_COST);
+    fs.hp=Math.min(100,fs.hp+12); fs.buffTrade=nowS()+60;
+    var f2=townFairyOf(id); if(f2){ f2.bubble='🍬'; f2.bubbleT=2; }
+    SFX.coin();
+    toast('🛒 '+nm+'에게 간식을 샀어요 · 체력 +12, 60초 장사 +20%',2200);
+  } else if(what==='ring'||what==='charm'||what==='potion'){
+    if(!facilityReady(I_GEAR)){ toast('💍 마법 잡화·장비점을 먼저 지어 주세요'); return 'nofac'; }
+    var g=GEAR_D[what];
+    if(what!=='potion'&&fs.items[what]){ toast(nm+'는 이미 '+g.name+'을(를) 갖고 있어요'); return 'owned'; }
+    if(S.coins<g.price){ SFX.fail(); toast('코인이 모자라요 · 🪙 '+g.price); return 'poor'; }
+    addCoins(-g.price);
+    S.plots[I_GEAR].income=Math.min(9999,S.plots[I_GEAR].income+g.price);
+    if(what==='potion') fs.hp=Math.min(100,fs.hp+45);
+    else fs.items[what]=true;
+    var f3=townFairyOf(id); if(f3){ f3.bubble='💍'; f3.bubbleT=2.2; f3.flash=1; }
+    SFX.level(); burst(f3?f3.x:player.x,(f3?f3.y:player.y)-40,16,['#fff','#ffd166','#c9a6ff'],130);
+    toast('✨ '+nm+'에게 '+g.name+' 선물! '+g.desc,2300);
+  }
+  save(); renderTown(); updateTownDot();
+  return 'ok';
+}
+function townGo(){
+  if(inside) exitHouse();
+  closeSheet();
+  setTimeout(function(){
+    player.x=TOWN.acad.x; player.y=TOWN.acad.y+150;
+    player.tx=player.x; player.ty=player.y; player.moving=false;
+    cam.x=clamp(player.x-W/2,0,Math.max(0,WORLD.w-W));
+    cam.y=clamp(player.y-H/2,0,Math.max(0,WORLD.h-H));
+    curZone=null;
+    SFX.open();
+    toast('🏘️ 요정 타운 · 아카데미 공부, 상점가 장사, 마트·병원·장비점 쇼핑!',2700);
+  },220);
+}
+
+/* ---------------- 타운 그리기 ---------------- */
+function townInView(){
+  return !(cam.x+W<TOWN.x-700||cam.x>TOWN.x+700||cam.y+H<TOWN.y-470||cam.y>TOWN.y+320);
+}
+function drawFence(g,cx,cy,own){
+  var w=82,h=34,k;
+  g.lineWidth=2.4;
+  g.strokeStyle=own?'#ffffff':'#fff0f4';
+  for(k=-3;k<=3;k++){
+    var px=cx+k*(w/3.2), py=cy+14-Math.abs(k)*2.2;
+    g.beginPath();g.moveTo(px,py);g.lineTo(px,py-15);g.stroke();
+    g.fillStyle=own?'#fff':'#fff6f9';
+    g.beginPath();g.moveTo(px,py-18);g.lineTo(px+2.6,py-15);g.lineTo(px-2.6,py-15);g.closePath();g.fill();
+  }
+  g.beginPath();g.moveTo(cx-w,cy-2);g.lineTo(cx+w,cy-2);g.stroke();
+  g.beginPath();g.moveTo(cx-w,cy+6);g.lineTo(cx+w,cy+6);g.stroke();
+  if(!own){ g.setLineDash([6,6]); g.strokeStyle='rgba(220,150,180,.5)'; }
+  g.setLineDash([]);
+}
+function drawPlotGround(g,i,t){
+  var cx=SHOP_X[i],cy=shopYOf(i),p=S.plots[i],s=SHOPS[i];
+  var lg=g.createRadialGradient(cx,cy+10,12,cx,cy+10,92);
+  lg.addColorStop(0,p.owned?'#d9f7c6':'#cbe6b8');
+  lg.addColorStop(.7,p.owned?'rgba(196,240,178,.85)':'rgba(190,226,170,.8)');
+  lg.addColorStop(1,'rgba(190,235,175,0)');
+  g.fillStyle=lg;g.beginPath();g.ellipse(cx,cy+10,94,38,0,0,TAU);g.fill();
+  if(!p.owned){
+    g.globalAlpha=.5;g.strokeStyle='#a8d79a';g.lineWidth=1.4;
+    for(var q=0;q<7;q++){
+      var qx=cx-52+q*18;
+      g.beginPath();g.moveTo(qx,cy+18);g.lineTo(qx+3,cy+6);g.stroke();
+    }
+    g.globalAlpha=1;
+    drawFence(g,cx,cy,false);
+    var sx=cx+52,sy=cy+16;
+    g.strokeStyle='#c2946b';g.lineWidth=3.4;g.lineCap='round';
+    g.beginPath();g.moveTo(sx,sy+2);g.lineTo(sx,sy-24);g.stroke();
+    g.save();g.translate(sx,sy-34);g.rotate(-0.1);
+    g.fillStyle='#fff';rr(g,-25,-14,50,28,6);g.fill();
+    g.strokeStyle='#ff8fb4';g.lineWidth=2.2;rr(g,-25,-14,50,28,6);g.stroke();
+    g.fillStyle='#e2479c';g.font='bold 9px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='center';g.textBaseline='middle';g.fillText('매물',0,-5);
+    g.fillStyle='#c07b00';g.font='bold 8px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.fillText(s.land+' 코인',0,6);
+    g.restore();
+    g.strokeStyle='#d9a35e';g.lineWidth=2;
+    g.beginPath();g.moveTo(cx-58,cy+10);g.lineTo(cx-58,cy-20);g.stroke();
+    g.fillStyle='#ff8fb4';
+    g.beginPath();g.moveTo(cx-58,cy-20);g.lineTo(cx-40,cy-15);g.lineTo(cx-58,cy-10);g.closePath();g.fill();
+  } else {
+    drawFence(g,cx,cy,true);
+    if(p.bld<1){
+      g.save();g.translate(cx,cy+2);
+      g.fillStyle='rgba(255,255,255,.9)';rr(g,-22,-46,44,22,7);g.fill();
+      g.strokeStyle='#8fd6ff';g.lineWidth=2;rr(g,-22,-46,44,22,7);g.stroke();
+      g.fillStyle='#2f8fbf';g.font='bold 9px -apple-system,"Apple SD Gothic Neo",sans-serif';
+      g.textAlign='center';g.textBaseline='middle';g.fillText('내 땅',0,-35);
+      g.restore();
+      g.fillStyle='#e8b06a';rr(g,cx-16,cy-14,32,20,4);g.fill();
+      g.fillStyle='#fff4d6';rr(g,cx-10,cy-26,16,12,3);g.fill();
+      var bob=Math.sin(t*3)*3;
+      g.fillStyle='#c98a3e';rr(g,cx+14,cy-40+bob,4,22,2);g.fill();
+      rr(g,cx+8,cy-46+bob,18,10,3);g.fill();
+      g.fillStyle='#fff8ea';rr(g,cx+11,cy-44+bob,12,6,2);g.fill();
+    }
+  }
+}
+function drawTownGround(g,t){
+  if(!townInView()) return;
+  var A=TOWN.acad;
+  var pv=g.createRadialGradient(A.x,A.y+56,40,A.x,A.y+56,440);
+  pv.addColorStop(0,'#fff7e6');pv.addColorStop(.58,'rgba(255,243,219,.92)');pv.addColorStop(1,'rgba(255,243,219,0)');
+  g.fillStyle=pv;g.beginPath();g.ellipse(A.x,A.y+56,440,220,0,0,TAU);g.fill();
+  var y0=TOWN.shopY, xa=SHOP_X[0]-104, xb=SHOP_X[4]+104;
+  g.save();
+  g.fillStyle='rgba(255,236,216,.95)';
+  rr(g,xa,y0-30,xb-xa,100,30);g.fill();
+  g.strokeStyle='rgba(232,196,170,.6)';g.lineWidth=1;
+  for(var by=y0-22;by<y0+66;by+=11){
+    g.beginPath();g.moveTo(xa+8,by);g.lineTo(xb-8,by);g.stroke();
+    var off=((by/11)|0)%2?11:0;
+    for(var bx=xa+10;bx<xb-10;bx+=22){
+      g.beginPath();g.moveTo(bx+off,by);g.lineTo(bx+off,by+11);g.stroke();
+    }
+  }
+  g.restore();
+  for(var i=0;i<SHOPS.length;i++) drawPlotGround(g,i,t);
+  drawTownDeco(g,t);
+}
+function drawLampPost(g,x,y,t){
+  shadow(g,x,y+2,12,4,.12);
+  g.fillStyle='#cfa9d8';rr(g,x-2.4,y-46,4.8,46,2.4);g.fill();
+  g.fillStyle='#b48fc0';rr(g,x-7,y-4,14,5,2.5);g.fill();
+  g.fillStyle='#ffe9b0';rr(g,x-8,y-66,16,21,6);g.fill();
+  g.strokeStyle='#fff';g.lineWidth=2;rr(g,x-8,y-66,16,21,6);g.stroke();
+  g.fillStyle='#ffd166';g.beginPath();g.arc(x,y-55.5,4,0,TAU);g.fill();
+  g.globalAlpha=.3+Math.sin(t*2+x)*0.1;
+  g.fillStyle='#fff3c4';g.beginPath();g.arc(x,y-55.5,19,0,TAU);g.fill();
+  g.globalAlpha=1;
+  g.fillStyle='#b48fc0';g.beginPath();g.arc(x,y-66,5,0,PI,TAU);g.fill();
+}
+function drawBench(g,x,y,t){
+  shadow(g,x,y+3,26,6,.12);
+  g.fillStyle='#d9a86a';rr(g,x-26,y-15,52,7,3);g.fill();
+  g.fillStyle='#c48f52';rr(g,x-24,y-7,48,6,3);g.fill();
+  g.fillStyle='#b57a3f';rr(g,x-22,y-5,5,13,2);g.fill();rr(g,x+17,y-5,5,13,2);g.fill();
+  g.fillStyle='#c48f52';rr(g,x-26,y-26,52,5,2.5);g.fill();
+  g.fillStyle='#b57a3f';rr(g,x-24,y-26,4,11,2);g.fill();rr(g,x+20,y-26,4,11,2);g.fill();
+}
+function drawTownDeco(g,t){
+  if(!townInView()) return;
+  var LAMPS=[1090,1260,1430,1770,1940,2090];
+  for(var i=0;i<LAMPS.length;i++) drawLampPost(g,LAMPS[i],2328,t);
+  drawBench(g,1420,2412,t);
+  drawBench(g,1790,2412,t);
+  /* 가게 사이 화단 */
+  for(var b=0;b<6;b++){
+    var bx=1280+b*168, byy=2336;
+    g.fillStyle='#cbe6b8';g.globalAlpha=.8;
+    g.beginPath();g.ellipse(bx,byy,22,7,0,0,TAU);g.fill();g.globalAlpha=1;
+    for(var f=0;f<5;f++){
+      var fx=bx-14+f*7, fy=byy-2+(f%2)*2;
+      g.fillStyle=['#ff9ecb','#ffd166','#c9a6ff','#8ff0d8'][f%4];
+      for(var pt2=0;pt2<5;pt2++){
+        var aa=pt2*1.256;
+        g.beginPath();g.ellipse(fx+Math.cos(aa)*2.6,fy+Math.sin(aa)*2,1.9,1.6,aa,0,TAU);g.fill();
+      }
+      g.fillStyle='#fff6b0';g.beginPath();g.arc(fx,fy,1.3,0,TAU);g.fill();
+    }
+  }
+}
+function drawAcademy(g,t){
+  var x=TOWN.acad.x,y=TOWN.acad.y;
+  g.save();g.translate(x,y);g.scale(0.8,0.8);g.translate(-x,-y);
+  var w=252,h=158,x0=x-w/2,y0=y-h;
+  shadow(g,x,y+8,w*0.55,18,.2);
+  g.fillStyle='#f0e2f7';rr(g,x-104,y-6,208,16,7);g.fill();
+  g.fillStyle='#fbf3ff';rr(g,x-92,y-16,184,14,6);g.fill();
+  g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.6;
+  g.beginPath();g.moveTo(x-100,y-6);g.lineTo(x+100,y-6);g.stroke();
+  var wg=g.createLinearGradient(0,y0,0,y-14);
+  wg.addColorStop(0,'#fffaff');wg.addColorStop(.55,'#f6e8ff');wg.addColorStop(1,'#e7d2fb');
+  g.fillStyle=wg;rr(g,x0,y0,w,h,14);g.fill();
+  g.strokeStyle='#fff';g.lineWidth=3.4;rr(g,x0,y0,w,h,14);g.stroke();
+  g.globalAlpha=.28;
+  for(var py=y0+18;py<y-24;py+=26){
+    for(var px=x0+16;px<x0+w-10;px+=30){
+      g.fillStyle='#f0b6dd';heartPathLocal(g,px,py,3.1);g.fill();
+    }
+  }
+  g.globalAlpha=1;
+  g.fillStyle='#9a7ce0';
+  g.beginPath();
+  g.moveTo(x0-14,y0+8);g.lineTo(x-16,y0-44);g.quadraticCurveTo(x,y0-64,x+16,y0-44);
+  g.lineTo(x0+w+14,y0+8);g.lineTo(x0+w-4,y0+16);g.lineTo(x0+4,y0+16);g.closePath();g.fill();
+  g.strokeStyle='#fff';g.lineWidth=2.6;
+  g.beginPath();g.moveTo(x0-10,y0+9);g.lineTo(x-15,y0-42);g.quadraticCurveTo(x,y0-60,x+15,y0-42);g.lineTo(x0+w+10,y0+9);g.stroke();
+  for(var st=0;st<9;st++){
+    var sa=st*0.7+t*0.35;
+    g.globalAlpha=.35+Math.sin(t*2+st)*0.3;
+    g.fillStyle='#ffe08a';
+    g.beginPath();g.arc(x0+22+((st*29)%(w-40)),y0+4+Math.sin(sa)*6,1.7,0,TAU);g.fill();
+  }
+  g.globalAlpha=1;
+  g.fillStyle='#fff6ff';rr(g,x-26,y0-92,52,60,10);g.fill();
+  g.strokeStyle='#fff';g.lineWidth=3;rr(g,x-26,y0-92,52,60,10);g.stroke();
+  g.fillStyle='#8f6bf0';
+  g.beginPath();g.moveTo(x-32,y0-92);g.lineTo(x,y0-126);g.lineTo(x+32,y0-92);g.closePath();g.fill();
+  g.strokeStyle='#fff';g.lineWidth=2.4;
+  g.beginPath();g.moveTo(x-32,y0-92);g.lineTo(x,y0-124);g.lineTo(x+32,y0-92);g.stroke();
+  g.fillStyle='#ffd166';g.beginPath();g.arc(x,y0-110,5,0,TAU);g.fill();
+  g.fillStyle='#fff';g.beginPath();g.arc(x,y0-62,15,0,TAU);g.fill();
+  g.strokeStyle='#c9a6ff';g.lineWidth=2.4;g.beginPath();g.arc(x,y0-62,15,0,TAU);g.stroke();
+  g.strokeStyle='#8f6bf0';g.lineWidth=2.2;g.lineCap='round';
+  g.beginPath();g.moveTo(x,y0-62);g.lineTo(x+6,y0-70);g.stroke();
+  g.beginPath();g.moveTo(x,y0-62);g.lineTo(x,y0-52);g.stroke();
+  g.fillStyle='#ffe9b8';
+  g.beginPath();g.moveTo(x-30,y-30);g.lineTo(x-30,y-92);g.quadraticCurveTo(x,y-124,x+30,y-92);g.lineTo(x+30,y-30);g.closePath();g.fill();
+  g.strokeStyle='#fff';g.lineWidth=3;g.stroke();
+  g.fillStyle='#ff9ecb';rr(g,x-17,y-62,34,16,3);g.fill();
+  g.fillStyle='#fff';rr(g,x-10,y-60,20,4,2);g.fill();
+  g.fillStyle='#fff';rr(g,x-1.4,y-88,3,26,1.5);g.fill();
+  g.fillStyle='#6b4a9c';
+  g.beginPath();g.moveTo(x-22,y-14);g.lineTo(x-22,y-52);g.quadraticCurveTo(x,y-74,x+22,y-52);g.lineTo(x+22,y-14);g.closePath();g.fill();
+  g.strokeStyle='#fff';g.lineWidth=2.6;g.stroke();
+  g.fillStyle='#ffd166';g.beginPath();g.arc(x+13,y-34,2.6,0,TAU);g.fill();
+  g.fillStyle='#fff';rr(g,x-62,y-88,124,20,8);g.fill();
+  g.strokeStyle='#c9a6ff';g.lineWidth=2;rr(g,x-62,y-88,124,20,8);g.stroke();
+  g.fillStyle='#7a4aa8';g.font='bold 10px -apple-system,"Apple SD Gothic Neo",sans-serif';
+  g.textAlign='center';g.textBaseline='middle';
+  g.fillText('마법 아카데미',x,y-77.5);
+  [-1,1].forEach(function(sd){
+    var wx=x+sd*86;
+    g.fillStyle='#d7f0ff';
+    g.beginPath();g.moveTo(wx-15,y-40);g.lineTo(wx-15,y-78);g.quadraticCurveTo(wx,y-94,wx+15,y-78);g.lineTo(wx+15,y-40);g.closePath();g.fill();
+    g.strokeStyle='#fff';g.lineWidth=2.6;g.stroke();
+    g.fillStyle='#fff';g.fillRect(wx-1.4,y-88,2.8,44);
+    g.fillStyle='#fff';g.fillRect(wx-14,y-62,28,2.6);
+    g.globalAlpha=.55;g.fillStyle='#fff7d0';
+    g.beginPath();g.moveTo(wx-14,y-40);g.lineTo(wx-24,y-16);g.lineTo(wx+24,y-16);g.lineTo(wx+14,y-40);g.closePath();g.fill();
+    g.globalAlpha=1;
+  });
+  var cols=['#ffb0d8','#c9a6ff','#8ff0d8','#ffd166'];
+  for(var b=0;b<8;b++){
+    var bxp=x0+14+b*((w-28)/7);
+    g.fillStyle=cols[b%4];
+    g.beginPath();g.moveTo(bxp-7,y0+14);g.lineTo(bxp+7,y0+14);g.lineTo(bxp,y0+27);g.closePath();g.fill();
+  }
+  [-1,1].forEach(function(sd){
+    var fx=x+sd*112,fy=y-4;
+    g.fillStyle='#e0b975';rr(g,fx-8,fy-14,16,14,4);g.fill();
+    g.fillStyle='#8ed687';
+    for(var l=0;l<4;l++){ g.beginPath();g.ellipse(fx-5+l*3.4,fy-19-Math.abs(1.5-l)*2.4,3.6,5.6,0.3*(l-1.5),0,TAU);g.fill(); }
+    g.fillStyle=sd<0?'#ffd166':'#ffb0d8';g.beginPath();g.arc(fx,fy-26,3.4,0,TAU);g.fill();
+  });
+  g.restore();
+}
+function drawDesk(g,d,t,i){
+  var x=d.x,y=d.y;
+  shadow(g,x,y+4,17,5,.12);
+  g.fillStyle='#e0b489';rr(g,x-16,y-16,32,6,3);g.fill();
+  g.fillStyle='#c99a6d';rr(g,x-13,y-10,4,12,2);g.fill();
+  rr(g,x+9,y-10,4,12,2);g.fill();
+  var sway=Math.sin(t*2+i)*0.06;
+  g.save();g.translate(x-1,y-17);g.rotate(sway);
+  g.fillStyle='#ff9ecb';rr(g,-9,-4,18,4,1.6);g.fill();
+  g.fillStyle='#fff';rr(g,-7,-3.4,14,1.2,0.6);g.fill();
+  g.restore();
+  g.fillStyle='#c9a6ff';rr(g,x+6,y-20,4,5,1.4);g.fill();
+  g.fillStyle='#8f6bf0';rr(g,x-14,y-20,5,5,1.6);g.fill();
+}
+function starPath(g,x,y,r){
+  g.beginPath();
+  for(var i=0;i<10;i++){
+    var a=-PI/2+i*PI/5, rad=i%2?r*0.46:r;
+    var px=x+Math.cos(a)*rad, py=y+Math.sin(a)*rad;
+    if(i===0) g.moveTo(px,py); else g.lineTo(px,py);
+  }
+  g.closePath();
+}
+function drawShopBuilding(g,i,t){
+  var cx=SHOP_X[i],by=shopYOf(i),s=SHOPS[i],p=S.plots[i],lv=p.bld;
+  if(!p.owned||lv<1) return;
+  var w=120+(lv>=3?10:0), h=118+(lv-1)*26;
+  var x0=cx-w/2, y0=by-h;
+  shadow(g,cx,by+10,w*0.62,16,.18);
+  /* 본관 */
+  var wgd=g.createLinearGradient(0,y0,0,by);
+  wgd.addColorStop(0,s.col2);wgd.addColorStop(1,s.col);
+  g.fillStyle=wgd;rr(g,x0,y0,w,h,10);g.fill();
+  g.strokeStyle='#fff';g.lineWidth=3;rr(g,x0,y0,w,h,10);g.stroke();
+  /* 벽 무늬 */
+  g.globalAlpha=.14;
+  for(var py=y0+14;py<by-44;py+=22){
+    for(var px=x0+12;px<x0+w-8;px+=26){ g.fillStyle=s.trim;heartPathLocal(g,px,py,2.6);g.fill(); }
+  }
+  g.globalAlpha=1;
+  /* 하단 띠 */
+  g.fillStyle=hexA(s.trim,.3);rr(g,x0+3,by-11,w-6,9,4);g.fill();
+  /* 지붕 */
+  g.fillStyle=s.roof;
+  g.beginPath();
+  g.moveTo(x0-15,y0+12);g.lineTo(cx,y0-30);g.lineTo(x0+w+15,y0+12);
+  g.lineTo(x0+w-2,y0+18);g.lineTo(x0+2,y0+18);g.closePath();g.fill();
+  g.strokeStyle='#fff';g.lineWidth=2.6;
+  g.beginPath();g.moveTo(x0-13,y0+13);g.lineTo(cx,y0-28);g.lineTo(x0+w+13,y0+13);g.stroke();
+  /* 지붕 위 간판 */
+  var sw=Math.min(w+38,Math.max(92,s.n.length*9.2+34));
+  var sy0=y0-68;
+  g.strokeStyle='#dbb9c9';g.lineWidth=2;g.lineCap='round';
+  g.beginPath();g.moveTo(cx-13,y0-28);g.lineTo(cx-13,sy0+26);g.stroke();
+  g.beginPath();g.moveTo(cx+13,y0-28);g.lineTo(cx+13,sy0+26);g.stroke();
+  g.fillStyle='#fff';rr(g,cx-sw/2,sy0,sw,26,9);g.fill();
+  g.strokeStyle=s.trim;g.lineWidth=2.4;rr(g,cx-sw/2,sy0,sw,26,9);g.stroke();
+  g.font='12px -apple-system,"Apple SD Gothic Neo",sans-serif';
+  g.textAlign='center';g.textBaseline='middle';
+  g.fillText(s.icon,cx-sw/2+13,sy0+13.5);
+  g.fillStyle='#6b3a5e';
+  g.font='bold '+(s.n.length>6?8.6:9.8)+'px -apple-system,"Apple SD Gothic Neo",sans-serif';
+  g.fillText(s.n,cx+6,sy0+14,sw-32);
+  /* 레벨 별 */
+  for(var k=0;k<lv;k++){
+    g.fillStyle='#ffd166';
+    starPath(g,cx+w/2-6-k*7,y0+6,3.6);g.fill();
+    g.strokeStyle='#fff';g.lineWidth=.9;g.stroke();
+  }
+  /* 차양 */
+  var ay=by-80;
+  var nSt=Math.ceil(w/13);
+  for(var k2=0;k2<nSt;k2++){
+    g.fillStyle=k2%2?'#fff':s.trim;
+    rr(g,x0+2+k2*13,ay,13,13,2);g.fill();
+  }
+  for(var k3=0;k3<nSt;k3++){
+    g.fillStyle=k3%2?'#fff':s.trim;
+    g.beginPath();g.arc(x0+8.5+k3*13,ay+13,6.5,0,PI);g.fill();
+  }
+  g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=1.4;
+  g.beginPath();g.moveTo(x0+2,ay);g.lineTo(x0+w-2,ay);g.stroke();
+  /* 창문 */
+  [-1,1].forEach(function(sd){
+    var wx=cx+sd*37, wy=by-50;
+    g.fillStyle='#fff6d8';rr(g,wx-13,wy-28,26,32,5);g.fill();
+    g.strokeStyle='#fff';g.lineWidth=2.6;rr(g,wx-13,wy-28,26,32,5);g.stroke();
+    g.fillStyle=hexA(s.trim,.4);
+    rr(g,wx-9,wy-23,18,4,2);g.fill();
+    rr(g,wx-9,wy-11,12,4,2);g.fill();
+    g.fillStyle='#fff';g.fillRect(wx-1,wy-28,2,32);
+    g.fillRect(wx-13,wy-11,26,2);
+    g.fillStyle='#e0b975';rr(g,wx-10,wy+6,20,5,2);g.fill();
+    g.fillStyle='#8ed687';
+    for(var l=0;l<3;l++){g.beginPath();g.arc(wx-5+l*5,wy+4,3,0,TAU);g.fill();}
+  });
+  /* 문 */
+  g.fillStyle=hexA(s.trim,-0.32);
+  g.beginPath();g.moveTo(cx-17,by-1);g.lineTo(cx-17,by-42);g.quadraticCurveTo(cx,by-60,cx+17,by-42);g.lineTo(cx+17,by-1);g.closePath();g.fill();
+  g.strokeStyle='#fff';g.lineWidth=2.6;g.stroke();
+  g.fillStyle='#ffe9b0';g.globalAlpha=.6;
+  g.beginPath();g.moveTo(cx-11,by-6);g.lineTo(cx-11,by-38);g.quadraticCurveTo(cx,by-52,cx+11,by-38);g.lineTo(cx+11,by-6);g.closePath();g.fill();
+  g.globalAlpha=1;
+  g.fillStyle='#ffd166';g.beginPath();g.arc(cx+11,by-22,2.1,0,TAU);g.fill();
+  g.fillStyle=hexA(s.trim,.32);rr(g,cx-15,by+1,30,7,3);g.fill();
+  /* 2층 창 · 발코니 */
+  if(lv>=2){
+    var by2=y0+30;
+    g.fillStyle='#fff6d8';rr(g,cx-22,by2-13,44,26,6);g.fill();
+    g.strokeStyle='#fff';g.lineWidth=2.4;rr(g,cx-22,by2-13,44,26,6);g.stroke();
+    g.fillStyle=hexA(s.trim,.38);g.fillRect(cx-1.4,by2-13,2.8,26);
+    g.fillRect(cx-22,by2-1,44,2);
+    g.strokeStyle='#fff';g.lineWidth=1.8;
+    for(var rl=0;rl<5;rl++){ g.beginPath();g.moveTo(cx-22+rl*11,by2+13);g.lineTo(cx-22+rl*11,by2+20);g.stroke(); }
+    g.beginPath();g.moveTo(cx-23,by2+20);g.lineTo(cx+23,by2+20);g.stroke();
+    g.fillStyle='#8ed687';
+    for(var fl=0;fl<4;fl++){ g.beginPath();g.arc(cx-16+fl*11,by2+23,3.2,0,TAU);g.fill(); }
+  }
+  /* 3층 장식 · 별빛 */
+  if(lv>=3){
+    g.fillStyle='#ffd166';starPath(g,cx,y0-36,7);g.fill();
+    g.strokeStyle='#fff';g.lineWidth=1.4;g.stroke();
+    for(var bp=0;bp<7;bp++){
+      var bxp=x0+10+bp*((w-20)/6);
+      g.fillStyle=['#ffb0d8','#c9a6ff','#8ff0d8','#ffd166'][bp%4];
+      g.beginPath();g.moveTo(bxp-6,y0+18);g.lineTo(bxp+6,y0+18);g.lineTo(bxp,y0+29);g.closePath();g.fill();
+    }
+    for(var sp2=0;sp2<6;sp2++){
+      g.globalAlpha=.4+Math.sin(t*3+sp2)*0.3;
+      g.fillStyle='#fff8c4';
+      g.beginPath();g.arc(x0-2+((sp2*23)%(w+6)),y0+8+Math.sin(sp2*1.1+t)*6,1.9,0,TAU);g.fill();
+    }
+    g.globalAlpha=1;
+    g.strokeStyle='rgba(255,215,120,.95)';g.lineWidth=2;rr(g,x0-2,y0-2,w+4,h+4,11);g.stroke();
+  }
+  /* 업종 표식 */
+  if(s.kind==='hospital'){
+    g.fillStyle='#fff';g.beginPath();g.arc(x0+2,y0+40,10.5,0,TAU);g.fill();
+    g.strokeStyle='#e2688a';g.lineWidth=2.2;g.beginPath();g.arc(x0+2,y0+40,10.5,0,TAU);g.stroke();
+    g.fillStyle='#e2688a';
+    g.fillRect(x0-3,y0+38.4,10,3.2);g.fillRect(x0+0.6,y0+33.8,3.2,12.4);
+    g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=1.6;
+    g.beginPath();
+    g.moveTo(cx-w*0.3,by-92);g.lineTo(cx-w*0.3+7,by-92);g.lineTo(cx-w*0.3+10,by-98);g.lineTo(cx-w*0.3+13,by-86);g.lineTo(cx-w*0.3+16,by-92);
+    g.stroke();
+  } else if(s.kind==='mart'){
+    g.strokeStyle='#4fb356';g.lineWidth=2.2;g.lineCap='round';
+    g.beginPath();
+    g.moveTo(cx+w/2+8,by-30);g.lineTo(cx+w/2+3,by-30);g.lineTo(cx+w/2,by-42);g.lineTo(cx+w/2+10,by-42);g.lineTo(cx+w/2+8,by-34);
+    g.stroke();
+    g.fillStyle='#4fb356';
+    g.beginPath();g.arc(cx+w/2+3,by-26,2.2,0,TAU);g.fill();
+    g.beginPath();g.arc(cx+w/2+9,by-26,2.2,0,TAU);g.fill();
+    g.fillStyle='#ff9ecb';rr(g,cx+w/2+1,by-40,6,4,1.5);g.fill();
+    g.fillStyle='#ffd166';rr(g,cx+w/2+9,by-40,4,4,1.5);g.fill();
+  } else if(s.kind==='gear'){
+    g.globalAlpha=.4+Math.sin(t*3)*0.18;
+    var gg2=g.createRadialGradient(cx,y0+34,2,cx,y0+34,30);
+    gg2.addColorStop(0,'#efe0ff');gg2.addColorStop(1,'rgba(239,224,255,0)');
+    g.fillStyle=gg2;g.beginPath();g.arc(cx,y0+34,30,0,TAU);g.fill();
+    g.globalAlpha=1;
+    g.strokeStyle='#ffd166';g.lineWidth=2;g.beginPath();g.arc(cx,y0+34,6,0,TAU);g.stroke();
+    g.fillStyle='#ff9ecb';g.beginPath();g.arc(cx,y0+27,2,0,TAU);g.fill();
+  } else if(s.kind==='bakery'){
+    g.fillStyle='#e0a86a';g.beginPath();g.arc(cx-w*0.3,by-86,4.4,0,TAU);g.fill();
+    g.fillStyle='#fff2d0';g.beginPath();g.arc(cx-w*0.3,by-87,2.4,0,TAU);g.fill();
+  } else if(s.kind==='cafe'){
+    g.fillStyle='#63dcc9';rr(g,cx-w*0.3-5,by-90,10,7,2);g.fill();
+    g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.5;
+    g.beginPath();g.moveTo(cx-w*0.3-1,by-95);g.quadraticCurveTo(cx-w*0.3+1,by-99,cx-w*0.3+3,by-95);g.stroke();
+  } else if(s.kind==='boutique'){
+    g.fillStyle='#a98bf5';
+    g.beginPath();g.moveTo(cx-w*0.3,by-90);g.lineTo(cx-w*0.3-5,by-80);g.lineTo(cx-w*0.3+5,by-80);g.closePath();g.fill();
+  } else if(s.kind==='jewel'){
+    g.fillStyle='#8fe0ff';
+    g.beginPath();g.moveTo(cx-w*0.3,by-94);g.lineTo(cx-w*0.3+5,by-87);g.lineTo(cx-w*0.3,by-80);g.lineTo(cx-w*0.3-5,by-87);g.closePath();g.fill();
+  }
+  /* 굴뚝 연기 */
+  if(s.kind==='bakery'||s.kind==='hospital'||s.kind==='cafe'){
+    g.fillStyle='#e6c8a8';rr(g,x0+w-22,y0-18,11,20,3);g.fill();
+    for(var sm=0;sm<3;sm++){
+      var st2=(t*0.5+sm*0.33)%1;
+      g.globalAlpha=(1-st2)*0.45;
+      g.fillStyle='#fff';
+      g.beginPath();g.arc(x0+w-16+Math.sin(st2*6)*5,y0-22-st2*32,3+st2*5,0,TAU);g.fill();
+    }
+    g.globalAlpha=1;
+  }
+  /* 매출 배지 */
+  if(p.income>=1){
+    var n=Math.floor(p.income);
+    var py2=sy0-26+Math.sin(t*2.4)*1.6;
+    g.globalAlpha=.35+Math.sin(t*4)*0.15;
+    g.fillStyle='#ffe08a';g.beginPath();g.arc(cx,py2,20,0,TAU);g.fill();
+    g.globalAlpha=1;
+    g.fillStyle='rgba(255,255,255,.96)';rr(g,cx-25,py2-9,50,18,9);g.fill();
+    g.strokeStyle='#ffd166';g.lineWidth=2;rr(g,cx-25,py2-9,50,18,9);g.stroke();
+    g.fillStyle='#ffd166';g.beginPath();g.arc(cx-15,py2,4.4,0,TAU);g.fill();
+    g.strokeStyle='#c99a2e';g.lineWidth=1;g.beginPath();g.arc(cx-15,py2,4.4,0,TAU);g.stroke();
+    g.fillStyle='#c07b00';g.font='bold 9.5px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='center';g.textBaseline='middle';
+    g.fillText(n,cx+4,py2+0.5);
+  }
+}
+function drawTownFairy(g,f,t){
+  var def=f.def;
+  if(!def) return;
+  var jump=f.jump||0, fs=fairyOf(f.id);
+  drawFairy(g,def,f.x,f.y+(f.bob||0)-jump,t,0.94,{wear:wearOf(f.id),aura:f.st==='work'?0.5:0.28});
+  var st=studyOf(f.id);
+  if(f.st==='study'&&st.lv<5){
+    var need=studyNeed(st.lv), bw=36, bx=f.x-bw/2, byy=f.y-58;
+    g.fillStyle='rgba(255,255,255,.9)';rr(g,bx,byy,bw,6,3);g.fill();
+    g.strokeStyle='rgba(200,170,240,.9)';g.lineWidth=1;rr(g,bx,byy,bw,6,3);g.stroke();
+    var fr=clamp(st.xp/Math.max(1,need),0,1);
+    if(fr>0){ g.fillStyle='#a97bff';rr(g,bx+1,byy+1,Math.max(2,(bw-2)*fr),4,2);g.fill(); }
+    g.fillStyle='rgba(255,255,255,.95)';rr(g,bx-8,byy-15,52,13,6);g.fill();
+    g.fillStyle='#7d5bb5';g.font='bold 8px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='center';g.textBaseline='middle';
+    g.fillText('Lv.'+st.lv+(st.major?(' '+MAJORS[st.major].icon):''),f.x+4,byy-8.5);
+  }
+  if(f.st==='hospital'||f.st==='mart'||f.st==='gear'){
+    var lab=f.st==='hospital'?'치료 중':(f.st==='mart'?'장보는 중':'장비 보는 중');
+    g.fillStyle='rgba(255,255,255,.94)';rr(g,f.x-27,f.y-60,54,14,7);g.fill();
+    g.fillStyle=f.st==='hospital'?'#d94b6f':(f.st==='mart'?'#3f9a46':'#7a4fd0');
+    g.font='bold 8px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='center';g.textBaseline='middle';
+    g.fillText(lab,f.x,f.y-53);
+  }
+  if(fs.hp<60){
+    g.fillStyle='rgba(255,255,255,.95)';rr(g,f.x-18,f.y-92,36,13,6.5);g.fill();
+    g.fillStyle='#e24b6d';g.beginPath();
+    heartPath(g,f.x-10,f.y-85.5,3.4);g.fill();
+    g.fillStyle='#a8477f';g.font='bold 8px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='left';g.textBaseline='middle';
+    g.fillText(Math.round(fs.hp),f.x-4,f.y-85);
+  }
+  if(f.bubbleT>0&&f.bubble){
+    var by=f.y-108;
+    g.fillStyle='rgba(255,255,255,.96)';rr(g,f.x-13,by-11,26,22,9);g.fill();
+    g.beginPath();g.moveTo(f.x-4,by+10);g.lineTo(f.x+4,by+10);g.lineTo(f.x,by+16);g.closePath();g.fill();
+    g.font='13px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='center';g.textBaseline='middle';
+    g.fillText(f.bubble,f.x,by+1);
+  }
+  if(f.flash>0){
+    g.globalAlpha=f.flash*0.6;
+    g.strokeStyle='#ffe08a';g.lineWidth=3;
+    g.beginPath();g.arc(f.x,f.y-24,40+(1-f.flash)*30,0,TAU);g.stroke();
+    g.globalAlpha=1;
+  }
+}
+function drawCustomer(g,cu,t){
+  if(!cu.def) return;
+  drawFairy(g,cu.def,cu.x,cu.y,t,0.78,{aura:0.1});
+  if(cu.bubbleT>0&&cu.bubble){
+    g.fillStyle='rgba(255,255,255,.95)';rr(g,cu.x-11,cu.y-58,22,18,8);g.fill();
+    g.font='11px -apple-system,"Apple SD Gothic Neo",sans-serif';
+    g.textAlign='center';g.textBaseline='middle';
+    g.fillText(cu.bubble,cu.x,cu.y-49);
+  }
+}
+function drawTownScene(g,t){
+  if(!townInView()) return;
+  for(var i=0;i<SHOPS.length;i++) drawShopBuilding(g,i,t);
+  drawAcademy(g,t);
+  for(var d=0;d<DESKS.length;d++) drawDesk(g,DESKS[d],t,d);
+}
+function townShopAt(wx,wy){
+  for(var i=0;i<SHOPS.length;i++){
+    var cx=SHOP_X[i], by=shopYOf(i);
+    if(Math.abs(wx-cx)<62&&wy>by-170&&wy<by+40) return i;
+  }
+  if(Math.abs(wx-TOWN.acad.x)<150&&wy>TOWN.acad.y-150&&wy<TOWN.acad.y+70) return 90;
+  return -1;
+}
+
+/* ---------------- 타운 관리 UI ---------------- */
+function townStatLine(){
+  var owned=0,bld=0;
+  for(var i=0;i<SHOPS.length;i++){ if(S.plots[i].owned) owned++; if(S.plots[i].bld>0) bld++; }
+  return {owned:owned,bld:bld,rate:townRateTotal(),income:totalIncome()};
+}
+function statusOf(id){
+  var tf=townFairyOf(id);
+  if(!tf) return '대기 중';
+  if(tf.st==='move'){
+    if(tf.task==='hospital') return '🏥 병원으로 이동';
+    if(tf.task==='mart') return '🛒 마트로 이동';
+    if(tf.task==='gear') return '💍 장비점으로 이동';
+    if(tf.task==='work') return '🏪 가게로 출근 중';
+    return '🎒 아카데미로 이동';
+  }
+  if(tf.st==='hospital') return '🏥 병원 치료 중';
+  if(tf.st==='mart') return '🛒 마트 쇼핑 중';
+  if(tf.st==='gear') return '💍 장비 강화 중';
+  if(tf.st==='work') return '🏪 '+(tf.shop>=0?SHOPS[tf.shop].n:'가게')+' 장사 중';
+  if(tf.st==='study') return '📚 아카데미 공부 중';
+  if(tf.st==='rest') return '💤 쉬는 중';
+  return '대기 중';
+}
+function renderTown(){
+  if(openSheetId!=='town') return;
+  var stt=townStatLine();
+  var sb=$('townSub');
+  if(sb) sb.textContent='초당 '+stt.rate.toFixed(1)+' 코인 · 내 땅 '+stt.owned+'/7 · 건물 '+stt.bld;
+  var stats=$('townStats');
+  if(stats){
+    stats.innerHTML=
+      '<div><b>요정</b><span>'+S.house.length+'</span></div>'+
+      '<div><b>내 땅</b><span>'+stt.owned+'/7</span></div>'+
+      '<div><b>건물</b><span>'+stt.bld+'</span></div>'+
+      '<div><b>수거 대기</b><span>'+Math.floor(stt.income)+'</span></div>';
+  }
+  var loop=$('townLoop');
+  if(loop){
+    loop.innerHTML=
+      '<span class="lp">📚 학업</span><span class="ar">→</span>'+
+      '<span class="lp">🚩 땅 매입</span><span class="ar">→</span>'+
+      '<span class="lp">🏗️ 건설</span><span class="ar">→</span>'+
+      '<span class="lp">💰 장사·매출</span><span class="ar">→</span>'+
+      '<span class="lp">🛒 쇼핑·🏥 치료</span><span class="ar">→</span>'+
+      '<span class="lp">⬆️ 재투자</span>';
+  }
+  var box=$('townPlots');
+  if(box){
+    box.innerHTML='';
+    for(var i=0;i<SHOPS.length;i++){
+      var p=S.plots[i],s=SHOPS[i];
+      var card=document.createElement('div');
+      card.className='plotCard'+(p.owned?'':' locked');
+      var tag=p.bld>0?('<span class="tag bld">Lv.'+p.bld+'</span>'):(p.owned?'<span class="tag land">내 땅</span>':'<span class="tag none">매물</span>');
+      var who='';
+      if(p.bld>0) who=p.worker?('점장 '+FD[p.worker].name+' · '+SHOPS[i].tag):('점장 없음 · 셀프 운영');
+      else if(p.owned) who='건물을 올리면 장사가 시작돼요';
+      else who=s.tag+' · 땅 '+s.land+' / 건물 '+s.bld;
+      var rate=plotRate(i);
+      var act='';
+      if(!p.owned) act='<button data-town="buy" data-i="'+i+'"'+(S.coins<s.land?' disabled':'')+'>🚩 땅 사기 '+s.land+'</button>';
+      else if(p.bld<1) act='<button data-town="build" data-i="'+i+'"'+(S.coins<s.bld?' disabled':'')+'>🏗️ 건설 '+s.bld+'</button>';
+      else if(p.bld<3) act='<button data-town="up" data-i="'+i+'"'+(S.coins<upCost(i)?' disabled':'')+'>⬆️ Lv.'+(p.bld+1)+' '+upCost(i)+'</button>';
+      if(p.bld>0) act+='<button class="'+(p.income>=1?'got':'ghost')+'" data-town="collect" data-i="'+i+'"'+(p.income<1?' disabled':'')+'>💰 수거 '+Math.floor(p.income)+'</button>';
+      card.innerHTML=
+        '<div class="pi">'+s.icon+'</div>'+
+        '<div class="pmain">'+
+          '<div class="pn">'+s.n+' '+tag+'</div>'+
+          '<div class="pd">'+who+'</div>'+
+          '<div class="pbar"><i style="width:'+Math.min(100,(rate/2.4)*100)+'%"></i></div>'+
+        '</div>'+
+        '<div class="pact">'+(act||'<button class="ghost" data-town="visit" data-i="'+i+'">보러 가기</button>')+'</div>';
+      box.appendChild(card);
+    }
+  }
+  var fl=$('townFairyList');
+  if(fl){
+    fl.innerHTML='';
+    if(!S.house.length){
+      fl.innerHTML='<div class="dexReward">하우스에 요정이 없어요. 마을에서 요정을 잡으면 아카데미에 다니기 시작해요.</div>';
+    }
+    S.house.forEach(function(id){
+      var st=studyOf(id), fs=fairyOf(id), mj=st.major?MAJORS[st.major]:null;
+      var wi=workerPlot(id), md=modeOf(id), need=studyNeed(st.lv);
+      var pct=st.lv>=5?100:clamp(st.xp/Math.max(1,need)*100,0,100);
+      var row=document.createElement('div');
+      row.className='fRow'+(townSel===id?' sel':'');
+      var cnv=document.createElement('canvas');
+      cnv.width=76;cnv.height=84;
+      row.appendChild(cnv);
+      drawFairy(cnv.getContext('2d'),FD[id],38,62,0.6,0.86,{shadow:false,wear:wearOf(id)});
+      var main=document.createElement('div');
+      main.className='fm';
+      var buffs='';
+      if(fs.items.ring) buffs+='<span class="bf">💍</span>';
+      if(fs.items.charm) buffs+='<span class="bf">🍀</span>';
+      if(fs.buffTrade>nowS()) buffs+='<span class="bf">⏱️🍀</span>';
+      if(fs.buffStudy>nowS()) buffs+='<span class="bf">⏱️💍</span>';
+      main.innerHTML=
+        '<div class="fn">'+FD[id].name+'<span class="lv">Lv.'+st.lv+'</span>'+
+          (mj?'<span class="lv">'+mj.icon+mj.name+'</span>':'<span class="lv">전공 미정</span>')+buffs+'</div>'+
+        '<div class="hpline"><span class="hpi">❤</span><span class="hpbar"><i style="width:'+Math.round(fs.hp)+'%"></i></span>'+
+          '<span class="hpnum">'+Math.round(fs.hp)+'</span>'+
+          '<span class="wallet">🪙 '+Math.floor(fs.wallet)+'</span>'+
+          '<span class="wl">공 '+Math.floor(pct)+'%</span></div>'+
+        '<div class="fs">'+statusOf(id)+'</div>';
+      row.appendChild(main);
+      var modes=document.createElement('div');
+      modes.className='modes';
+      [['auto','자유'],['study','공부'],['work','장사']].forEach(function(mm){
+        var b=document.createElement('button');
+        b.textContent=mm[1];
+        if(md===mm[0]) b.className='on';
+        b.setAttribute('data-mode',mm[0]);
+        b.setAttribute('data-id',id);
+        modes.appendChild(b);
+      });
+      row.appendChild(modes);
+      /* 선택 시 돌보기 버튼 */
+      if(townSel===id){
+        var care=document.createElement('div');
+        care.className='carebar';
+        care.innerHTML=
+          '<button data-care="snack" data-id="'+id+'"'+(facilityReady(I_MART)?'':' disabled')+'>🍬 간식 '+SNACK_COST+'</button>'+
+          '<button data-care="heal" data-id="'+id+'"'+(facilityReady(I_HOSP)?'':' disabled')+'>🏥 치료 '+HEAL_COST+'</button>'+
+          '<button data-care="ring" data-id="'+id+'"'+(fs.items.ring?' disabled':'')+'>💍 반지 '+GEAR_D.ring.price+'</button>'+
+          '<button data-care="charm" data-id="'+id+'"'+(fs.items.charm?' disabled':'')+'>🍀 부적 '+GEAR_D.charm.price+'</button>';
+        row.appendChild(care);
+      }
+      row.addEventListener('click',function(ev){
+        var mb=ev.target.closest('[data-mode]');
+        if(mb){ SFX.init(); setFairyMode(mb.getAttribute('data-id'),mb.getAttribute('data-mode')); return; }
+        var cb2=ev.target.closest('[data-care]');
+        if(cb2){ SFX.init(); careFairy(cb2.getAttribute('data-id'),cb2.getAttribute('data-care')); return; }
+        SFX.init(); selectFairy(id);
+      });
+      fl.appendChild(row);
+    });
+  }
+  var sum=$('townCollectAll');
+  if(sum){
+    var tt=Math.floor(totalIncome());
+    sum.textContent=tt>0?('💰 전부 수거 · '+tt+' 코인'):'💰 수거할 코인 없음';
+    sum.disabled=tt<1;
+  }
+}
+$('townPlots')&&$('townPlots').addEventListener('click',function(e){
+  var b=e.target.closest('[data-town]');
+  if(!b) return;
+  SFX.init();
+  var i=+b.getAttribute('data-i'), act=b.getAttribute('data-town');
+  if(act==='buy') buyPlot(i);
+  else if(act==='build') buildShop(i);
+  else if(act==='up') upgradeShop(i);
+  else if(act==='collect') collectPlot(i);
+  else if(act==='visit'){
+    townSel=S.house[0]||null;
+    toast('요정을 골라 '+SHOPS[i].tag+' 이용을 도와주세요');
+    renderTown();
+  }
+  renderTown();
+});
+$('townCollectAll')&&$('townCollectAll').addEventListener('click',function(){ SFX.init(); collectAll(); });
+$('townGo')&&$('townGo').addEventListener('click',function(){ SFX.init(); townGo(); });
+
 /* ================= 데모/검증 훅 ================= */
 window.FC={
   state:function(){
@@ -4311,10 +5646,54 @@ window.FC={
   resetSave:function(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
 };
 
+/* ---- 타운 검증 훅 ---- */
+FC.town=function(){
+  return {
+    coins:Math.floor(S.coins), sheet:openSheetId, sel:townSel,
+    rate:+townRateTotal().toFixed(2), income:Math.floor(totalIncome()),
+    plots:S.plots.map(function(p,i){return {i:i,name:SHOPS[i].n,owned:p.owned,bld:p.bld,worker:p.worker,
+      income:Math.floor(p.income),rate:+plotRate(i).toFixed(2)};}),
+    fairies:S.house.map(function(id){
+      var st=studyOf(id),fs=fairyOf(id),tf=townFairyOf(id);
+      return {id:id,name:FD[id].name,lv:st.lv,xp:Math.round(st.xp),major:st.major,
+        hp:Math.round(fs.hp),wallet:Math.floor(fs.wallet),items:fs.items,mode:modeOf(id),
+        task:tf?tf.task:null,st:tf?tf.st:null,status:statusOf(id),
+        x:tf?Math.round(tf.x):null,y:tf?Math.round(tf.y):null,sx:tf?Math.round(tf.x-cam.x):null,sy:tf?Math.round(tf.y-cam.y):null};
+    }),
+    customers:townCustomers.length,
+    acad:{x:TOWN.acad.x,y:TOWN.acad.y},shops:SHOP_X.slice(),shopY:TOWN.shopY
+  };
+};
+FC.townBuy=function(i){return buyPlot(i);};
+FC.townBuild=function(i){return buildShop(i);};
+FC.townUp=function(i){return upgradeShop(i);};
+FC.townCollect=function(i){return collectPlot(i);};
+FC.townCollectAll=function(){return collectAll();};
+FC.townMode=function(id,m){return setFairyMode(id,m);};
+FC.townSelect=function(id){townSel=id;renderTown();return townSel;};
+FC.townCare=function(id,what){return careFairy(id,what);};
+FC.townGo=function(){townGo();return true;};
+FC.townSeen=function(){S.townSeen=true;save();};
+FC.townStep=function(sec){
+  var n=Math.max(1,Math.round(sec*20));
+  var t0=performance.now()/1000;
+  for(var i=0;i<n;i++) updateTown(0.05,t0+i*0.05);
+  return FC.town();
+};
+FC.townSet=function(id,o){
+  var fs=fairyOf(id);
+  if(o.hp!=null) fs.hp=clamp(o.hp,0,100);
+  if(o.wallet!=null) fs.wallet=o.wallet;
+  if(o.lv!=null){ var st=studyOf(id); st.lv=clamp(o.lv,1,5); st.xp=0; if(!st.major) st.major=pickMajor(); }
+  save(); return FC.town();
+};
+
 /* ================= 부트 ================= */
 resize();
 buildWorld();
 var hadSave=load();
+ensureTown();
+updateTownDot();
 refreshSolids();
 setupJoy();
 updateHUD();

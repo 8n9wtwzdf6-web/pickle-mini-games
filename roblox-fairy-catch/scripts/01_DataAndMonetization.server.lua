@@ -148,6 +148,14 @@ local remotes = {
 	BuyWear = getRemote("BuyWear"),     -- 클라이언트 -> 서버 (옷·악세사리 구매)
 	SetWear = getRemote("SetWear"),     -- 클라이언트 -> 서버 (요정별 코디 입기/벗기)
 	Notify = getRemote("Notify"),
+	-- 요정 타운 (학업 · 땅 · 건물 · 장사 · 병원/마트/장비점)
+	RequestTown = getRemote("RequestTown"),       -- 클라이언트 -> 서버 (타운 창 열기)
+	TownData = getRemote("TownData"),             -- 서버 -> 클라이언트 (타운 전체 상태)
+	BuyPlot = getRemote("BuyPlot"),               -- 클라이언트 -> 서버 (땅 매입)
+	UpgradeBuilding = getRemote("UpgradeBuilding"),-- 클라이언트 -> 서버 (건설/증축)
+	CollectBusiness = getRemote("CollectBusiness"),-- 클라이언트 -> 서버 (매출 수거)
+	SetFairyMode = getRemote("SetFairyMode"),     -- 자유/공부/장사
+	CareFairy = getRemote("CareFairy"),           -- 간식/치료/반지/부적 선물
 }
 
 -- ==============================================================
@@ -158,7 +166,7 @@ local PlayerData = {}
 shared.FairyData = PlayerData
 shared.FairyRemotes = remotes
 shared.FairyConfig = { CONFIG = CONFIG, RARITY = RARITY, FAIRY_LIST = FAIRY_LIST,
-	DRESSES = DRESSES, HEADS = HEADS, ACCS = ACCS }
+	DRESSES = DRESSES, HEADS = HEADS, ACCS = ACCS, TOWN = TOWN_FACILITIES }
 
 -- 코디 카탈로그도 ReplicatedStorage 에 올려 HUD 가 읽을 수 있게 합니다
 local wearFolder = ReplicatedStorage:FindFirstChild("FairyWearCatalog")
@@ -180,6 +188,37 @@ for _, group in ipairs({ { kind = "dress", list = DRESSES }, { kind = "head", li
 	end
 end
 
+-- 요정 타운: 7개 경제 거점 (땅 매입 -> 건설 -> 증축, 학업 Lv·장비로 매출 상승)
+local TOWN_FACILITIES = {
+	{ slot = 1, id = "bakery",   name = "달콤 베이커리",  icon = "🥐", kind = "shop",     major = "pastry",   land = 160, build = 300, base = 0.9  },
+	{ slot = 2, id = "mart",     name = "해피 마트",      icon = "🛒", kind = "mart",     major = nil,        land = 240, build = 420, base = 1.1  },
+	{ slot = 3, id = "hospital", name = "요정 병원",      icon = "🏥", kind = "hospital", major = nil,        land = 320, build = 560, base = 1.25 },
+	{ slot = 4, id = "cafe",     name = "무지개 포션카페", icon = "🧪", kind = "shop",     major = "barista",  land = 300, build = 520, base = 1.35 },
+	{ slot = 5, id = "gear",     name = "마법 잡화·장비점", icon = "💍", kind = "gear",     major = nil,        land = 380, build = 640, base = 1.5  },
+	{ slot = 6, id = "boutique", name = "별빛 부티크",    icon = "👗", kind = "shop",     major = "designer", land = 420, build = 740, base = 1.15 },
+	{ slot = 7, id = "jewel",    name = "크리스탈 보석상", icon = "💎", kind = "shop",     major = "jeweler",  land = 460, build = 820, base = 1.6  },
+}
+local townFolder = ReplicatedStorage:FindFirstChild("FairyTownCatalog")
+if townFolder == nil then
+	townFolder = Instance.new("Folder")
+	townFolder.Name = "FairyTownCatalog"
+	townFolder.Parent = ReplicatedStorage
+end
+townFolder:ClearAllChildren()
+for _, fac in ipairs(TOWN_FACILITIES) do
+	local conf = Instance.new("Configuration")
+	conf.Name = fac.id
+	conf:SetAttribute("Slot", fac.slot)
+	conf:SetAttribute("DisplayName", fac.name)
+	conf:SetAttribute("Icon", fac.icon)
+	conf:SetAttribute("Kind", fac.kind)
+	conf:SetAttribute("Major", fac.major or "")
+	conf:SetAttribute("Land", fac.land)
+	conf:SetAttribute("Build", fac.build)
+	conf:SetAttribute("Base", fac.base)
+	conf.Parent = townFolder
+end
+
 local function defaultData()
 	return {
 		Coins = CONFIG.START_COINS,
@@ -191,6 +230,12 @@ local function defaultData()
 		Wear = {},         -- [fairyId] = { dress = id, head = id, acc = id }
 		Pending = 0,
 		Total = 0,
+		-- 요정 타운
+		Study = {},        -- [fairyId] = { lv = 1..5, xp = 0, major = "pastry" }
+		Mode = {},         -- [fairyId] = "auto" | "study" | "work"
+		Care = {},         -- [fairyId] = { hp = 100, wallet = 40, ring = false, charm = false }
+		Plots = {},        -- [slot] = { owned = false, bld = 0, income = 0, worker = nil }
+		TownSeen = false,
 		FirstPlay = os.time(),
 	}
 end
@@ -251,6 +296,10 @@ local function pushHouse(player)
 		owned = data.Owned,
 		wear = data.Wear,
 		pending = data.Pending,
+		study = data.Study,
+		mode = data.Mode,
+		care = data.Care,
+		plots = data.Plots,
 	})
 end
 shared.FairyPush = pushHouse
@@ -283,6 +332,10 @@ local function loadData(player)
 			data.Wear = {}
 		end
 		data.Slots = math.clamp(data.Slots or CONFIG.BASE_SLOTS, CONFIG.BASE_SLOTS, CONFIG.MAX_SLOTS)
+		if type(data.Study) ~= "table" then data.Study = {} end
+		if type(data.Mode) ~= "table" then data.Mode = {} end
+		if type(data.Care) ~= "table" then data.Care = {} end
+		if type(data.Plots) ~= "table" then data.Plots = {} end
 		return data
 	end
 	return defaultData()

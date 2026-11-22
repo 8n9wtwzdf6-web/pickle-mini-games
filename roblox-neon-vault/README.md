@@ -19,8 +19,11 @@ UI(현금·방어막 타이머·해킹 버튼·도감·상점)는 **코드가 �
 | `scripts/03_NeonVaultHUD.client.lua` | `StarterPlayer > StarterPlayerScripts` (LocalScript) | 네온 HUD·도감·상점·해킹 버튼·토스트 |
 | `thumbnail_512.png` | — | Roblox 게임 아이콘(512×512) 업로드용 |
 | `thumbnail_wide.png` | — | 체험 썸네일(16:9) 업로드용 |
-| `neon-vault-safari.html` | — | **아이폰 사파리용 미니 테스트판** (Roblox 없이 게임 루프를 먼저 체험) |
-| `preview-neon-vault.png` | — | 미니 테스트판 화면 미리보기 |
+| `../neon-vault/neon-vault-safari.html` | — | **아이폰 사파리용 미니 테스트판** (Roblox 없이 게임 루프를 먼저 체험) |
+| `../neon-vault/preview-neon-vault.png` | — | 미니 테스트판 화면 미리보기 |
+
+> 이 키트만 필요하면 저장소의 `roblox-neon-vault/` 폴더 파일 5종(README·build_layout·scripts 3개)과 썸네일 2장을 받으면 됩니다.
+> 사파리 미니 테스트판은 같은 저장소의 `neon-vault/` 폴더에 있습니다.
 
 ### 완성 후 게임 흐름
 1. 접속 → 기지 1~4 중 하나가 자동 배정되고 내 금고로 이동
@@ -163,7 +166,7 @@ local COLLECT_BONUS = 0.05    -- 직접 수금 보너스(5%)
 
 ---
 
-## 9. 사파리 미니 테스트판 (`neon-vault-safari.html`)
+## 9. 사파리 미니 테스트판 (`neon-vault/neon-vault-safari.html`)
 
 Roblox Studio 없이 **아이폰 사파리에서 게임 루프를 먼저 확인**하는 단일 HTML 파일입니다. (외부 라이브러리·CDN 없음)
 
@@ -175,7 +178,7 @@ Roblox Studio 없이 **아이폰 사파리에서 게임 루프를 먼저 확인*
 - 🛡 잠금 버튼 → 방어막 즉시 재가동 (게임패스 체험판)
 
 PC에서는 파일을 더블클릭, 아이폰에서는 파일 앱 → 공유 → Safari로 열기로 실행합니다.
-(깃허브 Pages에 올려 두면 `https://8n9wtwzdf6-web.github.io/pickle-mini-games/neon-vault/` 로 바로 열 수 있습니다)
+(이미 깃허브 Pages에 올려 두었습니다 → `https://8n9wtwzdf6-web.github.io/pickle-mini-games/neon-vault/`)
 
 ---
 

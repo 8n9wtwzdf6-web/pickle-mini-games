@@ -4009,10 +4009,16 @@ function renderShop(){
       btxt:owned?'보유 ✓ (코디에서 입기)':'🪙 '+it.price,
       cls:owned?'own':(S.coins<it.price?'no':''),
       onTap:function(){
-        if(S.owned[it.id]){toast('이미 가지고 있어요 · 하우스 👗 코디에서 입혀 보세요',2000);return;}
+        var slotId=shopTab==='dress'?'dress':(HEADS.indexOf(it)>=0?'head':'acc');
+        if(S.owned[it.id]){
+          closeSheet();
+          setTimeout(function(){ openDress(dressFairyId(),slotId); },280);
+          toast('👗 코디에서 '+it.name+'을(를) 입혀 보세요',1800);
+          return;
+        }
         if(S.coins<it.price){toast('코인이 모자라요 🪙');return;}
         addCoins(-it.price);S.owned[it.id]=true;save();SFX.win();
-        toast('🛍️ '+it.name+' 구매! 하우스 👗 코디에서 바로 입힐 수 있어요',2200);
+        toast('🛍️ '+it.name+' 구매! 카드를 다시 누르면 바로 입힐 수 있어요',2200);
         renderShop();
       }
     }));
@@ -4028,13 +4034,13 @@ function renderShop(){
 /* ================= 요정 꾸미기(코디) ================= */
 var dressTab='dress',dressAnimId=0,dressOn=false;
 function dressFairyId(){ return S.house[hSel]||S.house[0]||null; }
-function openDress(id){
+function openDress(id,tab){
   if(!S.house.length){ toast('하우스에 요정이 없어요 · 마을에서 요정을 먼저 잡아 주세요',2400); return; }
   if(id!=null){ var idx=S.house.indexOf(id); if(idx>=0) hSel=idx; }
   if(openSheetId) return;
-  dressTab='dress';
+  dressTab=(tab==='head'||tab==='acc')?tab:'dress';
   [].forEach.call(document.querySelectorAll('.dtb'),function(b){
-    b.classList.toggle('on',b.getAttribute('data-dtab')==='dress');
+    b.classList.toggle('on',b.getAttribute('data-dtab')===dressTab);
   });
   openSheet('dress');
 }

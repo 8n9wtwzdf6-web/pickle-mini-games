@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070f">
 <meta name="format-detection" content="telephone=no">
-<meta name="description" content="아이폰 사파리에서 바로 즐기는 미니게임 3종 — 로켓 타이쿤, 스타 랜덤 디펜스, 네온 볼트 약탈자 3D">
+<meta name="description" content="아이폰 사파리에서 바로 즐기는 미니게임 4종 — 로켓 타이쿤, 스타 랜덤 디펜스, 네온 볼트 약탈자, 매직 하트핑 요정 캐치">
 <title>🎮 미니게임 아케이드</title>
 <style>
   :root{
@@ -94,10 +94,17 @@
   .card.vault{border-color:rgba(169,123,255,.32);}
   .card.vault .icon{filter:drop-shadow(0 6px 18px rgba(169,123,255,.45));}
   .card.vault .go{color:#16042a;background:linear-gradient(180deg,#c9a6ff,#7a3cff);}
-  .card.vault::before{
+  .card.fairy{border-color:rgba(255,143,199,.42);}
+  .card.fairy .icon{filter:drop-shadow(0 6px 18px rgba(255,120,190,.55));}
+  .card.fairy .go{color:#5c0f37;background:linear-gradient(180deg,#ffb3dc,#ff5fa8);}
+  .card.fairy::before{
     content:"NEW";position:absolute;right:18px;top:18px;font-size:10px;font-weight:800;letter-spacing:.12em;
-    color:#0d0320;background:linear-gradient(180deg,#ffd75e,#ff9f1c);border-radius:999px;padding:4px 9px;
-    box-shadow:0 4px 14px -6px rgba(255,159,28,.9);
+    color:#5c0f37;background:linear-gradient(180deg,#ffe08a,#ffb347);border-radius:999px;padding:4px 9px;
+    box-shadow:0 4px 14px -6px rgba(255,170,60,.9);
+  }
+  .card.fairy::after{
+    content:"";position:absolute;right:-50px;top:-70px;width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,170,210,.28),transparent 68%);pointer-events:none;
   }
 
   footer{margin-top:26px;text-align:center;color:#647fa0;font-size:12px;line-height:1.7;}
@@ -116,10 +123,24 @@
     <header>
       <div class="badge">iPhone Safari · Mini Games</div>
       <h1>🎮 미니게임 아케이드</h1>
-      <p>아이폰 사파리에서 바로 즐기는 게임 3종.<br>아래 카드를 터치하면 바로 시작됩니다.</p>
+      <p>아이폰 사파리에서 바로 즐기는 게임 4종.<br>아래 카드를 터치하면 바로 시작됩니다.</p>
     </header>
 
     <div class="cards">
+      <a class="card fairy" href="./fairy-catch/">
+        <span class="icon">🧚</span>
+        <h2>매직 하트핑</h2>
+        <p class="sub">마법 마을에서 요정을 찾아 <b>콤팩트 타이밍</b>으로 포획! 잡은 요정은 내 하우스에서 밥·놀기·쓰다듬기로 육성. 요정 12종 도감.</p>
+        <div class="row">
+          <div class="tags">
+            <span class="tag">요정 12종</span>
+            <span class="tag">콤팩트 캐치</span>
+            <span class="tag">하우스 육성</span>
+          </div>
+          <span class="go">플레이 ▶</span>
+        </div>
+      </a>
+
       <a class="card vault" href="./neon-vault/">
         <span class="icon">🛸</span>
         <h2>네온 볼트 약탈자 3D</h2>

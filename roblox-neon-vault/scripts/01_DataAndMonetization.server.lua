@@ -88,6 +88,8 @@ end
 local remotes = getOrCreate(ReplicatedStorage, "Folder", "NeonVaultRemotes")
 local notifyRemote = getOrCreate(remotes, "RemoteEvent", "Notify")
 getOrCreate(remotes, "RemoteEvent", "RollFx")
+getOrCreate(remotes, "RemoteEvent", "RequestHack")
+getOrCreate(remotes, "RemoteEvent", "RequestInstantLock")
 
 -- 뽑기 비용표도 HUD·코어가 함께 봅니다.
 local costsFolder = getOrCreate(configFolder, "Folder", "GachaCost")

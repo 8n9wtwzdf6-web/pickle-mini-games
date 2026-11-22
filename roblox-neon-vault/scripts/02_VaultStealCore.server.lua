@@ -480,7 +480,8 @@ local function tickShields()
 		if plot ~= nil then
 			local state = plotState[plot]
 			if state == nil then
-				plotState[plot] = { on = true, endsAt = now() + SHIELD_ON_TIME }
+				state = { on = true, endsAt = now() + SHIELD_ON_TIME }
+				plotState[plot] = state
 			elseif state.on then
 				if now() >= state.endsAt then
 					state.on = false
@@ -504,6 +505,11 @@ local function tickShields()
 				end
 			end
 			plot:SetAttribute("ShieldEnds", state.endsAt)
+			local owner = ownerPlayerOf(plot)
+			if owner ~= nil then
+				owner:SetAttribute("ShieldOn", state.on)
+				owner:SetAttribute("ShieldEnds", state.endsAt)
+			end
 			updateStatusGui(plot)
 		end
 	end
@@ -1008,6 +1014,9 @@ local function onPlayerRemoving(player)
 	if plot ~= nil then
 		clearPlot(plot)
 		player:SetAttribute("VaultIndex", 0)
+		player:SetAttribute("ShieldOn", true)
+		player:SetAttribute("ShieldEnds", 0)
+		player:SetAttribute("IncomePerSec", 0)
 		-- 나간 사람이 있던 자리를 기다리던 플레이어에게 배정합니다.
 		for _, other in ipairs(Players:GetPlayers()) do
 			if (other:GetAttribute("VaultIndex") or 0) == 0 then

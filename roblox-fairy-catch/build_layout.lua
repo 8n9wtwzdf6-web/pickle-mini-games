@@ -350,34 +350,79 @@ for i = 1, 8 do
 end
 
 -- ============================================================
--- 9. 요정 하우스 4채
+-- 9. 요정 하우스 4채 (실내까지 만드는 파스텔 코티지)
 -- ============================================================
 local houseSpots = {
 	{ 34, 40 }, { -34, 40 }, { 34, -40 }, { -34, -40 },
 }
+local wallColor = Color3.fromRGB(255, 248, 253)
+local mintColor = Color3.fromRGB(127, 230, 205)
+local lilacColor = Color3.fromRGB(201, 166, 255)
+local pinkColor = Color3.fromRGB(255, 170, 210)
+local creamColor = Color3.fromRGB(255, 238, 248)
+
 for i, spot in ipairs(houseSpots) do
 	local x, z = spot[1] * 2.2, spot[2] * 2.2
 	local plot = Instance.new("Model")
 	plot.Name = "FairyHouse_" .. i
 	plot.Parent = plotFolder
 	plot:SetAttribute("HouseIndex", i)
+	plot:SetAttribute("RoomSize", Vector3.new(15, 9, 12))
 
 	local base = newCylinder("PlotBase", Vector3.new(1, 26, 26), Vector3.new(x, 0.6, z),
 		Color3.fromRGB(255, 236, 247), zoneFolder)
 	base.CanCollide = false
 	base:SetAttribute("ZoneId", "plaza")
 
-	local wall = newPart("Wall", Vector3.new(16, 11, 13), Vector3.new(x, 6, z),
-		Color3.fromRGB(255, 248, 253), Enum.Material.SmoothPlastic, plot)
-	local roof = newWedge("Roof", Vector3.new(18, 5, 15), Vector3.new(x, 13.2, z),
+	-- ---------- 바닥 / 벽 ----------
+	local floor = newPart("Floor", Vector3.new(16, 0.6, 13), Vector3.new(x, 1.5, z),
+		Color3.fromRGB(255, 226, 240), Enum.Material.SmoothPlastic, plot)
+	floor.CanCollide = true
+
+	newPart("WallBack", Vector3.new(16, 9, 0.6), Vector3.new(x, 6, z - 6.2),
+		wallColor, Enum.Material.SmoothPlastic, plot)
+	newPart("WallLeft", Vector3.new(0.6, 9, 13), Vector3.new(x - 7.7, 6, z),
+		wallColor, Enum.Material.SmoothPlastic, plot)
+	newPart("WallRight", Vector3.new(0.6, 9, 13), Vector3.new(x + 7.7, 6, z),
+		wallColor, Enum.Material.SmoothPlastic, plot)
+	-- 앞면은 크게 열어 둡니다 (밖에서도 요정이 노는 모습이 보이도록)
+	newPart("WallFrontL", Vector3.new(1.6, 9, 0.6), Vector3.new(x - 7.2, 6, z + 6.2),
+		wallColor, Enum.Material.SmoothPlastic, plot)
+	newPart("WallFrontR", Vector3.new(1.6, 9, 0.6), Vector3.new(x + 7.2, 6, z + 6.2),
+		wallColor, Enum.Material.SmoothPlastic, plot)
+	local header = newPart("FrontHeader", Vector3.new(16, 1.4, 0.6), Vector3.new(x, 9.8, z + 6.2),
+		wallColor, Enum.Material.SmoothPlastic, plot)
+	header.CanCollide = true
+
+	local roof = newWedge("Roof", Vector3.new(18, 5, 15), Vector3.new(x, 12.6, z),
 		Color3.fromRGB(255, 160, 205), plot)
 	roof.CanCollide = false
-	local door = newPart("Door", Vector3.new(4.5, 7, 0.5), Vector3.new(x, 4.2, z + 6.7),
-		Color3.fromRGB(190, 150, 240), Enum.Material.SmoothPlastic, plot)
-	door.CanCollide = false
-	local win = newPart("Window", Vector3.new(4, 3.6, 0.4), Vector3.new(x + 5, 7.4, z + 6.7),
-		Color3.fromRGB(205, 244, 255), Enum.Material.Neon, plot)
-	win.CanCollide = false
+
+	-- 현관 매트
+	local mat = newPart("DoorMat", Vector3.new(7, 0.3, 1.6), Vector3.new(x, 1.85, z + 6.7),
+		Color3.fromRGB(255, 170, 210), Enum.Material.SmoothPlastic, plot)
+	mat.CanCollide = false
+
+	-- 앞면 창문 대신 안쪽 벽에 창문 2개 (밖에서도 보임)
+	for _, wx in ipairs({ -4.4, 4.4 }) do
+		local win = newPart("Window", Vector3.new(3.4, 3.2, 0.3), Vector3.new(x + wx, 6.6, z - 5.9),
+			Color3.fromRGB(205, 244, 255), Enum.Material.Neon, plot)
+		win.CanCollide = false
+		local sill = newPart("WindowSill", Vector3.new(4, 0.4, 0.8), Vector3.new(x + wx, 4.9, z - 5.8),
+			Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, plot)
+		sill.CanCollide = false
+	end
+
+	-- 하우스 표지판 (앞면 상단에 매답게)
+	local sign = newPart("HouseSign", Vector3.new(8, 1.9, 0.4), Vector3.new(x, 8.9, z + 6.45),
+		Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, plot)
+	sign.CanCollide = false
+	label(sign, "요정 하우스 " .. i, Color3.fromRGB(200, 80, 150))
+	for _, sx2 in ipairs({ -2.6, 2.6 }) do
+		local string_ = newPart("SignString", Vector3.new(0.12, 0.9, 0.12), Vector3.new(x + sx2, 9.5, z + 6.45),
+			Color3.fromRGB(224, 185, 117), Enum.Material.SmoothPlastic, plot)
+		string_.CanCollide = false
+	end
 
 	-- 상호작용 패드 (스크립트가 ProximityPrompt 를 붙입니다)
 	local pad = newCylinder("HousePad", Vector3.new(0.6, 7, 7), Vector3.new(x, 1.2, z + 9),
@@ -387,10 +432,121 @@ for i, spot in ipairs(houseSpots) do
 	pad:SetAttribute("HouseIndex", i)
 	glow(pad, Color3.fromRGB(255, 200, 235), 12, 0.9)
 
-	local sign = newPart("HouseSign", Vector3.new(8, 2.6, 0.4), Vector3.new(x, 10.5, z + 6.8),
+	-- ---------- 실내 가구 ----------
+	local furniture = Instance.new("Folder")
+	furniture.Name = "Furniture"
+	furniture.Parent = plot
+
+	local function fur(name, size, pos, color, material, collide)
+		local p = newPart(name, size, pos, color, material or Enum.Material.SmoothPlastic, furniture)
+		p.CanCollide = (collide == true)
+		return p
+	end
+	local function furSphere(name, dia, pos, color, material, collide)
+		local p = fur(name, Vector3.new(dia, dia, dia), pos, color, material, collide)
+		p.Shape = Enum.PartType.Ball
+		return p
+	end
+	local function furCyl(name, size, pos, color, material, collide)
+		local p = fur(name, size, pos, color, material, collide)
+		p.Shape = Enum.PartType.Cylinder
+		p.Orientation = Vector3.new(0, 0, 90)
+		return p
+	end
+
+	-- 러그
+	furCyl("Rug", Vector3.new(0.3, 9.5, 9.5), Vector3.new(x, 1.95, z), pinkColor)
+	furCyl("RugInner", Vector3.new(0.34, 6.4, 6.4), Vector3.new(x, 1.98, z), Color3.fromRGB(255, 235, 245))
+
+	-- 소파 (왼쪽 벽)
+	fur("SofaBase", Vector3.new(2.4, 1.2, 5), Vector3.new(x - 5.4, 2.6, z + 1.6), creamColor, nil, true)
+	fur("SofaBack", Vector3.new(0.8, 2.4, 5), Vector3.new(x - 6.5, 3.6, z + 1.6), creamColor, nil, true)
+	fur("SofaArmA", Vector3.new(2.4, 1.5, 0.7), Vector3.new(x - 5.4, 3.3, z - 1.0), creamColor, nil, true)
+	fur("SofaArmB", Vector3.new(2.4, 1.5, 0.7), Vector3.new(x - 5.4, 3.3, z + 4.2), creamColor, nil, true)
+	fur("SofaCushionA", Vector3.new(2, 0.5, 2), Vector3.new(x - 5.3, 3.4, z + 0.3), mintColor)
+	fur("SofaCushionB", Vector3.new(2, 0.5, 2), Vector3.new(x - 5.3, 3.4, z + 2.9), mintColor)
+	local heartPillow = furSphere("HeartPillow", 1.1, Vector3.new(x - 5.2, 4.0, z + 1.2), Color3.fromRGB(255, 150, 200))
+	heartPillow.Material = Enum.Material.SmoothPlastic
+
+	-- 티테이블 + 티팟 + 컵
+	furCyl("TeaTableTop", Vector3.new(0.4, 4.6, 4.6), Vector3.new(x, 3.4, z + 0.4), Color3.fromRGB(255, 255, 255), nil, true)
+	furCyl("TeaTableLeg", Vector3.new(2.4, 0.9, 0.9), Vector3.new(x, 2.2, z + 0.4), Color3.fromRGB(233, 196, 220))
+	furSphere("Teapot", 1.5, Vector3.new(x - 0.6, 4.3, z + 0.2), Color3.fromRGB(255, 208, 232))
+	furCyl("CupA", Vector3.new(0.7, 0.8, 0.8), Vector3.new(x + 1.1, 3.9, z + 0.9), Color3.fromRGB(255, 255, 255))
+	furCyl("CupB", Vector3.new(0.7, 0.8, 0.8), Vector3.new(x + 0.4, 3.9, z - 0.9), Color3.fromRGB(255, 255, 255))
+
+	-- 요정 침대 / 쿠션
+	fur("BedBase", Vector3.new(4.6, 0.5, 2.9), Vector3.new(x + 5.1, 2.0, z + 3.2), Color3.fromRGB(255, 255, 255), nil, true)
+	fur("BedMattress", Vector3.new(4.3, 0.6, 2.6), Vector3.new(x + 5.1, 2.5, z + 3.2), Color3.fromRGB(255, 226, 244))
+	fur("BedPillow", Vector3.new(1.1, 0.5, 1.9), Vector3.new(x + 3.5, 2.9, z + 3.2), Color3.fromRGB(255, 255, 255))
+	fur("BedBlanket", Vector3.new(2.4, 0.3, 2.6), Vector3.new(x + 5.9, 2.9, z + 3.2), lilacColor)
+	furSphere("BedCushionA", 0.9, Vector3.new(x + 6.6, 2.6, z + 4.0), Color3.fromRGB(255, 208, 232))
+	furSphere("BedCushionB", 0.8, Vector3.new(x + 6.4, 2.6, z + 2.4), Color3.fromRGB(255, 240, 180))
+
+	-- 실내 그네
+	fur("SwingBeam", Vector3.new(3.4, 0.4, 0.4), Vector3.new(x + 4.6, 9.1, z - 3.8), Color3.fromRGB(233, 196, 220))
+	fur("SwingRopeA", Vector3.new(0.16, 4.6, 0.16), Vector3.new(x + 3.4, 6.8, z - 3.8), Color3.fromRGB(224, 185, 117))
+	fur("SwingRopeB", Vector3.new(0.16, 4.6, 0.16), Vector3.new(x + 5.8, 6.8, z - 3.8), Color3.fromRGB(224, 185, 117))
+	fur("SwingSeat", Vector3.new(2.4, 0.3, 1.3), Vector3.new(x + 4.6, 4.5, z - 3.8), Color3.fromRGB(233, 196, 220), nil, true)
+	fur("SwingCushion", Vector3.new(2.1, 0.25, 1.1), Vector3.new(x + 4.6, 4.7, z - 3.8), Color3.fromRGB(255, 208, 232))
+
+	-- 점프 패드 (미니 트램펄린)
+	furCyl("JumpPad", Vector3.new(0.5, 4.4, 4.4), Vector3.new(x - 4.4, 2.0, z - 3.9), mintColor, Enum.Material.Neon)
+	local padRim = furCyl("JumpPadRim", Vector3.new(0.8, 5.0, 5.0), Vector3.new(x - 4.4, 1.8, z - 3.9), pinkColor)
+	padRim.CanCollide = true
+	glow(padRim, Color3.fromRGB(127, 230, 205), 14, 1.2)
+	for k = 1, 8 do
+		local a = (k / 8) * math.pi * 2
+		furSphere("Spring" .. k, 0.5, Vector3.new(x - 4.4 + math.cos(a) * 2.4, 1.9, z - 3.9 + math.sin(a) * 2.4),
+			Color3.fromRGB(255, 240, 180), Enum.Material.Neon)
+	end
+
+	-- 간식 테이블
+	furCyl("SnackTable", Vector3.new(0.3, 3.2, 3.2), Vector3.new(x + 1.4, 3.3, z - 4.4), Color3.fromRGB(255, 255, 255), nil, true)
+	furCyl("SnackLeg", Vector3.new(1.6, 0.9, 0.9), Vector3.new(x + 1.4, 2.2, z - 4.4), Color3.fromRGB(233, 196, 220))
+	furCyl("Cake", Vector3.new(1.3, 1.7, 1.7), Vector3.new(x + 1.4, 4.0, z - 4.4), Color3.fromRGB(255, 226, 244))
+	furSphere("Cherry", 0.5, Vector3.new(x + 1.4, 4.9, z - 4.4), Color3.fromRGB(255, 95, 150), Enum.Material.Neon)
+	furSphere("Strawberry", 0.5, Vector3.new(x - 0.2, 3.7, z - 4.4), Color3.fromRGB(255, 107, 138))
+
+	-- 책장 (앞 왼쪽 구석)
+	fur("Bookshelf", Vector3.new(1, 4.4, 3), Vector3.new(x - 6.9, 4.4, z - 2.4), Color3.fromRGB(255, 255, 255), nil, true)
+	for b = 1, 4 do
+		fur("Book" .. b, Vector3.new(0.8, 0.6, 0.4), Vector3.new(x - 6.6, 3.3 + b * 0.9, z - 3.3 + (b % 3) * 0.5),
+			Color3.fromRGB(255, 170, 210 + b * 10))
+	end
+
+	-- 반짝이 샹들리에
+	fur("ChandelierRod", Vector3.new(0.2, 1.6, 0.2), Vector3.new(x, 9.7, z), Color3.fromRGB(255, 225, 150))
+	local bulb = furSphere("ChandelierBulb", 1.4, Vector3.new(x, 8.8, z), Color3.fromRGB(255, 244, 196), Enum.Material.Neon)
+	glow(bulb, Color3.fromRGB(255, 236, 170), 22, 2.2)
+	for k = 1, 6 do
+		local a = (k / 6) * math.pi * 2
+		furSphere("Crystal" .. k, 0.45, Vector3.new(x + math.cos(a) * 1.9, 8.4, z + math.sin(a) * 1.9),
+			Color3.fromRGB(191, 244, 255), Enum.Material.Neon)
+	end
+
+	-- 벽 액자 + 전구 줄
+	fur("WallFrame", Vector3.new(4, 3, 0.2), Vector3.new(x, 6.6, z - 5.9), Color3.fromRGB(255, 255, 255))
+	fur("WallFrameIn", Vector3.new(3.2, 2.2, 0.24), Vector3.new(x, 6.6, z - 5.85), Color3.fromRGB(255, 214, 236))
+	local bulbColors2 = { Color3.fromRGB(255, 209, 102), Color3.fromRGB(255, 158, 203),
+		Color3.fromRGB(167, 232, 255), Color3.fromRGB(184, 243, 198) }
+	for k = 1, 8 do
+		local bulbColor = bulbColors2[(k % 4) + 1]
+		furSphere("StringLight" .. k, 0.42, Vector3.new(x - 6.5 + (k - 1) * 1.85, 8.3, z - 5.7), bulbColor, Enum.Material.Neon)
+	end
+
+	-- 화분
+	furCyl("Pot", Vector3.new(1.2, 1.4, 1.4), Vector3.new(x - 6.6, 2.2, z + 5.2), Color3.fromRGB(224, 185, 117))
+	furSphere("Plant", 1.5, Vector3.new(x - 6.6, 3.3, z + 5.2), Color3.fromRGB(142, 214, 135))
+
+	-- 스크립트가 읽는 방 기준점 (보이지 않음)
+	local mark = newPart("RoomCenter", Vector3.new(1, 1, 1), Vector3.new(x, 5.4, z),
 		Color3.fromRGB(255, 255, 255), Enum.Material.SmoothPlastic, plot)
-	sign.CanCollide = false
-	label(sign, "요정 하우스 " .. i, Color3.fromRGB(200, 80, 150))
+	mark.Transparency = 1
+	mark.CanCollide = false
+	mark.CanQuery = false
+	mark.CanTouch = false
+	mark:SetAttribute("HouseIndex", i)
 end
 
 -- ============================================================

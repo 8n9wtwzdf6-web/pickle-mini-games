@@ -430,6 +430,301 @@ function startPet(player, fairyId)
 end
 
 -- ==============================================================
+-- 4.5 하우스 안에서 노는 요정들 (3D 자유 놀이 AI)
+-- ==============================================================
+local PLOT_FOLDER = WORLD:FindFirstChild("FairyHousePlots")
+local houseFolder = WORLD:FindFirstChild("HouseFairies")
+if houseFolder == nil then
+	houseFolder = Instance.new("Folder")
+	houseFolder.Name = "HouseFairies"
+	houseFolder.Parent = WORLD
+end
+
+local houseGroups = {}      -- [player] = { fairies = {...}, sig = "...", center = Vector3 }
+local HOUSE_EMOJI = { "💖", "✨", "🎵", "🍓", "🌸", "☁️" }
+local HOUSE_SPOTS = {
+	Vector3.new(-5.0, 0, 2.0),   -- 소파
+	Vector3.new(5.0, 0, 3.0),    -- 침대
+	Vector3.new(4.6, 0, -3.8),   -- 그네
+	Vector3.new(-4.4, 0, -3.8),  -- 점프 패드
+	Vector3.new(1.4, 0, -4.4),   -- 간식 테이블
+}
+
+local function plotMark(houseIndex)
+	if PLOT_FOLDER == nil or houseIndex == nil then
+		return nil
+	end
+	local plot = PLOT_FOLDER:FindFirstChild("FairyHouse_" .. tostring(houseIndex))
+	if plot == nil then
+		return nil
+	end
+	return plot:FindFirstChild("RoomCenter")
+end
+
+local function pickEmoji()
+	return HOUSE_EMOJI[math.random(#HOUSE_EMOJI)]
+end
+
+local function makeHouseFairyModel(fairyId)
+	local info = FAIRY[fairyId]
+	if info == nil then
+		return nil
+	end
+	local rarityInfo = RARITY[info.rarity] or RARITY.common
+	local template = templates:FindFirstChild(rarityInfo.template) or templates:FindFirstChild("Fairy_Common")
+	if template == nil then
+		return nil
+	end
+	local model = template:Clone()
+	model.Name = "HouseFairy_" .. fairyId
+	model:SetAttribute("FairyId", fairyId)
+	model:SetAttribute("Rarity", info.rarity)
+
+	local body = model:FindFirstChild("Body")
+	if body ~= nil then
+		body.Color = info.color
+		local oldPrompt = body:FindFirstChildOfClass("ProximityPrompt")
+		if oldPrompt ~= nil then
+			oldPrompt:Destroy()
+		end
+		body.CanCollide = false
+	end
+
+	local head = model:FindFirstChild("Head")
+	if head ~= nil then
+		local tag = head:FindFirstChild("NameTag")
+		if tag ~= nil then
+			tag.Size = UDim2.new(0, 120, 0, 30)
+			tag.StudsOffset = Vector3.new(0, 2.0, 0)
+		end
+		local bubble = Instance.new("BillboardGui")
+		bubble.Name = "SpeechBubble"
+		bubble.Size = UDim2.new(0, 54, 0, 54)
+		bubble.StudsOffset = Vector3.new(0, 3.2, 0)
+		bubble.AlwaysOnTop = true
+		bubble.Enabled = false
+		bubble.Parent = head
+
+		local lbl = Instance.new("TextLabel")
+		lbl.Name = "BubbleText"
+		lbl.Size = UDim2.new(1, 0, 1, 0)
+		lbl.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		lbl.BackgroundTransparency = 0.05
+		lbl.Text = ""
+		lbl.TextScaled = true
+		lbl.Font = Enum.Font.GothamBold
+		lbl.TextColor3 = Color3.fromRGB(180, 60, 120)
+		lbl.Parent = bubble
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 18)
+		corner.Parent = lbl
+	end
+
+	model.Parent = houseFolder
+	return model
+end
+
+local function houseSignature(data)
+	local parts = {}
+	for _, id in ipairs(data.House) do
+		table.insert(parts, id)
+	end
+	return table.concat(parts, ",")
+end
+
+local function showBubble(f, text)
+	f.bubbleText = text
+	f.bubbleT = 1.9
+	local head = f.model:FindFirstChild("Head")
+	local gui = head and head:FindFirstChild("SpeechBubble")
+	if gui ~= nil then
+		local lbl = gui:FindFirstChild("BubbleText")
+		if lbl ~= nil then
+			lbl.Text = text
+		end
+		gui.Enabled = true
+	end
+end
+
+local function chooseHouseAction(f, center)
+	local r = math.random()
+	if r < 0.48 then
+		f.target = center + Vector3.new(math.random() * 10 - 5, 0, math.random() * 8 - 4)
+		f.mode = "wander"
+		f.timer = 1.4 + math.random() * 2.2
+	elseif r < 0.68 then
+		f.target = center + Vector3.new(math.random() * 9 - 4.5, 0, math.random() * 7 - 3.5)
+		f.mode = "wander"
+		f.jumpV = 11 + math.random() * 5
+		f.jump = 0.05
+		f.timer = 1.2 + math.random() * 1.4
+	elseif r < 0.82 then
+		f.target = center + Vector3.new(math.random() * 8 - 4, 0, math.random() * 6 - 3)
+		f.mode = "wander"
+		f.spinT = 0.8 + math.random() * 0.7
+		f.timer = 0.9 + math.random() * 0.8
+	else
+		local spot = HOUSE_SPOTS[math.random(#HOUSE_SPOTS)]
+		f.target = center + spot
+		f.mode = "goto"
+		f.timer = 7
+		f.spot = spot
+	end
+end
+
+local function refreshHouseFairies(player)
+	local data = PlayerData[player]
+	if data == nil then
+		return
+	end
+	local mark = plotMark(player:GetAttribute("HouseIndex"))
+	if mark == nil then
+		return
+	end
+	local center = mark.Position
+	local sig = houseSignature(data) .. "|" .. tostring(player:GetAttribute("HouseIndex"))
+	local group = houseGroups[player]
+	if group ~= nil and group.sig == sig then
+		group.center = center
+		return
+	end
+	if group ~= nil then
+		for _, f in ipairs(group.fairies) do
+			if f.model.Parent ~= nil then
+				f.model:Destroy()
+			end
+		end
+	end
+
+	group = { fairies = {}, sig = sig, center = center }
+	houseGroups[player] = group
+
+	local total = math.max(1, #data.House)
+	for index, fairyId in ipairs(data.House) do
+		local model = makeHouseFairyModel(fairyId)
+		if model ~= nil then
+			local a = ((index - 1) / total) * math.pi * 2
+			local pos = center + Vector3.new(math.cos(a) * 3.2, 0, math.sin(a) * 2.6)
+			local f = {
+				id = fairyId,
+				model = model,
+				pos = pos,
+				target = pos,
+				speed = 2.0 + math.random() * 1.0,
+				mode = "wander",
+				timer = 1.5 + math.random() * 2,
+				jump = 0,
+				jumpV = 0,
+				yaw = math.random() * math.pi * 2,
+				spinT = 0,
+				bubbleT = 0,
+				bubbleText = "",
+				meet = 0,
+				phase = math.random() * math.pi * 2,
+				spot = nil,
+			}
+			model:PivotTo(CFrame.new(pos + Vector3.new(0, 3.2, 0)) * CFrame.Angles(0, f.yaw, 0))
+			table.insert(group.fairies, f)
+		end
+	end
+end
+shared.FairyRefreshHouse = refreshHouseFairies
+
+local function updateHouseFairies(dt, now)
+	for player, group in pairs(houseGroups) do
+		local center = group.center
+		for _, f in ipairs(group.fairies) do
+			if f.model.Parent ~= nil then
+			-- 점프
+			if f.jumpV ~= 0 or f.jump > 0 then
+				f.jump = f.jump + f.jumpV * dt
+				f.jumpV = f.jumpV - 22 * dt
+				if f.jump <= 0 then
+					f.jump = 0
+					f.jumpV = 0
+				end
+			end
+			-- 빙글 회전
+			if f.spinT > 0 then
+				f.spinT = f.spinT - dt
+				f.yaw = f.yaw + dt * 8
+			end
+			f.timer = f.timer - dt
+			f.bubbleT = math.max(0, f.bubbleT - dt)
+			f.meet = math.max(0, f.meet - dt)
+
+			local flat = Vector3.new(f.target.X - f.pos.X, 0, f.target.Z - f.pos.Z)
+			local dist = flat.Magnitude
+			if f.mode == "rest" then
+				if f.timer <= 0 then
+					chooseHouseAction(f, center)
+				end
+			else
+				if dist > 0.35 then
+					local step = math.min(dist, f.speed * dt)
+					local dir = flat.Unit
+					f.pos = f.pos + dir * step
+					f.yaw = math.atan2(dir.X, dir.Z)
+					if f.spinT <= 0 then
+						f.yaw = f.yaw + math.sin(now * 3 + f.phase) * 0.25
+					end
+				else
+					if f.mode == "goto" then
+						f.mode = "rest"
+						f.timer = 2.4 + math.random() * 2.6
+						if math.random() < 0.5 then
+							showBubble(f, pickEmoji())
+						end
+					else
+						chooseHouseAction(f, center)
+					end
+				end
+			end
+
+			-- 벽 밖으로 나가지 않게
+			f.pos = Vector3.new(
+				math.clamp(f.pos.X, center.X - 5.9, center.X + 5.9),
+				f.pos.Y,
+				math.clamp(f.pos.Z, center.Z - 4.9, center.Z + 4.9)
+			)
+
+			local hover = center.Y - 2.2 + math.sin(now * 2 + f.phase) * 0.22 + f.jump
+			f.model:PivotTo(CFrame.new(Vector3.new(f.pos.X, hover, f.pos.Z)) * CFrame.Angles(0, f.yaw, 0))
+
+			if f.bubbleT <= 0 then
+				local head = f.model:FindFirstChild("Head")
+				local gui = head and head:FindFirstChild("SpeechBubble")
+				if gui ~= nil and gui.Enabled then
+					gui.Enabled = false
+				end
+			end
+			end
+		end
+
+		-- 요정끼리 마주치면 말풍선으로 교감
+		local list = group.fairies
+		for i = 1, #list do
+			for j = i + 1, #list do
+				local a = list[i]
+				local b = list[j]
+				if a.meet <= 0 and b.meet <= 0 then
+					local d = (a.pos - b.pos).Magnitude
+					if d < 3.2 then
+						a.meet = 4.2
+						b.meet = 4.2
+						showBubble(a, pickEmoji())
+						showBubble(b, pickEmoji())
+						a.spinT = 0.7
+						b.spinT = 0.7
+					end
+				end
+			end
+		end
+	end
+end
+
+-- ==============================================================
 -- 5. 하우스 상호작용
 -- ==============================================================
 local ACTION_CONFIG = {
@@ -459,8 +754,8 @@ if zonePartsFolder ~= nil then
 	for _, obj in ipairs(zonePartsFolder:GetChildren()) do
 		if obj.Name == "HousePad" and obj:GetAttribute("HouseIndex") ~= nil then
 			local prompt = Instance.new("ProximityPrompt")
-			prompt.ActionText = "요정 하우스 열기"
-			prompt.ObjectText = "내 요정 하우스"
+			prompt.ActionText = "하우스 메뉴"
+			prompt.ObjectText = "내 요정 하우스 · 문으로 직접 들어가도 돼요"
 			prompt.HoldDuration = 0
 			prompt.MaxActivationDistance = 12
 			prompt.Parent = obj
@@ -520,6 +815,27 @@ remotes.FairyAction.OnServerEvent:Connect(function(player, fairyId, action)
 		shared.FairyNotify(player, "🎉 " .. FAIRY[fairyId].name .. " Lv." .. tostring(fairyData.level) .. " 달성! +" .. tostring(bonus) .. "코인")
 	else
 		shared.FairyNotify(player, "💗 " .. FAIRY[fairyId].name .. " 친밀도 +" .. tostring(cfg.aff))
+	end
+
+	-- 하우스 안 요정이 반응 (하트·점프·빙글)
+	local group = houseGroups[player]
+	if group ~= nil then
+		for _, f in ipairs(group.fairies) do
+			if f.id == fairyId then
+				if action == "play" then
+					f.jumpV = 15
+					f.spinT = 1.1
+					showBubble(f, "🎈")
+				elseif action == "feed" then
+					f.jumpV = 12
+					showBubble(f, "🍰")
+				else
+					f.jumpV = 9
+					showBubble(f, "💗")
+				end
+				f.jump = math.max(f.jump, 0.05)
+			end
+		end
 	end
 
 	savePlayer(player)
@@ -613,11 +929,15 @@ RunService.Heartbeat:Connect(function(dt)
 		end
 	end
 
+	-- 하우스 안 요정들 자유 놀이
+	updateHouseFairies(dt, now)
+
 	-- 초당 코인
 	spawnTimer = spawnTimer + dt
 	if spawnTimer >= 1 then
 		spawnTimer = 0
 		for player, data in pairs(PlayerData) do
+			refreshHouseFairies(player)
 			local rate = 0
 			for _, fairyId in ipairs(data.House) do
 				local fd = data.Fairies[fairyId]
@@ -670,6 +990,15 @@ Players.PlayerRemoving:Connect(function(player)
 		pet:Destroy()
 	end
 	pets[player] = nil
+	local group = houseGroups[player]
+	if group ~= nil then
+		for _, f in ipairs(group.fairies) do
+			if f.model.Parent ~= nil then
+				f.model:Destroy()
+			end
+		end
+		houseGroups[player] = nil
+	end
 	sessions[player] = nil
 end)
 

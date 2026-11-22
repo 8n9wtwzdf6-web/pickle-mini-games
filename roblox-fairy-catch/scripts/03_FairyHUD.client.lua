@@ -814,12 +814,12 @@ local function refreshHouse()
 		local data = houseData.fairies[fairyId]
 		affLabel.Text = (info and info.name or fairyId) .. "   Lv." .. tostring(data.level or 1) .. "   친밀도 " .. tostring(math.floor(data.aff or 0)) .. "/100"
 		affFill.Size = UDim2.fromScale(math.clamp((data.aff or 0) / 100, 0, 1), 1)
-		roomLabel.Text = (info and info.name or fairyId) .. "가 하우스에서 쉬고 있어요"
+		roomLabel.Text = (info and info.name or fairyId) .. "가 하우스에서 신나게 놀고 있어요"
 		roomGlyph.Text = "🏡"
 	else
 		affLabel.Text = "요정을 잡아 하우스에 초대해 보세요"
 		affFill.Size = UDim2.fromScale(0, 1)
-		roomLabel.Text = "아직 하우스가 비어 있어요"
+		roomLabel.Text = "아직 비어 있어요 · 마을에서 요정을 잡아 보세요"
 		roomGlyph.Text = "🏠"
 	end
 	harvestBtn.Text = "코인 수확 · " .. tostring(math.floor(houseData.pending or 0))

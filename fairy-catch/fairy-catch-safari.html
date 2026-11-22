@@ -128,10 +128,10 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .sheet-hd .spacer{flex:1;}
 .xbtn{width:32px;height:32px;border-radius:12px;background:#fff;border:1.5px solid #ffe0f0;font-size:15px;
   color:#b0568c;font-weight:900;box-shadow:0 6px 14px -10px rgba(150,70,130,.9);}
-.sheet-bd{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 18px;flex:1 1 auto;touch-action:pan-y;}
+.sheet-bd{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 26px;flex:1 1 auto;touch-action:pan-y;}
 
 /* ============ 하우스 ============ */
-.room{position:relative;height:190px;border-radius:20px;overflow:hidden;border:2.5px solid #fff;
+.room{position:relative;height:172px;border-radius:20px;overflow:hidden;border:2.5px solid #fff;
   box-shadow:inset 0 0 30px rgba(220,160,220,.25),0 12px 26px -16px rgba(150,70,130,.7);
   background:linear-gradient(180deg,#ffe7f3 0%,#ffdcee 46%,#f6d9f7 46.5%,#ead8ff 100%);}
 .room::before{content:"";position:absolute;inset:0 0 54%;background:
@@ -175,11 +175,11 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .room.decorSofa .sofa{display:block}
 .room.decorCurtain .curtain{display:block}
 .room.decorChand .chand{display:block}
-.room .houseFairy{position:absolute;left:50%;bottom:34px;width:140px;height:150px;margin-left:-70px;}
+.room .houseFairy{position:absolute;left:50%;bottom:28px;width:130px;height:140px;margin-left:-65px;}
 .room .houseFairy canvas{width:100%;height:100%;}
 .room .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:11.5px;font-weight:800;color:#b081a3;text-align:center;line-height:1.6;padding:0 40px;}
-.housebar{display:flex;gap:8px;align-items:center;margin:10px 2px 0;}
+.housebar{display:flex;gap:8px;align-items:center;margin:7px 2px 0;}
 .housebar .lvl{font-size:11px;font-weight:900;color:#8a4f7d;background:#fff;border:1.5px solid #ffe0f0;border-radius:999px;padding:5px 10px;}
 .housebar .name{font-size:14px;font-weight:900;letter-spacing:-.4px;}
 .hbarwrap{flex:1;}
@@ -187,8 +187,8 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .affbar i{display:block;height:100%;width:0;border-radius:999px;transition:width .35s cubic-bezier(.2,1,.3,1);
   background:linear-gradient(90deg,#ffd166,#ff8fc7 50%,#c9a6ff);}
 .afftxt{font-size:9.5px;font-weight:800;color:#a2748f;margin-top:3px;display:flex;justify-content:space-between;}
-.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
-.act{position:relative;border-radius:16px;padding:10px 6px 9px;background:linear-gradient(180deg,#fff,#ffeaf6);
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:7px;}
+.act{position:relative;border-radius:16px;padding:8px 6px 7px;background:linear-gradient(180deg,#fff,#ffeaf6);
   border:2px solid #fff;box-shadow:0 10px 20px -14px rgba(160,70,130,.9);display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .1s;}
 .act:active{transform:scale(.95);}
 .act .ai{font-size:20px;line-height:1.1;}
@@ -199,15 +199,15 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .act.cool{opacity:.55;}
 .act.cool .cd{opacity:1;}
 .act .cd.hide{display:none;}
-.houseSlots{display:flex;gap:7px;overflow-x:auto;padding:4px 2px 6px;margin-top:9px;touch-action:pan-x;}
-.hslot{flex:0 0 auto;width:58px;height:66px;border-radius:14px;background:linear-gradient(180deg,#fff,#ffeef8);
+.houseSlots{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 4px;margin-top:6px;touch-action:pan-x;}
+.hslot{flex:0 0 auto;width:56px;height:60px;border-radius:14px;background:linear-gradient(180deg,#fff,#ffeef8);
   border:2px solid #fff;box-shadow:0 8px 16px -12px rgba(160,70,130,.9);position:relative;display:flex;
   align-items:center;justify-content:center;overflow:hidden;}
 .hslot canvas{width:54px;height:58px;}
 .hslot.on{border-color:#ff8fc7;box-shadow:0 0 0 2px #ffd0e6 inset,0 8px 16px -10px rgba(160,70,130,.9);}
 .hslot.add{background:linear-gradient(180deg,#fff,#f0eaff);color:#9a7fd0;font-size:19px;font-weight:800;}
 .hslot .lv{position:absolute;right:2px;bottom:1px;font-size:8px;font-weight:900;color:#a4588c;background:rgba(255,255,255,.9);border-radius:6px;padding:0 3px;}
-.harvest{margin-top:10px;width:100%;height:46px;border-radius:16px;font-size:13.5px;font-weight:900;color:#6a3b00;
+.harvest{margin-top:7px;width:100%;height:42px;border-radius:16px;font-size:13.5px;font-weight:900;color:#6a3b00;
   background:linear-gradient(180deg,#ffe08a,#ffc44d);border:2px solid #fff;box-shadow:0 12px 22px -14px rgba(220,150,30,.9);}
 .harvest:disabled{background:linear-gradient(180deg,#f6eef4,#eee4ef);color:#b49aae;box-shadow:none;}
 
@@ -287,7 +287,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
   box-shadow:0 10px 20px -14px rgba(140,90,190,.9);}
 
 @media (max-height:730px){
-  .room{height:158px}
+  .room{height:146px}
   .sheet-hd{padding:10px 14px 6px}
   .sheet-hd h2{font-size:16px}
   .acts{margin-top:8px}

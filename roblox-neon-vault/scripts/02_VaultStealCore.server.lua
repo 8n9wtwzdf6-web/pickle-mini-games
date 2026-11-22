@@ -10,6 +10,11 @@
                주인에게 잡히거나 15초 지나면 원래 자리로 반환)
     · 🛸 사이버 드론 해킹 (적 금고 방어막 남은 시간 감소 / 즉시 무력화)
     · 즉시 잠금(게임패스) 스킬
+    · 🐾 펫 팔로우 — 가장 강한 전시품/드론이 3D 모델로 캐릭터 옆을 따라다님
+    · 🌿 은신 수풀 — 수풀 존 안에서는 반투명 은신 + 이름표 숨김 + 추격 회피
+    · 💛 황금 하이퍼 코어 — 45초마다 중앙 아레나에 등장, 먼저 차지하면
+         현금 보너스 + 상대 3기지 방어막 25초 무력화
+    · ⚡ 가속 / 🟢 점프 패드
 ]]
 
 local Players = game:GetService("Players")
@@ -18,6 +23,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
 local world = Workspace:WaitForChild("NeonVaultWorld", 40)
 if world == nil then
@@ -60,6 +66,14 @@ local HACK_COOLDOWN = 18
 local INSTANT_LOCK_COOLDOWN = 45
 local COLLECT_BONUS = 0.05
 local MAX_SLOTS = 8
+local CORE_INTERVAL = 45
+local CORE_LIFETIME = 28
+local CORE_RADIUS = 15
+local CORE_REWARD = 1500
+local CORE_SHIELD_CUT = 25
+local PET_SIDE_OFFSET = 6
+local PET_HEIGHT = 9
+local STEALTH_TRANSPARENCY = 0.85
 
 local RARITY_ORDER = { "common", "rare", "epic", "legendary" }
 local RARITY = {
@@ -121,6 +135,15 @@ local function plotCenter(plot)
 	return base.Position
 end
 
+-- 기지 크기에 맞춘 '내 금고 도착' 판정 반경 (대형 맵 대응)
+local function plotReturnRadius(plot)
+	local base = plot:FindFirstChild("Base")
+	if base == nil then
+		return 34
+	end
+	return math.max(base.Size.X, base.Size.Z) * 0.55
+end
+
 -- ==============================================================
 -- 3. 전시대 · 전시품
 -- ==============================================================
@@ -172,11 +195,16 @@ local function setShieldVisual(plot, on)
 		return
 	end
 	for _, wall in ipairs(shield:GetChildren()) do
-		if wall:IsA("BasePart") and string.sub(wall.Name, 1, 10) == "ShieldWall" then
-			if on then
-				wall.Transparency = 0.7
-			else
-				wall.Transparency = 1
+		if wall:IsA("BasePart") then
+			local isWall = string.sub(wall.Name, 1, 10) == "ShieldWall"
+			local isDome = wall.Name == "ShieldDome"
+			if isWall or isDome then
+				if on then
+					wall.Transparency = isDome and 0.55 or 0.7
+					wall.CanQuery = false
+				else
+					wall.Transparency = 1
+				end
 			end
 		end
 	end
@@ -723,7 +751,7 @@ local function resolveCarry(player)
 	local myPlot = plotOfPlayer(player)
 	if myPlot ~= nil then
 		local distance = (root.Position - plotCenter(myPlot)).Magnitude
-		if distance < 34 then
+		if distance < plotReturnRadius(myPlot) then
 			local itemDef = data.itemDef
 			releaseCarry(player, false)
 			local ok = addItemToVault(player, itemDef)
@@ -745,7 +773,8 @@ local function resolveCarry(player)
 	if sourceOwner ~= nil and sourceOwner.Character ~= nil then
 		local ownerRoot = sourceOwner.Character:FindFirstChild("HumanoidRootPart")
 		if ownerRoot ~= nil then
-			if (ownerRoot.Position - root.Position).Magnitude < 9 then
+			local catchRange = (player:GetAttribute("Stealthed") == true) and 5 or 9
+			if (ownerRoot.Position - root.Position).Magnitude < catchRange then
 				local itemName = data.itemDef.name
 				releaseCarry(player, true)
 				notify(player, "❌ 잡혔습니다! " .. itemName .. " 이(가) 원래 자리로 돌아갑니다.")
@@ -875,6 +904,409 @@ local function requestInstantLock(player)
 end
 
 -- ==============================================================
+-- 8-B. 🐾 펫 팔로우 (최고 등급 전시품/드론이 캐릭터 옆을 따라다님)
+-- ==============================================================
+local pets = {}
+
+local function bestDisplayOf(plot)
+	local folder = displaysOf(plot)
+	if folder == nil then
+		return nil
+	end
+	local best = nil
+	local bestIncome = -1
+	for _, display in ipairs(folder:GetChildren()) do
+		local income = display:GetAttribute("Income") or 0
+		if income > bestIncome then
+			bestIncome = income
+			best = display
+		end
+	end
+	return best
+end
+
+local function makePetModel(player, templateName)
+	local template = templatesFolder:FindFirstChild(templateName)
+	if template == nil then
+		return nil
+	end
+	local model = template:Clone()
+	model.Name = "FollowPet_" .. player.Name
+	for _, descendant in ipairs(model:GetDescendants()) do
+		if descendant:IsA("BasePart") then
+			descendant.Anchored = true
+			descendant.CanCollide = false
+			descendant.CanQuery = false
+		end
+	end
+	if model.PrimaryPart == nil then
+		model.PrimaryPart = model:FindFirstChild("Core")
+	end
+	model.Parent = Workspace
+	return model
+end
+
+local function refreshPet(player)
+	local plot = plotOfPlayer(player)
+	local best = bestDisplayOf(plot)
+	local key = nil
+	if best ~= nil then
+		key = tostring(best:GetAttribute("ItemId")) .. "#" .. tostring(best:GetAttribute("Slot"))
+	end
+	local entry = pets[player]
+	if entry ~= nil and entry.key == key then
+		return
+	end
+	if entry ~= nil and entry.model ~= nil then
+		entry.model:Destroy()
+	end
+	pets[player] = nil
+	if best == nil then
+		return
+	end
+	local themeDef = THEMES[best:GetAttribute("Theme") or "gem"]
+	if themeDef == nil then
+		return
+	end
+	local model = makePetModel(player, themeDef.template)
+	if model == nil then
+		return
+	end
+	pets[player] = { model = model, key = key, position = nil }
+end
+
+local function updatePets(dt)
+	for _, player in ipairs(Players:GetPlayers()) do
+		refreshPet(player)
+		local entry = pets[player]
+		if entry ~= nil and entry.model ~= nil then
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			if root ~= nil then
+				local bob = math.sin(Workspace:GetServerTimeNow() * 2.4) * 0.8
+				local target = root.Position + root.CFrame.RightVector * PET_SIDE_OFFSET + Vector3.new(0, PET_HEIGHT + bob, 0)
+				if entry.position == nil then
+					entry.position = target
+				end
+				entry.position = entry.position:Lerp(target, math.min(1, dt * 6))
+				local spin = Workspace:GetServerTimeNow() * 1.3
+				entry.model:PivotTo(CFrame.new(entry.position) * CFrame.Angles(0, spin, 0))
+			end
+		end
+	end
+end
+
+local function clearPet(player)
+	local entry = pets[player]
+	if entry ~= nil and entry.model ~= nil then
+		entry.model:Destroy()
+	end
+	pets[player] = nil
+end
+
+-- ==============================================================
+-- 8-C. 🌿 은신 수풀
+-- ==============================================================
+local bushZones = {}
+
+local function loadBushes()
+	bushZones = {}
+	local folder = world:FindFirstChild("Bushes")
+	if folder == nil then
+		return
+	end
+	for _, bush in ipairs(folder:GetChildren()) do
+		local zone = bush:FindFirstChild("BushZone")
+		if zone ~= nil then
+			local radius = zone:GetAttribute("Radius") or 30
+			table.insert(bushZones, { position = zone.Position, radius = math.max(radius, 20) })
+		end
+	end
+end
+
+local function setStealth(player, on)
+	if player:GetAttribute("Stealthed") == on then
+		return
+	end
+	player:SetAttribute("Stealthed", on)
+	local character = player.Character
+	if character == nil then
+		return
+	end
+	for _, descendant in ipairs(character:GetDescendants()) do
+		if descendant:IsA("BasePart") and descendant.Name ~= "HumanoidRootPart" then
+			if on then
+				if descendant:GetAttribute("NVOrigTransparency") == nil then
+					descendant:SetAttribute("NVOrigTransparency", descendant.Transparency)
+				end
+				descendant.Transparency = math.max(descendant.Transparency, STEALTH_TRANSPARENCY)
+			else
+				local original = descendant:GetAttribute("NVOrigTransparency")
+				if original ~= nil then
+					descendant.Transparency = original
+					descendant:SetAttribute("NVOrigTransparency", nil)
+				end
+			end
+		end
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid ~= nil then
+		if on then
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		else
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
+		end
+	end
+	if on then
+		notify(player, "🌿 은신 중 — 다른 플레이어에게 보이지 않습니다.")
+	else
+		notify(player, "🌿 수풀에서 나왔습니다.")
+	end
+end
+
+local function updateStealth()
+	if #bushZones == 0 then
+		return
+	end
+	for _, player in ipairs(Players:GetPlayers()) do
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if root ~= nil then
+			local inside = false
+			for _, zone in ipairs(bushZones) do
+				local dx = root.Position.X - zone.position.X
+				local dz = root.Position.Z - zone.position.Z
+				if (dx * dx + dz * dz) < (zone.radius * zone.radius) then
+					inside = true
+					break
+				end
+			end
+			setStealth(player, inside)
+		end
+	end
+end
+
+-- ==============================================================
+-- 8-D. 💛 황금 하이퍼 코어
+-- ==============================================================
+local coreModel = nil
+local coreActive = false
+local coreEndsAt = 0
+local coreNextAt = 0
+
+local function coreAnchorPart()
+	local arena = world:FindFirstChild("Arena")
+	local dais = arena and arena:FindFirstChild("CoreDais")
+	return dais and dais:FindFirstChild("CoreSpawn") or nil
+end
+
+local function publishCoreState()
+	Workspace:SetAttribute("NV_CoreActive", coreActive)
+	Workspace:SetAttribute("NV_CoreEndsAt", coreEndsAt)
+	Workspace:SetAttribute("NV_CoreNextAt", coreNextAt)
+end
+
+local function spawnCore()
+	local anchor = coreAnchorPart()
+	if anchor == nil then
+		return
+	end
+	local model = Instance.new("Model")
+	model.Name = "GoldenHyperCore"
+
+	local ball = Instance.new("Part")
+	ball.Name = "CoreBall"
+	ball.Shape = Enum.PartType.Ball
+	ball.Size = Vector3.new(16, 16, 16)
+	ball.CFrame = anchor.Position
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Material = Enum.Material.Neon
+	ball.Color = Color3.fromRGB(255, 224, 102)
+	ball.Transparency = 0.05
+	ball.Parent = model
+
+	local ringA = Instance.new("Part")
+	ringA.Name = "CoreRingA"
+	ringA.Size = Vector3.new(30, 1.6, 30)
+	ringA.CFrame = anchor.Position + Vector3.new(0, 2, 0)
+	ringA.Anchored = true
+	ringA.CanCollide = false
+	ringA.Material = Enum.Material.Neon
+	ringA.Color = Color3.fromRGB(255, 198, 58)
+	ringA.Transparency = 0.2
+	ringA.Shape = Enum.PartType.Cylinder
+	ringA.CFrame = CFrame.new(anchor.Position + Vector3.new(0, 2, 0)) * CFrame.Angles(0, 0, math.rad(90))
+	ringA.Parent = model
+
+	local glow = Instance.new("PointLight")
+	glow.Brightness = 6
+	glow.Range = 60
+	glow.Color = Color3.fromRGB(255, 210, 90)
+	glow.Parent = ball
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "CoreGui"
+	gui.Adornee = ball
+	gui.Size = UDim2.fromOffset(360, 90)
+	gui.StudsOffset = Vector3.new(0, 16, 0)
+	gui.AlwaysOnTop = true
+	gui.LightInfluence = 0
+	gui.MaxDistance = 600
+	gui.Parent = ball
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.Font = Enum.Font.GothamBlack
+	label.TextScaled = true
+	label.TextColor3 = Color3.fromRGB(255, 240, 190)
+	label.TextStrokeTransparency = 0.2
+	label.Text = "💛 황금 하이퍼 코어 — 먼저 차지하세요!"
+	label.Parent = gui
+
+	model.Parent = Workspace
+	coreModel = model
+	coreActive = true
+	coreEndsAt = now() + CORE_LIFETIME
+	publishCoreState()
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		notify(player, "💛 황금 하이퍼 코어 등장! 중앙 아레나로!")
+	end
+end
+
+local function despawnCore()
+	if coreModel ~= nil then
+		coreModel:Destroy()
+		coreModel = nil
+	end
+	coreActive = false
+	coreNextAt = now() + CORE_INTERVAL
+	publishCoreState()
+end
+
+local function claimCore(player)
+	local myPlot = plotOfPlayer(player)
+	if myPlot == nil then
+		return
+	end
+	for i = 1, 4 do
+		local plot = getPlot(i)
+		if plot ~= nil and plot ~= myPlot then
+			local state = plotState[plot]
+			if state ~= nil then
+				state.on = false
+				state.endsAt = now() + CORE_SHIELD_CUT
+				plot:SetAttribute("ShieldOn", false)
+				plot:SetAttribute("ShieldEnds", state.endsAt)
+				setShieldVisual(plot, false)
+				refreshStealPrompts(plot)
+			end
+		end
+	end
+	player:SetAttribute("Cash", (player:GetAttribute("Cash") or 0) + CORE_REWARD)
+	player:SetAttribute("TotalEarned", (player:GetAttribute("TotalEarned") or 0) + CORE_REWARD)
+	player:SetAttribute("Cores", (player:GetAttribute("Cores") or 0) + 1)
+	notify(player, "💛 황금 코어 차지! +$" .. tostring(CORE_REWARD) .. " · 상대 3기지 방어막 " .. tostring(CORE_SHIELD_CUT) .. "초 무력화!")
+	for _, other in ipairs(Players:GetPlayers()) do
+		if other ~= player then
+			notify(other, "😱 " .. player.Name .. " 이(가) 황금 코어를 차지해 내 방어막이 무력화되었습니다!")
+		end
+	end
+	despawnCore()
+end
+
+local function updateCore()
+	if not coreActive then
+		if coreNextAt == 0 then
+			coreNextAt = now() + CORE_INTERVAL
+			publishCoreState()
+			return
+		end
+		if now() >= coreNextAt then
+			spawnCore()
+		end
+		return
+	end
+	local anchor = coreAnchorPart()
+	if anchor == nil then
+		despawnCore()
+		return
+	end
+	for _, player in ipairs(Players:GetPlayers()) do
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if root ~= nil and (root.Position - anchor.Position).Magnitude < CORE_RADIUS then
+			claimCore(player)
+			return
+		end
+	end
+	if now() >= coreEndsAt then
+		despawnCore()
+		for _, player in ipairs(Players:GetPlayers()) do
+			notify(player, "💛 코어가 사라졌습니다. 다음 스폰을 기다리세요.")
+		end
+	end
+end
+
+-- ==============================================================
+-- 8-E. ⚡ 가속 패드 · 🟢 점프 패드
+-- ==============================================================
+local function connectPadsFolder()
+	local pads = world:FindFirstChild("Pads")
+	if pads == nil then
+		return
+	end
+	for _, pad in ipairs(pads:GetChildren()) do
+		if pad:IsA("BasePart") and pad:GetAttribute("Connected") ~= true then
+			if pad:GetAttribute("SpeedPad") == true then
+				pad:SetAttribute("Connected", true)
+				pad.Touched:Connect(function(hit)
+					local character = hit:FindFirstAncestorOfClass("Model")
+					if character == nil then
+						return
+					end
+					local humanoid = character:FindFirstChildOfClass("Humanoid")
+					if humanoid == nil or pad:GetAttribute("BoostUntil") ~= nil then
+						return
+					end
+					local boost = pad:GetAttribute("BoostSpeed") or 40
+					if humanoid.WalkSpeed >= boost then
+						return
+					end
+					local original = humanoid.WalkSpeed
+					humanoid.WalkSpeed = boost
+					pad:SetAttribute("BoostUntil", now() + 2)
+					task.delay(2, function()
+						if humanoid.Parent ~= nil then
+							humanoid.WalkSpeed = original
+						end
+						pad:SetAttribute("BoostUntil", nil)
+					end)
+				end)
+			elseif pad:GetAttribute("JumpPad") == true then
+				pad:SetAttribute("Connected", true)
+				pad.Touched:Connect(function(hit)
+					local root = hit:FindFirstAncestorOfClass("Model")
+					if root == nil then
+						return
+					end
+					local part = root:FindFirstChild("HumanoidRootPart")
+					if part == nil then
+						return
+					end
+					if now() < (pad:GetAttribute("NextJumpAt") or 0) then
+						return
+					end
+					pad:SetAttribute("NextJumpAt", now() + 1.5)
+					part.AssemblyLinearVelocity = Vector3.new(part.AssemblyLinearVelocity.X, pad:GetAttribute("JumpPower") or 90, part.AssemblyLinearVelocity.Z)
+				end)
+			end
+		end
+	end
+end
+
+-- ==============================================================
 -- 9. 프롬프트 연결
 -- ==============================================================
 local function connectPedestal(pedestal)
@@ -924,14 +1356,11 @@ local function connectPads(plot)
 end
 
 local function connectTower()
-	local tower = world:FindFirstChild("GachaTower")
-	if tower == nil then
-		return
-	end
-	for _, station in ipairs(tower:GetChildren()) do
-		local themeId = station:GetAttribute("Theme")
-		if themeId ~= nil then
-			local prompt = station:FindFirstChildOfClass("ProximityPrompt")
+	-- 중앙 타워 + 4개 테마 구역 뽑기 패드를 모두 연결합니다.
+	for _, descendant in ipairs(world:GetDescendants()) do
+		local themeId = descendant:GetAttribute("Theme")
+		if themeId ~= nil and THEMES[themeId] ~= nil then
+			local prompt = descendant:FindFirstChildOfClass("ProximityPrompt")
 			if prompt ~= nil and prompt:GetAttribute("Connected") ~= true then
 				prompt:SetAttribute("Connected", true)
 				prompt.ObjectText = THEMES[themeId].label .. "  $" .. tostring(themeCost(themeId))
@@ -1009,6 +1438,7 @@ local function onPlayerAdded(player)
 end
 
 local function onPlayerRemoving(player)
+	clearPet(player)
 	local plot = plotOfPlayer(player)
 	releaseCarry(player, false)
 	if plot ~= nil then
@@ -1057,9 +1487,15 @@ task.spawn(function()
 			end
 		end
 		connectTower()
+		connectPadsFolder()
 		task.wait(0.5)
 	end
 end)
+
+-- 초기화: 수풀 / 패드 / 코어
+loadBushes()
+connectPadsFolder()
+publishCoreState()
 
 -- 메인 루프
 task.spawn(function()
@@ -1067,6 +1503,8 @@ task.spawn(function()
 	while true do
 		local dt = task.wait(0.25)
 		tickShields()
+		updateStealth()
+		updateCore()
 		incomeAccum = incomeAccum + dt
 		if incomeAccum >= 1 then
 			incomeAccum = incomeAccum - 1
@@ -1076,6 +1514,11 @@ task.spawn(function()
 			resolveCarry(player)
 		end
 	end
+end)
+
+-- 펫 팔로우는 부드러움을 위해 Heartbeat 사용
+RunService.Heartbeat:Connect(function(dt)
+	updatePets(math.min(dt, 0.1))
 end)
 
 Players.PlayerAdded:Connect(onPlayerAdded)

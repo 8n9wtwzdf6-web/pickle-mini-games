@@ -11,6 +11,8 @@
        - 상점·게임패스 모달
        - 🛸 드론 해킹 버튼 (재사용 대기 표시)
        - 🔒 즉시 잠금 버튼 (게임패스 보유 시)
+    · 🗺️ 전략 미니맵 — 4기지 방어막 상태 · 내 위치 · 황금 코어 스폰 · 테마 구역
+    · 🌿 은신 표시 (수풀 안에 있으면 화면에 표시)
     · 서버 알림(토스트) 표시
     · 뽑기 결과 연출
   ※ UI 는 코드가 전부 자동 생성합니다. 화면에 따로 배치할 필요 없습니다.
@@ -238,6 +240,186 @@ shieldBar.BackgroundColor3 = CYAN
 shieldBar.BorderSizePixel = 0
 shieldBar.Parent = shieldBarBg
 corner(shieldBar, 4)
+
+-- ==============================================================
+-- 우측 상단 아래 : 전략 미니맵 (LoL · 유나이트 스타일)
+-- ==============================================================
+local MINI_SIZE = 158
+local MINI_PAD = 6
+local WORLD_HALF = 440
+
+local miniPanel = Instance.new("Frame")
+miniPanel.Name = "MiniMapPanel"
+miniPanel.Size = UDim2.new(0, MINI_SIZE + MINI_PAD * 2, 0, MINI_SIZE + MINI_PAD * 2 + 26)
+miniPanel.Position = UDim2.new(1, -(MINI_SIZE + MINI_PAD * 2 + 12), 0, 96)
+miniPanel.BackgroundColor3 = PANEL
+miniPanel.BackgroundTransparency = 0.2
+miniPanel.BorderSizePixel = 0
+miniPanel.Parent = gui
+corner(miniPanel, 14)
+stroke(miniPanel, CYAN, 1.6, 0.35)
+
+local miniArea = Instance.new("Frame")
+miniArea.Name = "MapArea"
+miniArea.Size = UDim2.new(0, MINI_SIZE, 0, MINI_SIZE)
+miniArea.Position = UDim2.new(0, MINI_PAD, 0, MINI_PAD)
+miniArea.BackgroundColor3 = Color3.fromRGB(6, 10, 20)
+miniArea.BorderSizePixel = 0
+miniArea.ClipsDescendants = true
+miniArea.Parent = miniPanel
+corner(miniArea, 10)
+
+local miniFoot = Instance.new("TextLabel")
+miniFoot.Name = "CoreTimer"
+miniFoot.Size = UDim2.new(1, -12, 0, 22)
+miniFoot.Position = UDim2.new(0, 6, 1, -24)
+miniFoot.BackgroundTransparency = 1
+miniFoot.Font = Enum.Font.GothamBlack
+miniFoot.TextSize = 13
+miniFoot.TextColor3 = GOLD
+miniFoot.Text = "💛 코어 대기"
+miniFoot.Parent = miniPanel
+
+local function minimapPosition(worldPos)
+	local px = (worldPos.X + WORLD_HALF) / (WORLD_HALF * 2) * MINI_SIZE
+	local pz = (worldPos.Z + WORLD_HALF) / (WORLD_HALF * 2) * MINI_SIZE
+	return math.clamp(px, 0, MINI_SIZE), math.clamp(pz, 0, MINI_SIZE)
+end
+
+local function miniDot(parent, size, color)
+	local dot = Instance.new("Frame")
+	dot.Size = UDim2.new(0, size, 0, size)
+	dot.AnchorPoint = Vector2.new(0.5, 0.5)
+	dot.BackgroundColor3 = color
+	dot.BorderSizePixel = 0
+	dot.Parent = parent
+	corner(dot, size / 2)
+	local st = Instance.new("UIStroke")
+	st.Color = WHITE
+	st.Thickness = 1.4
+	st.Transparency = 0.25
+	st.Parent = dot
+	return dot, st
+end
+
+-- 중앙 아레나 표시
+local arenaDot = Instance.new("Frame")
+arenaDot.Size = UDim2.new(0, 44, 0, 44)
+arenaDot.AnchorPoint = Vector2.new(0.5, 0.5)
+arenaDot.Position = UDim2.new(0.5, 0, 0.5, 0)
+arenaDot.BackgroundColor3 = CYAN
+arenaDot.BackgroundTransparency = 0.86
+arenaDot.BorderSizePixel = 0
+arenaDot.Parent = miniArea
+corner(arenaDot, 22)
+
+-- 미드 대각선 표시
+local function miniLine(a, b, color)
+	local ax, az = minimapPosition(a)
+	local bx, bz = minimapPosition(b)
+	local dx, dz = bx - ax, bz - az
+	local length = math.sqrt(dx * dx + dz * dz)
+	local angle = math.deg(math.atan2(dz, dx))
+	local line = Instance.new("Frame")
+	line.Size = UDim2.new(0, length, 0, 2)
+	line.AnchorPoint = Vector2.new(0.5, 0.5)
+	line.Position = UDim2.new(0, (ax + bx) / 2, 0, (az + bz) / 2)
+	line.Rotation = angle
+	line.BackgroundColor3 = color
+	line.BackgroundTransparency = 0.45
+	line.BorderSizePixel = 0
+	line.Parent = miniArea
+	return line
+end
+
+local PLOT_MINI_COLORS = { CYAN, MAGENTA, GREEN, VIOLET }
+
+-- 월드 오브젝트 수집
+local mapWorld = Workspace:WaitForChild("NeonVaultWorld", 30)
+local mapInfo = mapWorld and mapWorld:FindFirstChild("MapInfo")
+if mapInfo ~= nil then
+	local halfValue = mapInfo:FindFirstChild("WorldHalf")
+	if halfValue ~= nil and halfValue:IsA("NumberValue") then
+		WORLD_HALF = halfValue.Value
+	end
+end
+
+local plotDots = {}
+local plotFrames = {}
+local mapPlots = mapWorld and mapWorld:FindFirstChild("Plots")
+for i = 1, 4 do
+	local plot = mapPlots and mapPlots:FindFirstChild("Plot" .. i)
+	local base = plot and plot:FindFirstChild("Base")
+	if base ~= nil then
+		local dot, dotStroke = miniDot(miniArea, 9, PLOT_MINI_COLORS[i])
+		plotDots[i] = { dot = dot, strokeUi = dotStroke, position = base.Position }
+		plotFrames[i] = plot
+	end
+end
+
+-- 테마 구역 점
+if mapInfo ~= nil then
+	local points = mapInfo:FindFirstChild("RegionPoints")
+	if points ~= nil then
+		local regionColors = {
+			crystal = CYAN,
+			city = VIOLET,
+			lava = MAGENTA,
+			jungle = GREEN,
+		}
+		for _, point in ipairs(points:GetChildren()) do
+			local dot = miniDot(miniArea, 6, regionColors[point.Name] or DIM)
+			dot.BackgroundTransparency = 0.25
+			local px, pz = minimapPosition(point.Position)
+			dot.Position = UDim2.new(0, px, 0, pz)
+		end
+	end
+end
+
+-- 미드 대각선
+if #plotFrames >= 4 and plotFrames[1] ~= nil and plotFrames[2] ~= nil then
+	local b1 = plotFrames[1]:FindFirstChild("Base")
+	local b2 = plotFrames[2]:FindFirstChild("Base")
+	local b3 = plotFrames[3]:FindFirstChild("Base")
+	local b4 = plotFrames[4]:FindFirstChild("Base")
+	if b1 and b2 and b3 and b4 then
+		miniLine(b1.Position, b2.Position, MAGENTA)
+		miniLine(b3.Position, b4.Position, MAGENTA)
+		miniLine(b3.Position, b1.Position, CYAN)
+		miniLine(b1.Position, b4.Position, GREEN)
+	end
+end
+
+-- 내 위치 점 / 코어 점
+local meDot, meStroke = miniDot(miniArea, 10, WHITE)
+meStroke.Transparency = 1
+meDot.ZIndex = 5
+
+local coreDot = miniDot(miniArea, 12, GOLD)
+coreDot.Visible = false
+coreDot.ZIndex = 6
+
+-- ==============================================================
+-- 화면 중앙 : 은신 표시
+-- ==============================================================
+local stealthChip = Instance.new("Frame")
+stealthChip.Name = "StealthChip"
+stealthChip.Size = UDim2.new(0, 250, 0, 34)
+stealthChip.Position = UDim2.new(0.5, -125, 0, 118)
+stealthChip.BackgroundColor3 = Color3.fromRGB(10, 44, 28)
+stealthChip.BackgroundTransparency = 0.15
+stealthChip.BorderSizePixel = 0
+stealthChip.Visible = false
+stealthChip.Parent = gui
+corner(stealthChip, 17)
+stroke(stealthChip, GREEN, 1.6, 0.2)
+local stealthLabel = makeLabel(stealthChip, {
+	Size = UDim2.new(1, -16, 1, 0),
+	Position = UDim2.new(0, 8, 0, 0),
+	TextSize = 14,
+	TextColor3 = Color3.fromRGB(200, 255, 220),
+	Text = "🌿 은신 중 — 적에게 보이지 않습니다",
+})
 
 -- ==============================================================
 -- 좌측 하단 : 내 기지 요약 / 도감 / 상점 버튼
@@ -731,6 +913,44 @@ RunService.RenderStepped:Connect(function(dt)
 		shieldStroke.Color = shieldOn and CYAN or RED
 		shieldTime.TextColor3 = shieldOn and WHITE or Color3.fromRGB(255, 160, 160)
 	end
+
+	-- 미니맵: 내 위치 / 기지 방어막 / 코어
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if root ~= nil then
+		local px, pz = minimapPosition(root.Position)
+		meDot.Position = UDim2.new(0, px, 0, pz)
+	end
+	for i, entry in pairs(plotDots) do
+		local px, pz = minimapPosition(entry.position)
+		entry.dot.Position = UDim2.new(0, px, 0, pz)
+		local plot = plotFrames[i]
+		local shieldOn = true
+		if plot ~= nil then
+			shieldOn = plot:GetAttribute("ShieldOn") ~= false
+		end
+		if shieldOn then
+			entry.strokeUi.Color = CYAN
+			entry.dot.BackgroundColor3 = PLOT_MINI_COLORS[i]
+		else
+			entry.strokeUi.Color = RED
+			entry.dot.BackgroundColor3 = Color3.fromRGB(120, 40, 52)
+		end
+	end
+	local coreActive = Workspace:GetAttribute("NV_CoreActive") == true
+	coreDot.Visible = coreActive
+	if coreActive then
+		coreDot.Position = UDim2.new(0.5, 0, 0.5, 0)
+		local endsAt = Workspace:GetAttribute("NV_CoreEndsAt") or 0
+		miniFoot.Text = "💛 코어 쟁탈 " .. tostring(math.max(0, math.ceil(endsAt - now))) .. "초"
+		miniFoot.TextColor3 = Color3.fromRGB(255, 244, 190)
+	else
+		local nextAt = Workspace:GetAttribute("NV_CoreNextAt") or 0
+		local left = math.max(0, math.ceil(nextAt - now))
+		miniFoot.Text = "💛 코어 " .. tostring(left) .. "초"
+		miniFoot.TextColor3 = GOLD
+	end
+	stealthChip.Visible = player:GetAttribute("Stealthed") == true
 
 	local hackReadyAt = player:GetAttribute("HackReadyAt") or 0
 	local hackLeft = math.max(0, hackReadyAt - now)

@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#05060d">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="네온 볼트 약탈자 — 뽑기로 금고를 채우고, 방어막이 꺼진 남의 금고를 털어 오세요. 아이폰 사파리용 미니 테스트판.">
+<title>🛸 네온 볼트 약탈자</title>
+<style>
+  :root{
+    --cyan:#00e8ff;
+    --magenta:#ff2ebe;
+    --violet:#966eff;
+    --gold:#ffc63a;
+    --red:#ff5460;
+    --green:#5af0a0;
+    --txt:#eaf4ff;
+    --dim:#93a8c8;
+    --panel:rgba(10,14,28,.82);
+    --line:rgba(120,200,255,.28);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#05060d;}
+  body{
+    position:fixed;inset:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",system-ui,sans-serif;
+    color:var(--txt);
+    touch-action:none;
+    -webkit-text-size-adjust:100%;
+    overscroll-behavior:none;
+  }
+  #game{position:absolute;inset:0;display:block;width:100%;height:100%;}
+
+  /* ---------- 공통 패널 ---------- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 10px 26px -14px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05);
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
+  }
+
+  /* ---------- 상단 HUD ---------- */
+  #hudTop{
+    position:absolute;left:0;right:0;
+    top:calc(env(safe-area-inset-top) + 8px);
+    padding:0 10px;
+    display:flex;gap:8px;align-items:flex-start;
+    pointer-events:none;
+    z-index:5;
+  }
+  #cashPanel{
+    flex:0 0 158px;padding:8px 12px 9px;
+    background:linear-gradient(160deg,rgba(24,56,92,.94),rgba(10,14,28,.9));
+    border:1px solid rgba(0,232,255,.36);
+  }
+  #cashRow{display:flex;align-items:baseline;gap:5px;}
+  #cash{font-size:21px;font-weight:900;letter-spacing:-.5px;color:var(--gold);line-height:1.05;}
+  #cashUnit{font-size:11px;color:#c8a850;font-weight:700;}
+  #income{font-size:11.5px;color:var(--green);font-weight:800;margin-top:2px;}
+  #stats{font-size:10.5px;color:var(--dim);margin-top:2px;letter-spacing:.1px;}
+
+  #shieldPanel{
+    flex:1 1 auto;min-width:0;padding:7px 11px 9px;
+    border-color:rgba(0,232,255,.3);
+  }
+  #shieldPanel.off{border-color:rgba(255,84,96,.6);background:linear-gradient(160deg,rgba(70,14,24,.94),rgba(14,10,20,.9));}
+  #shieldHead{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;color:#8fe9ff;}
+  #shieldPanel.off #shieldHead{color:#ffb0b8;}
+  #shieldTime{font-size:15px;font-weight:900;letter-spacing:-.3px;color:#fff;}
+  #shieldTrack{height:6px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:5px;overflow:hidden;}
+  #shieldFill{height:100%;width:100%;border-radius:4px;background:linear-gradient(90deg,#00e8ff,#4da3ff);transition:width .18s linear;}
+  #shieldPanel.off #shieldFill{background:linear-gradient(90deg,#ff5460,#ff9a3c);}
+
+  /* ---------- 안내 토스트 ---------- */
+  #toasts{
+    position:absolute;left:50%;transform:translateX(-50%);
+    top:calc(env(safe-area-inset-top) + 92px);
+    width:min(330px,84vw);
+    display:flex;flex-direction:column;gap:5px;align-items:center;
+    pointer-events:none;z-index:6;
+  }
+  .toast{
+    padding:7px 12px;border-radius:11px;
+    background:rgba(8,12,24,.92);border:1px solid rgba(0,232,255,.4);
+    font-size:12px;font-weight:700;line-height:1.35;text-align:center;color:#e9f5ff;
+    animation:toastIn .22s ease-out;
+    box-shadow:0 8px 18px -12px #000;
+  }
+  .toast.good{border-color:rgba(90,240,160,.6);color:#c9ffe0;}
+  .toast.bad{border-color:rgba(255,84,96,.7);color:#ffd2d6;}
+  .toast.gold{border-color:rgba(255,198,58,.75);color:#ffe9ab;}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
+
+  /* ---------- 하단 버튼 ---------- */
+  #btnBar{
+    position:absolute;right:10px;
+    bottom:calc(env(safe-area-inset-bottom) + 12px);
+    display:flex;flex-direction:column;gap:8px;align-items:flex-end;
+    z-index:7;
+  }
+  .gbtn{
+    display:flex;align-items:center;gap:7px;
+    padding:0 13px;height:44px;
+    border-radius:14px;border:1px solid rgba(0,232,255,.4);
+    background:linear-gradient(165deg,rgba(20,30,58,.95),rgba(9,13,26,.95));
+    color:#dff3ff;font-size:13px;font-weight:900;letter-spacing:-.2px;
+    box-shadow:0 10px 22px -16px #000, inset 0 1px 0 rgba(255,255,255,.06);
+    position:relative;overflow:hidden;
+  }
+  .gbtn .em{font-size:17px;line-height:1;}
+  .gbtn:active{transform:scale(.965);}
+  .gbtn.hack{border-color:rgba(150,110,255,.75);box-shadow:0 0 18px -2px rgba(150,110,255,.5), inset 0 1px 0 rgba(255,255,255,.08);}
+  .gbtn.hack .cd{
+    position:absolute;left:0;top:0;bottom:0;background:rgba(150,110,255,.22);
+    width:0%;transition:width .2s linear;
+  }
+  .gbtn.shop{border-color:rgba(255,198,58,.6);color:#ffe9ab;}
+  .gbtn.lock{border-color:rgba(0,232,255,.45);}
+  .gbtn .lbl{position:relative;}
+  .gbtn:disabled{opacity:.42;}
+  #btnLock{height:38px;font-size:12px;}
+
+  /* ---------- 훔치기 버튼 ---------- */
+  #stealBtn{
+    position:absolute;left:50%;transform:translateX(-50%) translateY(14px);
+    bottom:calc(env(safe-area-inset-bottom) + 74px);
+    min-width:200px;height:56px;padding:0 22px;
+    border-radius:18px;border:2px solid rgba(255,198,58,.9);
+    background:linear-gradient(170deg,rgba(255,120,40,.96),rgba(180,30,90,.96));
+    color:#fff;font-size:16px;font-weight:900;letter-spacing:-.3px;
+    box-shadow:0 0 26px rgba(255,150,50,.55), inset 0 1px 0 rgba(255,255,255,.28);
+    opacity:0;pointer-events:none;transition:opacity .16s ease, transform .16s ease;
+    z-index:8;
+  }
+  #stealBtn.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  #stealBtn:active{transform:translateX(-50%) scale(.96);}
+  #stealBtn small{display:block;font-size:10.5px;font-weight:700;opacity:.9;margin-top:1px;}
+
+  /* ---------- 운반 게이지 ---------- */
+  #carryBar{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom) + 140px);
+    width:min(260px,76vw);padding:7px 11px 9px;border-radius:13px;
+    background:linear-gradient(170deg,rgba(74,14,26,.94),rgba(18,8,16,.94));
+    border:1px solid rgba(255,84,96,.7);
+    display:none;z-index:6;
+    box-shadow:0 0 22px -6px rgba(255,84,96,.6);
+  }
+  #carryBar.show{display:block;}
+  #carryTop{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;color:#ffbcc2;}
+  #carryTrack{height:5px;border-radius:3px;background:rgba(255,255,255,.14);margin-top:5px;overflow:hidden;}
+  #carryFill{height:100%;width:100%;background:linear-gradient(90deg,#ff5460,#ffb03a);}
+
+  /* ---------- 조이스틱 ---------- */
+  #joy{position:absolute;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;
+    border:2px solid rgba(0,232,255,.35);background:rgba(0,232,255,.06);display:none;pointer-events:none;z-index:4;}
+  #joyKnob{position:absolute;left:50%;top:50%;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#8ff6ff,#00a6c8);box-shadow:0 0 18px rgba(0,232,255,.7);}
+
+  /* ---------- 모달 공통 ---------- */
+  .veil{
+    position:absolute;inset:0;background:rgba(3,5,12,.72);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:20;
+    padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);
+  }
+  .veil.show{display:flex;}
+  .sheet{
+    width:100%;max-width:360px;max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;
+    padding:16px 14px 14px;border-radius:22px;
+    background:linear-gradient(175deg,rgba(16,22,44,.98),rgba(7,10,20,.99));
+    border:1px solid rgba(0,232,255,.36);
+    box-shadow:0 24px 60px -24px #000, inset 0 1px 0 rgba(255,255,255,.06);
+    animation:sheetIn .22s ease-out;
+  }
+  @keyframes sheetIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+  .sheet h2{margin:0 0 3px;font-size:17px;font-weight:900;letter-spacing:-.4px;}
+  .sheet .sub{margin:0 0 12px;font-size:11.5px;color:var(--dim);line-height:1.45;}
+  .closeX{
+    position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:10px;
+    border:1px solid rgba(255,120,140,.4);background:rgba(60,14,24,.8);color:#ffb3bc;
+    font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  }
+  .sheetDB{position:relative;}
+
+  /* 뽑기 카드 */
+  .themeCard{
+    display:flex;align-items:center;gap:11px;width:100%;
+    padding:11px 12px;margin-bottom:9px;border-radius:16px;text-align:left;
+    border:1px solid rgba(120,180,255,.28);
+    background:linear-gradient(150deg,rgba(22,30,56,.9),rgba(10,14,28,.92));
+    color:var(--txt);
+  }
+  .themeCard:active{transform:scale(.98);}
+  .themeCard .tcIcon{
+    width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-size:23px;background:rgba(255,255,255,.06);flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.1);
+  }
+  .themeCard .tcBody{flex:1;min-width:0;}
+  .themeCard .tcName{display:block;font-size:13.5px;font-weight:900;letter-spacing:-.2px;line-height:1.3;}
+  .themeCard .tcDesc{display:block;font-size:10.5px;color:var(--dim);margin-top:2px;line-height:1.35;}
+  .themeCard .tcCost{font-size:13px;font-weight:900;color:var(--gold);white-space:nowrap;}
+  .themeCard.poor{opacity:.55;}
+  .themeCard.t1{border-color:rgba(0,232,255,.45)}
+  .themeCard.t2{border-color:rgba(140,255,106,.4)}
+  .themeCard.t3{border-color:rgba(255,90,209,.45)}
+  .themeCard.t4{border-color:rgba(180,140,255,.5)}
+
+  /* 결과 카드 */
+  #revealCard{
+    width:100%;max-width:300px;padding:18px 16px 16px;border-radius:22px;text-align:center;
+    background:linear-gradient(175deg,rgba(18,24,48,.99),rgba(6,9,18,.99));
+    border:2px solid var(--cyan);
+    box-shadow:0 0 42px -8px var(--cyan);
+    animation:popIn .34s cubic-bezier(.2,1.5,.4,1);
+  }
+  @keyframes popIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+  #revealCard .rvRarity{font-size:11px;font-weight:900;letter-spacing:2px;}
+  #revealCard .rvName{font-size:22px;font-weight:900;margin:4px 0 2px;letter-spacing:-.5px;}
+  #revealCard .rvInc{font-size:14px;font-weight:900;color:var(--green);}
+  #revealArt{width:132px;height:132px;display:block;margin:6px auto 2px;}
+  #revealCard .rvHint{font-size:10.5px;color:var(--dim);margin-top:8px;}
+  #revealCard.poor{border-color:#c6d6ec;box-shadow:0 0 34px -10px #c6d6ec;}
+
+  /* 도감 */
+  .colRow{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:14px;margin-bottom:8px;
+    background:rgba(22,30,52,.7);border:1px solid rgba(150,110,255,.35);}
+  .colRow .em{font-size:20px;}
+  .colRow .cn{display:block;font-size:13px;font-weight:900;}
+  .colRow .cc{display:block;font-size:10.5px;color:var(--dim);margin-top:2px;}
+  .goalRow{display:flex;justify-content:space-between;font-size:11.5px;padding:6px 2px;color:var(--dim);}
+  .goalRow.done{color:var(--green);font-weight:800;}
+
+  /* 인트로 */
+  #introSheet{padding:20px 18px 18px;}
+  #introSheet h2{font-size:21px;background:linear-gradient(100deg,#fff,var(--cyan) 45%,var(--magenta));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .stepRow{display:flex;gap:10px;margin:10px 0;align-items:flex-start;}
+  .stepNum{width:22px;height:22px;flex:0 0 auto;border-radius:8px;background:rgba(0,232,255,.16);
+    border:1px solid rgba(0,232,255,.45);color:#9df1ff;font-size:11px;font-weight:900;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .stepTxt{font-size:12px;line-height:1.5;color:#cfe2f7;}
+  .stepTxt b{color:#fff;}
+  .bigBtn{
+    width:100%;height:50px;border-radius:16px;margin-top:12px;border:none;
+    background:linear-gradient(170deg,#00e8ff,#3a7bff);color:#04121c;
+    font-size:16px;font-weight:900;letter-spacing:-.3px;
+    box-shadow:0 0 26px -4px rgba(0,232,255,.7);
+  }
+  .bigBtn:active{transform:scale(.98);}
+  .ghostBtn{
+    width:100%;height:42px;border-radius:14px;margin-top:8px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(120,200,255,.3);color:#cfe6ff;
+    font-size:13px;font-weight:800;
+  }
+  .hintLine{font-size:10.5px;color:var(--dim);text-align:center;margin-top:9px;line-height:1.5;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hudTop">
+  <div id="cashPanel" class="panel">
+    <div id="cashRow"><span id="cash">$0</span><span id="cashUnit">NEON</span></div>
+    <div id="income">+$0 /초</div>
+    <div id="stats">수금 0 · 훔침 0</div>
+  </div>
+  <div id="shieldPanel" class="panel">
+    <div id="shieldHead"><span>🛡 내 방어막</span><span id="shieldTime">60초</span></div>
+    <div id="shieldTrack"><div id="shieldFill"></div></div>
+    <div id="droneLine" style="font-size:10px;color:#c9b7ff;font-weight:800;margin-top:5px;">🛸 드론 Lv.1 · 해킹 준비</div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<div id="carryBar">
+  <div id="carryTop"><span id="carryName">🕵️ 전리품</span><span id="carryLeft">15초</span></div>
+  <div id="carryTrack"><div id="carryFill"></div></div>
+</div>
+
+<button id="stealBtn">훔치기<small>내 금고로 가져오세요</small></button>
+
+<div id="joy"><div id="joyKnob"></div></div>
+
+<div id="btnBar">
+  <button class="gbtn hack" id="btnHack"><span class="cd" id="hackCd"></span><span class="em">🛸</span><span class="lbl" id="hackLbl">해킹</span></button>
+  <button class="gbtn shop" id="btnShop"><span class="em">🎲</span><span class="lbl">뽑기</span></button>
+  <button class="gbtn" id="btnDex"><span class="em">📖</span><span class="lbl">도감</span></button>
+  <button class="gbtn lock" id="btnLock"><span class="lbl" id="lockLbl">🔒 잠금</span></button>
+</div>
+
+<!-- 뽑기 시트 -->
+<div class="veil" id="sheetVeil">
+  <div class="sheet sheetDB">
+    <button class="closeX" data-close="sheetVeil">✕</button>
+    <h2>🎰 네온 뽑기 타워</h2>
+    <p class="sub">등급: 일반 62% · 희귀 25% · 영웅 10% · <b style="color:#ffbe46">전설 3%</b><br>전시대 8칸이 가득 차면 가장 약한 전시품이 교체됩니다.</p>
+    <div id="themeList"></div>
+    <p class="hintLine">보유 <b id="sheetCash" style="color:#ffc63a">$0</b></p>
+  </div>
+</div>
+
+<!-- 결과 -->
+<div class="veil" id="revealVeil">
+  <div id="revealCard">
+    <div class="rvRarity" id="rvRarity">희귀</div>
+    <canvas id="revealArt" width="264" height="264"></canvas>
+    <div class="rvName" id="rvName">네온 수정</div>
+    <div class="rvInc" id="rvInc">+$8 /초</div>
+    <div class="rvHint" id="rvHint">내 금고 전시대에 배치되었습니다 · 화면을 탭해 닫기</div>
+  </div>
+</div>
+
+<!-- 도감 -->
+<div class="veil" id="dexVeil">
+  <div class="sheet sheetDB">
+    <button class="closeX" data-close="dexVeil">✕</button>
+    <h2>📖 네온 도감</h2>
+    <p class="sub">4대 테마를 모을수록 금고가 화려해집니다.</p>
+    <div id="dexList"></div>
+    <div style="height:1px;background:rgba(120,200,255,.2);margin:12px 0 8px;"></div>
+    <div id="goalList"></div>
+  </div>
+</div>
+
+<!-- 인트로 -->
+<div class="veil show" id="introVeil">
+  <div class="sheet" id="introSheet">
+    <h2>🛸 네온 볼트 약탈자</h2>
+    <p class="sub">뽑기로 내 금고를 채우고, 남의 방어막이 꺼지면 훔쳐 오세요.</p>
+    <div class="stepRow"><div class="stepNum">1</div><div class="stepTxt"><b>🎲 뽑기</b> — 오른쪽 뽑기 버튼으로 4대 테마(💎🦖🐉🛸)를 뽑아 내 금고 전시대에 올립니다. 전시품은 <b>초당 현금</b>을 만듭니다.</div></div>
+    <div class="stepRow"><div class="stepNum">2</div><div class="stepTxt"><b>🕵️ 약탈</b> — 상대 금고의 방어막이 꺼지면(남색 표시) 들어가 <b>훔치기</b>. 15초 안에 내 금고로 돌아오면 내 것이 됩니다. 경비 드론에게 잡히면 빼앗깁니다.</div></div>
+    <div class="stepRow"><div class="stepNum">3</div><div class="stepTxt"><b>🛸 해킹</b> — 드론을 뽑으면 해킹 파워가 올라갑니다. 해킹 버튼으로 상대 방어막을 미리 꺼버리세요.</div></div>
+    <div class="stepRow"><div class="stepNum">4</div><div class="stepTxt"><b>🕹 이동</b> — 화면을 <b>짧게 탭</b>하면 그쪽으로 이동, <b>누른 채 드래그</b>하면 조이스틱이 나타납니다.</div></div>
+    <button class="bigBtn" id="btnStart">시작하기 ▶</button>
+    <p class="hintLine">아이폰 세로 화면에 맞춰 만들었습니다. 소리는 첫 터치 이후 재생됩니다.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============================================================
+  // 0. 기본
+  // ============================================================
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var W = 390, H = 844, DPR = 1;
+  var scale = 1;
+  var cam = { x: 700, y: 1120 };
+
+  var WORLD = 1400;
+  var PLAYER_SPEED = 205;
+  var GUARD_SPEED = 178;
+  var THIEF_SPEED = 150;
+  var CARRY_TIME = 15;
+  var HACK_COOLDOWN = 18;
+  var LOCK_COOLDOWN = 45;
+
+  var THEMES = {
+    gem:     { key:'gem',     ko:'💎 보석 · 유물', short:'보석',    icon:'💎', cost:40,   incomes:[3,8,20,50],        color:'#39e6ff' },
+    egg:     { key:'egg',     ko:'🦖 공룡 알',      short:'공룡알',  icon:'🦖', cost:180,  incomes:[10,26,65,160],     color:'#8cff6a' },
+    monster: { key:'monster', ko:'🐉 전설 몬스터',  short:'몬스터',  icon:'🐉', cost:700,  incomes:[30,80,200,500],    color:'#ff5ad1' },
+    drone:   { key:'drone',   ko:'🛸 사이버 드론',  short:'드론',    icon:'🛸', cost:2600, incomes:[110,280,700,1800], color:'#b48cff' }
+  };
+  var THEME_ORDER = ['gem','egg','monster','drone'];
+  var RARITY = [
+    { key:'common',    name:'일반', color:'#c6d6ec', w:62, mult:1 },
+    { key:'rare',      name:'희귀', color:'#54baff', w:25, mult:2.6 },
+    { key:'epic',      name:'영웅', color:'#be74ff', w:10, mult:6.5 },
+    { key:'legendary', name:'전설', color:'#ffbe46', w:3,  mult:16 }
+  ];
+  var NAMES = {
+    gem:     ['네온 수정','루비 파편','심연의 사파이어','무한의 프리즘'],
+    egg:     ['점박이 알','발광 알','고대의 알','태고룡 알'],
+    monster: ['그림자 새끼','화염 와이번','심해 크라켄','전설의 용'],
+    drone:   ['정찰 드론','해커 드론','스텔스 드론','오버로드 드론']
+  };
+
+  // ============================================================
+  // 1. 상태
+  // ============================================================
+  var G = null;
+
+  function makeVault(cfg){
+    var v = {
+      id: cfg.id, name: cfg.name, color: cfg.color, isPlayer: !!cfg.isPlayer,
+      x: cfg.x, y: cfg.y, w: 286, h: 214,
+      slots: [null,null,null,null,null,null,null,null],
+      shieldOn: true, shieldEnd: 0,
+      onTime: cfg.isPlayer ? 60 : 45,
+      offTime: cfg.isPlayer ? 30 : 25,
+      cash: cfg.isPlayer ? 0 : (cfg.cash || 620),
+      ai: { nextRoll: cfg.firstRoll || 8, theme: cfg.theme || 'gem' },
+      guard: { x: cfg.x, y: cfg.y + 40, tx: cfg.x, ty: cfg.y + 40, wait: 1 },
+      thief: null
+    };
+    return v;
+  }
+
+  function newGame(){
+    G = {
+      time: 0,
+      cash: 620,
+      earned: 0,
+      steals: 0,
+      droneBest: 1,
+      droneCount: 1,
+      collection: { gem:{count:0,best:-1}, egg:{count:0,best:-1}, monster:{count:0,best:-1}, drone:{count:0,best:-1} },
+      goals: { firstSteal:false, firstLegend:false, firstHack:false, rich:false },
+      hackReady: 0,
+      lockReady: 0,
+      player: { x: 700, y: 990, vx: 0, vy: 0, carrying: null, target: null, face: -1 },
+      vaults: [
+        makeVault({ id:'me', name:'내 금고', color:'#00e8ff', isPlayer:true, x:700, y:990 }),
+        makeVault({ id:'r1', name:'루비 길드', color:'#ff4d8d', x:330, y:660, theme:'gem', firstRoll: 3 }),
+        makeVault({ id:'r2', name:'바이퍼 크루', color:'#b48cff', x:700, y:300, theme:'egg', firstRoll: 9 }),
+        makeVault({ id:'r3', name:'네온 재규어', color:'#8cff6a', x:1070, y:660, theme:'monster', cash: 1250, firstRoll: 12 })
+      ],
+      fx: [],
+      floats: [],
+      particles: [],
+      dust: []
+    };
+    for (var di = 0; di < 70; di++){
+      G.dust.push({ x: Math.random()*WORLD, y: Math.random()*WORLD,
+        vx: (Math.random()-0.5)*14, vy: -8 - Math.random()*16,
+        r: 0.7 + Math.random()*1.6, a: 0.10 + Math.random()*0.32 });
+    }
+    G.vaults[0].shieldEnd = 60;
+    G.vaults[1].shieldEnd = 26;
+    G.vaults[2].shieldEnd = 40;
+    G.vaults[3].shieldEnd = 14;
+    G.player.x = 700; G.player.y = 990;
+    cam.x = 700; cam.y = 990;
+  }
+
+  function playerVault(){ return G.vaults[0]; }
+
+  // ============================================================
+  // 2. 유틸
+  // ============================================================
+  function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+  function dist(ax, ay, bx, by){ var dx = ax-bx, dy = ay-by; return Math.sqrt(dx*dx+dy*dy); }
+  function fmt(n){
+    n = Math.floor(n || 0);
+    var s = String(n), out = '', c = 0;
+    for (var i = s.length-1; i >= 0; i--){
+      out = s[i] + out; c++;
+      if (c % 3 === 0 && i > 0) out = ',' + out;
+    }
+    return out;
+  }
+  function hexA(hex, a){
+    var h = hex.replace('#','');
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+  function vaultIncome(v){
+    var sum = 0;
+    for (var i = 0; i < v.slots.length; i++) if (v.slots[i]) sum += v.slots[i].income;
+    return sum;
+  }
+  function freeSlot(v){
+    for (var i = 0; i < v.slots.length; i++) if (!v.slots[i]) return i;
+    return -1;
+  }
+  function weakestSlot(v){
+    var idx = -1, low = Infinity;
+    for (var i = 0; i < v.slots.length; i++){
+      if (v.slots[i] && v.slots[i].income < low){ low = v.slots[i].income; idx = i; }
+    }
+    return idx;
+  }
+  function insideVault(v, x, y, pad){
+    pad = pad || 0;
+    return Math.abs(x - v.x) < v.w/2 + pad && Math.abs(y - v.y) < v.h/2 + pad;
+  }
+  function slotPos(v, i){
+    var xs = [-96, -32, 32, 96], ys = [-46, 46];
+    return { x: v.x + xs[i % 4], y: v.y + ys[Math.floor(i/4)] };
+  }
+
+  // ============================================================
+  // 3. 사운드 (아주 가벼운 WebAudio)
+  // ============================================================
+  var actx = null;
+  function audioInit(){
+    if (actx) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) actx = new AC();
+    } catch(e){ actx = null; }
+  }
+  function blip(freq, dur, type, vol){
+    if (!actx) return;
+    try {
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || 'sine'; o.frequency.value = freq;
+      g.gain.value = vol || 0.05;
+      o.connect(g); g.connect(actx.destination);
+      var t = actx.currentTime;
+      g.gain.setValueAtTime(g.gain.value, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.12));
+      o.start(t); o.stop(t + (dur || 0.12) + 0.02);
+    } catch(e){}
+  }
+
+  // ============================================================
+  // 4. 아이템 스프라이트 (오프스크린 캔버스 캐시)
+  // ============================================================
+  var spriteCache = {};
+  function sprite(theme, rarityIdx){
+    var key = theme + '_' + rarityIdx;
+    if (spriteCache[key]) return spriteCache[key];
+    var c = document.createElement('canvas');
+    c.width = 128; c.height = 128;
+    var x = c.getContext('2d');
+    var col = RARITY[rarityIdx].color;
+    var themeCol = THEMES[theme].color;
+
+    // 바닥 광원
+    var g0 = x.createRadialGradient(64, 78, 3, 64, 78, 50);
+    g0.addColorStop(0, hexA(col, .55));
+    g0.addColorStop(.55, hexA(themeCol, .18));
+    g0.addColorStop(1, hexA(themeCol, 0));
+    x.fillStyle = g0; x.beginPath(); x.arc(64, 78, 50, 0, Math.PI*2); x.fill();
+
+    x.save();
+    x.translate(64, 62);
+    x.shadowColor = hexA(col, .9);
+    x.shadowBlur = 16;
+
+    if (theme === 'gem'){
+      x.beginPath();
+      x.moveTo(0, -34); x.lineTo(21, -8); x.lineTo(0, 34); x.lineTo(-21, -8); x.closePath();
+      var g1 = x.createLinearGradient(-18, -30, 18, 30);
+      g1.addColorStop(0, '#ffffff'); g1.addColorStop(.35, themeCol); g1.addColorStop(1, col);
+      x.fillStyle = g1; x.fill();
+      x.strokeStyle = 'rgba(255,255,255,.85)'; x.lineWidth = 1.6; x.stroke();
+      x.beginPath(); x.moveTo(0,-34); x.lineTo(0,34); x.moveTo(-21,-8); x.lineTo(21,-8);
+      x.strokeStyle = 'rgba(255,255,255,.45)'; x.lineWidth = 1; x.stroke();
+    } else if (theme === 'egg'){
+      x.beginPath();
+      x.ellipse(0, 0, 21, 30, 0, 0, Math.PI*2);
+      var g2 = x.createLinearGradient(-16, -26, 18, 28);
+      g2.addColorStop(0, '#f3ffe4'); g2.addColorStop(.5, '#d6ecbe'); g2.addColorStop(1, '#9fd07d');
+      x.fillStyle = g2; x.fill();
+      x.strokeStyle = hexA(col, .95); x.lineWidth = 2; x.stroke();
+      x.fillStyle = 'rgba(96,150,72,.85)';
+      var spots = [[-7,-14,4.4],[8,-6,3.6],[-4,6,5],[6,15,3.2],[-11,13,2.8]];
+      for (var i = 0; i < spots.length; i++){
+        x.beginPath(); x.arc(spots[i][0], spots[i][1], spots[i][2], 0, Math.PI*2); x.fill();
+      }
+    } else if (theme === 'monster'){
+      // 날개
+      x.fillStyle = hexA(themeCol, .85);
+      x.beginPath(); x.moveTo(-4, -4); x.lineTo(-34, -20); x.lineTo(-26, 6); x.lineTo(-8, 10); x.closePath(); x.fill();
+      x.beginPath(); x.moveTo(4, -4); x.lineTo(34, -20); x.lineTo(26, 6); x.lineTo(8, 10); x.closePath(); x.fill();
+      // 몸통
+      var g3 = x.createRadialGradient(-6, -8, 2, 0, 0, 26);
+      g3.addColorStop(0, '#ffd6ff'); g3.addColorStop(.5, themeCol); g3.addColorStop(1, '#8a1f9c');
+      x.fillStyle = g3;
+      x.beginPath(); x.ellipse(0, 4, 15, 18, 0, 0, Math.PI*2); x.fill();
+      // 머리
+      x.beginPath(); x.ellipse(0, -20, 10, 9, 0, 0, Math.PI*2); x.fill();
+      // 뿔
+      x.strokeStyle = '#ffe9a8'; x.lineWidth = 2.4;
+      x.beginPath(); x.moveTo(-6,-26); x.lineTo(-10,-36); x.moveTo(6,-26); x.lineTo(10,-36); x.stroke();
+      // 눈
+      x.fillStyle = '#ffe14d'; x.beginPath(); x.arc(-3.4,-19,2.1,0,Math.PI*2); x.arc(3.4,-19,2.1,0,Math.PI*2); x.fill();
+      // 꼬리
+      x.strokeStyle = hexA(themeCol, .95); x.lineWidth = 4; x.beginPath(); x.moveTo(6, 18); x.quadraticCurveTo(20, 24, 16, 34); x.stroke();
+    } else {
+      // 드론 본체
+      x.fillStyle = hexA('#323d60', 1);
+      x.beginPath(); x.arc(0, 0, 19, 0, Math.PI*2); x.fill();
+      x.strokeStyle = hexA(col, .95); x.lineWidth = 2.6; x.beginPath(); x.arc(0, 0, 19, 0, Math.PI*2); x.stroke();
+      // 암 + 로터
+      var angs = [Math.PI/4, Math.PI*3/4, Math.PI*5/4, Math.PI*7/4];
+      for (var k = 0; k < 4; k++){
+        var a = angs[k], rx = Math.cos(a)*30, ry = Math.sin(a)*30;
+        x.strokeStyle = hexA('#7f8db8', .95); x.lineWidth = 3.8;
+        x.beginPath(); x.moveTo(Math.cos(a)*14, Math.sin(a)*14); x.lineTo(rx, ry); x.stroke();
+        x.strokeStyle = hexA(col, .95); x.lineWidth = 2.2;
+        x.beginPath(); x.ellipse(rx, ry, 11, 4, a, 0, Math.PI*2); x.stroke();
+      }
+      // 코어
+      var g4 = x.createRadialGradient(0, -2, 1, 0, 0, 12);
+      g4.addColorStop(0, '#ffffff'); g4.addColorStop(.5, themeCol); g4.addColorStop(1, hexA(themeCol, .1));
+      x.fillStyle = g4; x.beginPath(); x.arc(0, 0, 10, 0, Math.PI*2); x.fill();
+    }
+    x.restore();
+    spriteCache[key] = c;
+    return c;
+  }
+
+  // ============================================================
+  // 5. 입력
+  // ============================================================
+  var joy = { active:false, ox:0, oy:0, dx:0, dy:0, id:null };
+  var joyEl = document.getElementById('joy');
+  var joyKnob = document.getElementById('joyKnob');
+
+  function screenToWorld(px, py){
+    return { x: (px - W/2)/scale + cam.x, y: (py - H/2)/scale + cam.y };
+  }
+  function isUI(target){
+    return !!(target && target.closest && target.closest('.gbtn, #stealBtn, .veil, #carryBar'));
+  }
+
+  canvas.addEventListener('pointerdown', function(e){
+    audioInit();
+    if (isUI(e.target)) return;
+    joy.active = true; joy.id = e.pointerId;
+    joy.ox = e.clientX; joy.oy = e.clientY; joy.dx = 0; joy.dy = 0;
+    joyEl.style.display = 'block';
+    joyEl.style.left = e.clientX + 'px';
+    joyEl.style.top = e.clientY + 'px';
+    joyKnob.style.transform = 'translate(0,0)';
+    G.player.target = null;
+    if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch(err){} }
+  });
+
+  canvas.addEventListener('pointermove', function(e){
+    if (!joy.active || e.pointerId !== joy.id) return;
+    var dx = e.clientX - joy.ox, dy = e.clientY - joy.oy;
+    var len = Math.sqrt(dx*dx + dy*dy);
+    var maxR = 46;
+    if (len > maxR){ dx = dx/len*maxR; dy = dy/len*maxR; len = maxR; }
+    joy.dx = dx / maxR; joy.dy = dy / maxR;
+    joyKnob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+  });
+
+  function endPointer(e){
+    if (!joy.active || (e.pointerId !== undefined && e.pointerId !== joy.id)) return;
+    var moved = Math.sqrt(joy.dx*joy.dx + joy.dy*joy.dy);
+    if (moved < 0.18){
+      var w = screenToWorld(e.clientX, e.clientY);
+      G.player.target = { x: clamp(w.x, 40, WORLD-40), y: clamp(w.y, 40, WORLD-40) };
+    }
+    joy.active = false; joy.dx = 0; joy.dy = 0;
+    joyEl.style.display = 'none';
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
+  var keys = {};
+  window.addEventListener('keydown', function(e){
+    keys[e.key.toLowerCase()] = true;
+    if (e.key === ' ') e.preventDefault();
+  });
+  window.addEventListener('keyup', function(e){ keys[e.key.toLowerCase()] = false; });
+
+  // ============================================================
+  // 6. 게임 로직
+  // ============================================================
+  function toast(text, kind){
+    var box = document.getElementById('toasts');
+    var el = document.createElement('div');
+    el.className = 'toast' + (kind ? ' ' + kind : '');
+    el.textContent = text;
+    box.appendChild(el);
+    while (box.children.length > 2) box.removeChild(box.firstChild);
+    setTimeout(function(){
+      el.style.transition = 'opacity .35s';
+      el.style.opacity = '0';
+      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 380);
+    }, 2000);
+  }
+
+  function floatText(x, y, text, color){
+    G.floats.push({ x:x, y:y, text:text, color:color, t:0, life:1.1 });
+  }
+
+  function burst(x, y, color, n){
+    for (var i = 0; i < n; i++){
+      var a = Math.random()*Math.PI*2, sp = 40 + Math.random()*130;
+      G.particles.push({ x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 30, t:0, life:0.5+Math.random()*0.5, color:color, r:1.4+Math.random()*2.4 });
+    }
+  }
+
+  function pickRarity(){
+    var total = 0, i;
+    for (i = 0; i < RARITY.length; i++) total += RARITY[i].w;
+    var r = Math.random()*total, acc = 0;
+    for (i = 0; i < RARITY.length; i++){
+      acc += RARITY[i].w;
+      if (r <= acc) return i;
+    }
+    return 0;
+  }
+
+  function rollItem(theme, rarityIdx){
+    var t = THEMES[theme];
+    return {
+      theme: theme,
+      rarity: rarityIdx,
+      name: NAMES[theme][rarityIdx],
+      income: t.incomes[rarityIdx],
+      color: RARITY[rarityIdx].color
+    };
+  }
+
+  function addToVault(v, item){
+    var idx = freeSlot(v);
+    var replaced = false;
+    if (idx < 0){ idx = weakestSlot(v); replaced = true; }
+    if (idx < 0) return { ok:false };
+    v.slots[idx] = item;
+    return { ok:true, slot:idx, replaced:replaced };
+  }
+
+  function trackCollection(theme, rarityIdx){
+    var c = G.collection[theme];
+    if (!c) return;
+    c.count++;
+    if (rarityIdx > c.best) c.best = rarityIdx;
+  }
+
+  function doRoll(theme){
+    closeVeil('sheetVeil');
+    var t = THEMES[theme];
+    if (!t) return;
+    if (G.cash < t.cost){
+      toast('현금이 부족합니다 · $' + fmt(t.cost) + ' 필요', 'bad');
+      return;
+    }
+    G.cash -= t.cost;
+    var rar = pickRarity();
+    var item = rollItem(theme, rar);
+    var res = addToVault(playerVault(), item);
+    if (!res.ok){ toast('전시대가 가득 찼습니다', 'bad'); G.cash += t.cost; return; }
+    trackCollection(theme, rar);
+    if (theme === 'drone'){
+      G.droneCount++;
+      if (rar + 1 > G.droneBest){ G.droneBest = rar + 1; }
+      toast('🛸 드론 해킹 파워 Lv.' + G.droneBest + ' 로 강화!', 'gold');
+    }
+    if (rar === 3 && !G.goals.firstLegend){
+      G.goals.firstLegend = true;
+      toast('🏆 업적: 전설 등급 획득!', 'gold');
+    }
+    showReveal(item, res.replaced);
+    var sp = slotPos(playerVault(), res.slot);
+    burst(sp.x, sp.y, RARITY[rar].color, 16);
+    blip(420 + rar*140, 0.16, 'triangle', 0.06);
+    blip(700 + rar*180, 0.1, 'sine', 0.04);
+  }
+
+  function showReveal(item, replaced){
+    var card = document.getElementById('revealCard');
+    card.className = '';
+    card.style.borderColor = item.color;
+    card.style.boxShadow = '0 0 46px -8px ' + item.color;
+    document.getElementById('rvRarity').textContent = RARITY[item.rarity].name.toUpperCase() + ' · ' + THEMES[item.theme].short;
+    document.getElementById('rvRarity').style.color = item.color;
+    document.getElementById('rvName').textContent = item.name;
+    document.getElementById('rvInc').textContent = '+$' + fmt(item.income) + ' /초';
+    document.getElementById('rvHint').textContent = replaced
+      ? '전시대가 가득 차 가장 약한 전시품을 교체했습니다'
+      : '내 금고 전시대에 배치되었습니다 · 탭해서 닫기';
+    var art = document.getElementById('revealArt');
+    var ax = art.getContext('2d');
+    ax.clearRect(0,0,art.width,art.height);
+    ax.drawImage(sprite(item.theme, item.rarity), 0, 0, art.width, art.height);
+    openVeil('revealVeil');
+    clearTimeout(showReveal._t);
+    showReveal._t = setTimeout(function(){ closeVeil('revealVeil'); }, 2100);
+  }
+
+  // ---------- 방어막 ----------
+  function updateShields(dt){
+    for (var i = 0; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      if (v.shieldOn){
+        if (G.time >= v.shieldEnd){
+          v.shieldOn = false;
+          v.shieldEnd = G.time + v.offTime;
+          if (v.isPlayer) toast('⚠️ 방어막이 꺼졌습니다! 30초간 약탈 위험', 'bad');
+          else toast('🚨 ' + v.name + ' 방어막 꺼짐 — 지금이 기회!', 'gold');
+          burst(v.x, v.y - v.h/2, v.color, 18);
+          blip(220, 0.25, 'sawtooth', 0.05);
+        }
+      } else {
+        if (G.time >= v.shieldEnd){
+          v.shieldOn = true;
+          v.shieldEnd = G.time + v.onTime;
+          if (v.isPlayer) toast('🛡 방어막이 다시 켜졌습니다', 'good');
+        }
+      }
+    }
+  }
+
+  // ---------- 수익 ----------
+  var incomeAcc = 0;
+  function updateIncome(dt){
+    incomeAcc += dt;
+    if (incomeAcc < 1) return;
+    incomeAcc -= 1;
+    for (var i = 0; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      var inc = vaultIncome(v);
+      if (inc <= 0) continue;
+      if (v.isPlayer){
+        G.cash += inc;
+        G.earned += inc;
+        if (Math.random() < 0.55) floatText(v.x + (Math.random()*140-70), v.y - 30, '+$' + fmt(inc), '#5af0a0');
+        if (!G.goals.rich && G.cash >= 20000) { G.goals.rich = true; toast('🏆 업적: $20,000 돌파!', 'gold'); }
+      } else {
+        v.cash += inc;
+      }
+    }
+  }
+
+  // ---------- AI ----------
+  function updateAI(dt){
+    for (var i = 1; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      v.ai.nextRoll -= dt;
+      if (v.ai.nextRoll <= 0){
+        v.ai.nextRoll = 9 + Math.random()*9;
+        var t = THEMES[v.ai.theme];
+        if (v.cash >= t.cost){
+          v.cash -= t.cost;
+          var rar = pickRarity();
+          addToVault(v, rollItem(v.ai.theme, rar));
+          var sp = slotPos(v, freeSlot(v) >= 0 ? freeSlot(v) : 0);
+          burst(sp.x, sp.y, RARITY[rar].color, 8);
+        }
+        // 가끔 상위 테마로 업그레이드
+        if (v.cash > 4000 && v.ai.theme === 'gem') v.ai.theme = 'egg';
+        if (v.cash > 15000 && v.ai.theme === 'egg') v.ai.theme = 'monster';
+      }
+
+      // 경비 드론: 내 기지 경비 순찰 + 도둑 추격
+      var g = v.guard;
+      if (v.guardChase && v.guardChase.active){
+        var px = G.player.x, py = G.player.y;
+        var d = dist(g.x, g.y, px, py);
+        if (d > 2){
+          g.x += (px - g.x)/d * GUARD_SPEED * dt;
+          g.y += (py - g.y)/d * GUARD_SPEED * dt;
+        }
+        if (d < 26){
+          // 잡았다
+          var carried = G.player.carrying;
+          if (carried){
+            var src = G.vaults[carried.fromVault];
+            addToVault(src, carried.item);
+            G.player.carrying = null;
+            v.guardChase.active = false;
+            toast('❌ 경비 드론에게 잡혔습니다! 전리품 회수', 'bad');
+            burst(G.player.x, G.player.y, '#ff5460', 20);
+            blip(150, 0.3, 'square', 0.06);
+          }
+        }
+      }
+
+      // 라이벌 도둑: 내 방어막이 꺼져 있으면 원정
+      if (!v.thief && !playerVault().shieldOn && G.time > 6 && Math.random() < 0.35*dt){
+        if (playerVault().slots.some(function(s){ return !!s; })){
+          v.thief = { x: v.x, y: v.y, state:'to', carrying: null, from: v.id, homeX: v.x, homeY: v.y, t: 0 };
+          toast('🕵️ ' + v.name + ' 도둑이 접근 중!', 'bad');
+        }
+      }
+      var th = v.thief;
+      if (th){
+        th.t += dt;
+        var targetX = th.state === 'to' ? playerVault().x : v.x;
+        var targetY = th.state === 'to' ? playerVault().y : v.y;
+        var dd = dist(th.x, th.y, targetX, targetY);
+        if (dd > 3){
+          th.x += (targetX - th.x)/dd * THIEF_SPEED * dt;
+          th.y += (targetY - th.y)/dd * THIEF_SPEED * dt;
+        } else if (th.state === 'to'){
+          var pv = playerVault();
+          var idx = weakestSlot(pv);
+          if (idx >= 0){
+            th.carrying = pv.slots[idx];
+            pv.slots[idx] = null;
+            th.state = 'back';
+            toast('🚨 ' + v.name + ' 이(가) ' + th.carrying.name + ' 을(를) 훔쳐 갑니다! 잡으세요!', 'bad');
+            blip(320, 0.2, 'square', 0.05);
+          } else {
+            v.thief = null;
+          }
+        } else {
+          if (th.carrying) addToVault(v, th.carrying);
+          v.thief = null;
+          toast('💀 ' + v.name + ' 이(가) 전리품을 가져갔습니다', 'bad');
+        }
+        // 플레이어가 도둑을 잡음
+        if (v.thief && dist(G.player.x, G.player.y, th.x, th.y) < 28){
+          if (th.carrying){
+            addToVault(playerVault(), th.carrying);
+            toast('🛡 도둑을 잡아 ' + th.carrying.name + ' 을(를) 되찾았습니다!', 'good');
+            burst(th.x, th.y, '#5af0a0', 16);
+          }
+          v.thief = null;
+        }
+        if (th.t > 40) v.thief = null;
+      }
+    }
+  }
+
+  // ---------- 플레이어 ----------
+  function updatePlayer(dt){
+    var p = G.player;
+    var ax = 0, ay = 0;
+
+    if (joy.active){
+      ax = joy.dx; ay = joy.dy;
+    } else {
+      var kx = 0, ky = 0;
+      if (keys['a'] || keys['arrowleft']) kx -= 1;
+      if (keys['d'] || keys['arrowright']) kx += 1;
+      if (keys['w'] || keys['arrowup']) ky -= 1;
+      if (keys['s'] || keys['arrowdown']) ky += 1;
+      if (kx || ky){
+        var kl = Math.sqrt(kx*kx + ky*ky);
+        ax = kx/kl; ay = ky/kl;
+        p.target = null;
+      } else if (p.target){
+        var tdx = p.target.x - p.x, tdy = p.target.y - p.y;
+        var td = Math.sqrt(tdx*tdx + tdy*tdy);
+        if (td < 8){ p.target = null; }
+        else { ax = tdx/td; ay = tdy/td; }
+      }
+    }
+
+    var speed = PLAYER_SPEED * (p.carrying ? 0.86 : 1);
+    p.vx += (ax*speed - p.vx) * Math.min(1, dt*14);
+    p.vy += (ay*speed - p.vy) * Math.min(1, dt*14);
+    if (Math.abs(ax) < 0.01 && Math.abs(ay) < 0.01){
+      p.vx *= Math.pow(0.001, dt);
+      p.vy *= Math.pow(0.001, dt);
+    }
+    p.x = clamp(p.x + p.vx*dt, 30, WORLD-30);
+    p.y = clamp(p.y + p.vy*dt, 30, WORLD-30);
+    if (Math.abs(p.vx) > 8) p.face = p.vx > 0 ? 1 : -1;
+
+    // 전리품 운반 판정
+    if (p.carrying){
+      var home = playerVault();
+      if (insideVault(home, p.x, p.y, 6)){
+        var item = p.carrying.item;
+        var fromV = G.vaults[p.carrying.fromVault];
+        var res = addToVault(home, item);
+        if (!res.ok){
+          toast('전시대가 가득 차 전리품을 놓쳤습니다', 'bad');
+        } else {
+          G.steals++;
+          if (!G.goals.firstSteal){
+            G.goals.firstSteal = true;
+            toast('🏆 업적: 첫 약탈 성공!', 'gold');
+          }
+          toast('✅ 약탈 성공! ' + item.name + ' 이(가) 내 금고에!', 'good');
+          burst(home.x, home.y, '#ffc63a', 24);
+          blip(660, 0.12, 'triangle', 0.06);
+          blip(880, 0.16, 'sine', 0.05);
+        }
+        p.carrying = null;
+        if (fromV) fromV.guardChase = { active:false };
+      } else if (G.time >= p.carrying.endsAt){
+        var fv = G.vaults[p.carrying.fromVault];
+        addToVault(fv, p.carrying.item);
+        toast('⏰ 시간 초과! 전리품이 원래 자리로 돌아갑니다', 'bad');
+        p.carrying = null;
+        if (fv) fv.guardChase = { active:false };
+      }
+    }
+  }
+
+  // ---------- 근처 훔치기 후보 ----------
+  var stealCandidate = null;
+  function updateStealCandidate(){
+    stealCandidate = null;
+    if (G.player.carrying) return;
+    for (var i = 1; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      if (v.shieldOn) continue;
+      if (!insideVault(v, G.player.x, G.player.y, 10)) continue;
+      for (var s = 0; s < v.slots.length; s++){
+        if (!v.slots[s]) continue;
+        var sp = slotPos(v, s);
+        var d = dist(G.player.x, G.player.y, sp.x, sp.y);
+        if (d < 62){
+          if (!stealCandidate || d < stealCandidate.d){
+            stealCandidate = { vault: v, slot: s, item: v.slots[s], d: d };
+          }
+        }
+      }
+    }
+  }
+
+  function doSteal(){
+    if (!stealCandidate) return;
+    var v = stealCandidate.vault, idx = stealCandidate.slot, item = stealCandidate.item;
+    v.slots[idx] = null;
+    G.player.carrying = { item: item, fromVault: G.vaults.indexOf(v), endsAt: G.time + CARRY_TIME };
+    v.guardChase = { active:true };
+    stealCandidate = null;
+    toast('🕵️ ' + item.name + ' 훔쳤습니다! 15초 안에 내 금고로!', 'gold');
+    burst(G.player.x, G.player.y, '#ffc63a', 14);
+    blip(520, 0.1, 'square', 0.05);
+    updateHUD();
+  }
+
+  // ---------- 해킹 ----------
+  function nearestHackTarget(){
+    var best = null, bd = Infinity;
+    for (var i = 1; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      if (!v.shieldOn) continue;
+      var d = dist(G.player.x, G.player.y, v.x, v.y);
+      if (d < bd){ bd = d; best = v; }
+    }
+    return best;
+  }
+
+  function doHack(){
+    if (G.time < G.hackReady){
+      toast('⏳ 해킹 재충전 ' + Math.ceil(G.hackReady - G.time) + '초', 'bad');
+      return;
+    }
+    var target = nearestHackTarget();
+    if (!target){
+      toast('지금 해킹할 방어막이 없습니다', 'bad');
+      return;
+    }
+    var cut = 8 + G.droneBest*6;
+    target.shieldEnd -= cut;
+    G.hackReady = G.time + HACK_COOLDOWN;
+    G.fx.push({ type:'beam', x1:G.player.x, y1:G.player.y-10, x2:target.x, y2:target.y, t:0, life:0.55, color:'#b48cff' });
+    if (target.shieldEnd <= G.time){
+      target.shieldOn = false;
+      target.shieldEnd = G.time + target.offTime;
+      toast('🛸 해킹 성공! ' + target.name + ' 방어막 완전 무력화!', 'gold');
+      burst(target.x, target.y, '#b48cff', 22);
+    } else {
+      toast('🛸 해킹! ' + target.name + ' 방어막 -' + cut + '초', 'gold');
+    }
+    if (!G.goals.firstHack){
+      G.goals.firstHack = true;
+      toast('🏆 업적: 첫 해킹 성공!', 'gold');
+    }
+    blip(300, 0.22, 'sawtooth', 0.05);
+    blip(600, 0.12, 'sine', 0.04);
+  }
+
+  function doLock(){
+    if (G.time < G.lockReady){
+      toast('⏳ 잠금 재사용까지 ' + Math.ceil(G.lockReady - G.time) + '초', 'bad');
+      return;
+    }
+    var v = playerVault();
+    v.shieldOn = true;
+    v.shieldEnd = G.time + 60;
+    G.lockReady = G.time + LOCK_COOLDOWN;
+    toast('🔒 방어막을 즉시 잠갔습니다! 60초 보호', 'good');
+    burst(v.x, v.y, '#00e8ff', 18);
+    blip(760, 0.14, 'triangle', 0.05);
+  }
+
+  // ============================================================
+  // 7. 업데이트
+  // ============================================================
+  function update(dt){
+    G.time += dt;
+    updatePlayer(dt);
+    updateShields(dt);
+    updateIncome(dt);
+    updateAI(dt);
+    updateStealCandidate();
+
+    // fx
+    var i;
+    for (i = G.fx.length-1; i >= 0; i--){
+      G.fx[i].t += dt;
+      if (G.fx[i].t > G.fx[i].life) G.fx.splice(i,1);
+    }
+    for (i = G.floats.length-1; i >= 0; i--){
+      G.floats[i].t += dt;
+      if (G.floats[i].t > G.floats[i].life) G.floats.splice(i,1);
+    }
+    for (i = G.particles.length-1; i >= 0; i--){
+      var pt = G.particles[i];
+      pt.t += dt;
+      pt.x += pt.vx*dt; pt.y += pt.vy*dt;
+      pt.vy += 220*dt;
+      if (pt.t > pt.life) G.particles.splice(i,1);
+    }
+
+    // 먼지 입자
+    for (i = 0; i < G.dust.length; i++){
+      var du = G.dust[i];
+      du.x += du.vx*dt; du.y += du.vy*dt;
+      if (du.y < -20) du.y = WORLD + 20;
+      if (du.x < -20) du.x = WORLD + 20;
+      if (du.x > WORLD + 20) du.x = -20;
+    }
+
+    // 카메라
+    var lead = G.player.carrying ? 0.12 : 0.09;
+    cam.x += (G.player.x - cam.x) * Math.min(1, dt*6);
+    cam.y += (G.player.y - cam.y) * Math.min(1, dt*6);
+    var halfW = W/(2*scale), halfH = H/(2*scale);
+    cam.x = clamp(cam.x, Math.min(halfW, WORLD/2), Math.max(WORLD-halfW, WORLD/2));
+    cam.y = clamp(cam.y, Math.min(halfH, WORLD/2), Math.max(WORLD-halfH, WORLD/2));
+
+    updateHUD();
+  }
+
+  // ============================================================
+  // 8. 렌더
+  // ============================================================
+  function roundRect(x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  function drawGrid(){
+    var halfW = W/(2*scale), halfH = H/(2*scale);
+    var x0 = cam.x - halfW - 40, x1 = cam.x + halfW + 40;
+    var y0 = cam.y - halfH - 40, y1 = cam.y + halfH + 40;
+    var step = 70;
+    ctx.lineWidth = 1/scale;
+    ctx.strokeStyle = 'rgba(70,130,190,.16)';
+    ctx.beginPath();
+    for (var x = Math.floor(x0/step)*step; x < x1; x += step){
+      ctx.moveTo(x, y0); ctx.lineTo(x, y1);
+    }
+    for (var y = Math.floor(y0/step)*step; y < y1; y += step){
+      ctx.moveTo(x0, y); ctx.lineTo(x1, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawVault(v){
+    var w = v.w, h = v.h, x = v.x - w/2, y = v.y - h/2;
+    var isMine = v.isPlayer;
+    var accent = v.color;
+
+    // 바닥 그림자
+    ctx.fillStyle = 'rgba(0,0,0,.55)';
+    roundRect(x + 8, y + 16, w, h, 22); ctx.fill();
+
+    // 플랫폼 본체
+    var g = ctx.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, hexA(accent, isMine ? .22 : .15));
+    g.addColorStop(.55, 'rgba(14,19,36,.94)');
+    g.addColorStop(1, 'rgba(8,11,22,.96)');
+    ctx.fillStyle = g;
+    roundRect(x, y, w, h, 22); ctx.fill();
+
+    // 금고 안쪽 바닥 (전시 영역)
+    var vg = ctx.createLinearGradient(x, y + 26, x, y + h);
+    vg.addColorStop(0, 'rgba(255,255,255,.045)');
+    vg.addColorStop(1, 'rgba(0,0,0,.22)');
+    ctx.fillStyle = vg;
+    roundRect(x + 14, y + 30, w - 28, h - 44, 16); ctx.fill();
+
+    // 안쪽 격자
+    ctx.save();
+    ctx.strokeStyle = hexA(accent, .10);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var gx = x + 30; gx < x + w - 20; gx += 22){
+      ctx.moveTo(gx, y + 34); ctx.lineTo(gx, y + h - 16);
+    }
+    for (var gy = y + 48; gy < y + h - 16; gy += 22){
+      ctx.moveTo(x + 18, gy); ctx.lineTo(x + w - 18, gy);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // 코너 브래킷
+    ctx.save();
+    ctx.strokeStyle = hexA(accent, .85);
+    ctx.shadowColor = hexA(accent, .8);
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 3.2;
+    var cl = 22;
+    var corners = [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]];
+    for (var c = 0; c < corners.length; c++){
+      var cx = corners[c][0], cy = corners[c][1], sx = corners[c][2], sy = corners[c][3];
+      ctx.beginPath();
+      ctx.moveTo(cx + sx*cl, cy + sy*4);
+      ctx.lineTo(cx + sx*4, cy + sy*4);
+      ctx.lineTo(cx + sx*4, cy + sy*cl);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 테두리 네온
+    ctx.save();
+    ctx.shadowColor = hexA(accent, .8);
+    ctx.shadowBlur = 16;
+    ctx.strokeStyle = hexA(accent, v.shieldOn ? .5 : .95);
+    ctx.lineWidth = 2.6;
+    roundRect(x, y, w, h, 22); ctx.stroke();
+    ctx.restore();
+
+    // 전시대 + 전시품
+    for (var i = 0; i < 8; i++){
+      var sp = slotPos(v, i);
+      var item = v.slots[i];
+      var ringCol = item ? RARITY[item.rarity].color : accent;
+
+      ctx.beginPath();
+      ctx.ellipse(sp.x, sp.y + 17, 21, 8.5, 0, 0, Math.PI*2);
+      ctx.fillStyle = item ? hexA(ringCol, .16) : 'rgba(255,255,255,.03)';
+      ctx.fill();
+      ctx.strokeStyle = item ? hexA(ringCol, .8) : hexA(accent, .3);
+      ctx.lineWidth = item ? 1.8 : 1.1;
+      ctx.stroke();
+
+      if (item){
+        var bob = Math.sin(G.time*2 + i*1.3)*3;
+        var spr = sprite(item.theme, item.rarity);
+        var size = 78;
+        // 발광
+        var gg = ctx.createRadialGradient(sp.x, sp.y + 4, 2, sp.x, sp.y + 4, 34);
+        gg.addColorStop(0, hexA(item.color, .38));
+        gg.addColorStop(1, hexA(item.color, 0));
+        ctx.fillStyle = gg;
+        ctx.beginPath(); ctx.arc(sp.x, sp.y + 4, 34, 0, Math.PI*2); ctx.fill();
+        ctx.drawImage(spr, sp.x - size/2, sp.y - size/2 + 4 + bob, size, size);
+      }
+    }
+
+    // 입구 셰브런
+    drawEntrance(v);
+
+    // 상단 라벨 판
+    drawVaultPlate(v);
+  }
+
+  function drawEntrance(v){
+    var baseY = v.y + v.h/2;
+    var accent = v.color;
+    ctx.save();
+    for (var k = 0; k < 3; k++){
+      var yy = baseY + 14 + k*13;
+      var ww = 58 - k*12;
+      ctx.globalAlpha = 0.55 - k*0.13;
+      ctx.strokeStyle = hexA(accent, .9);
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(v.x - ww, yy); ctx.lineTo(v.x, yy + 9); ctx.lineTo(v.x + ww, yy);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawVaultPlate(v){
+    var w = 190, h = 28;
+    var x = v.x - w/2, y = v.y - v.h/2 - 42;
+    var accent = v.color;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(7,10,20,.9)';
+    roundRect(x, y, w, h, 9); ctx.fill();
+    ctx.strokeStyle = hexA(accent, v.shieldOn ? .45 : .9);
+    ctx.lineWidth = 1.5;
+    roundRect(x, y, w, h, 9); ctx.stroke();
+    ctx.restore();
+
+    ctx.font = '900 12px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = hexA(accent, .98);
+    ctx.fillText(v.name + (v.isPlayer ? ' · 나' : ''), x + 10, y + 18.5);
+
+    var left = Math.max(0, Math.ceil(v.shieldEnd - G.time));
+    ctx.textAlign = 'right';
+    if (v.shieldOn){
+      ctx.fillStyle = 'rgba(150,240,255,.95)';
+      ctx.fillText('🛡 ' + left + 's', x + w - 10, y + 18.5);
+    } else {
+      var pulse = 0.6 + Math.sin(G.time*6)*0.35;
+      ctx.fillStyle = 'rgba(255,110,120,' + pulse + ')';
+      ctx.fillText('⚠ ' + left + 's', x + w - 10, y + 18.5);
+    }
+  }
+
+  function drawShield(v){
+    var w = v.w, h = v.h, x = v.x - w/2, y = v.y - h/2;
+    var left = Math.max(0, v.shieldEnd - G.time);
+    var frac = clamp(left / v.onTime, 0, 1);
+    var alpha = 0.07 + 0.035*Math.sin(G.time*3);
+
+    ctx.save();
+    var g = ctx.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, 'rgba(120,230,255,' + (alpha + 0.07) + ')');
+    g.addColorStop(1, 'rgba(80,160,255,' + (alpha*0.4) + ')');
+    ctx.fillStyle = g;
+    roundRect(x - 5, y - 5, w + 10, h + 10, 24); ctx.fill();
+
+    // 레이저 격자 (가볍게)
+    ctx.strokeStyle = 'rgba(140,240,255,.09)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var i = -h; i < w + h; i += 30){
+      ctx.moveTo(x + i, y); ctx.lineTo(x + i + h, y + h);
+    }
+    ctx.stroke();
+
+    // 스캔 라인
+    var scanY = y + ((G.time*70) % h);
+    var sg = ctx.createLinearGradient(0, scanY - 14, 0, scanY + 14);
+    sg.addColorStop(0, 'rgba(150,240,255,0)');
+    sg.addColorStop(.5, 'rgba(150,240,255,.16)');
+    sg.addColorStop(1, 'rgba(150,240,255,0)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(x - 4, scanY - 14, w + 8, 28);
+
+    ctx.shadowColor = 'rgba(120,230,255,.9)';
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = 'rgba(150,240,255,' + (0.4 + frac*0.35) + ')';
+    ctx.lineWidth = 2.4;
+    roundRect(x - 5, y - 5, w + 10, h + 10, 24); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawAgent(x, y, color, face, opts){
+    opts = opts || {};
+    var bob = Math.sin(G.time*8 + (opts.seed || 0)) * 1.6;
+    // 그림자
+    ctx.fillStyle = 'rgba(0,0,0,.5)';
+    ctx.beginPath(); ctx.ellipse(x, y + 15, 13, 5, 0, 0, Math.PI*2); ctx.fill();
+
+    var body = 13;
+    ctx.save();
+    ctx.translate(x, y + bob);
+    // 바닥 광원
+    var glow = ctx.createRadialGradient(0, 12, 2, 0, 12, 30);
+    glow.addColorStop(0, hexA(color, .35));
+    glow.addColorStop(1, hexA(color, 0));
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, 12, 30, 0, Math.PI*2); ctx.fill();
+    ctx.shadowColor = hexA(color, .95);
+    ctx.shadowBlur = 18;
+    // 몸
+    var g = ctx.createLinearGradient(-body, -body, body, body);
+    g.addColorStop(0, hexA(color, .95));
+    g.addColorStop(1, 'rgba(20,28,50,.95)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, body, 0, Math.PI*2); ctx.fill();
+    // 바이저
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.beginPath(); ctx.ellipse(face*3, -3, 6.5, 3.6, 0, 0, Math.PI*2); ctx.fill();
+    // 배터리
+    ctx.fillStyle = hexA(color, .8);
+    ctx.fillRect(-3, 6, 6, 8);
+    ctx.restore();
+
+    if (opts.label){
+      ctx.font = '800 10px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(255,255,255,.8)';
+      ctx.fillText(opts.label, x, y - 22);
+    }
+  }
+
+  function drawCarry(){
+    var c = G.player.carrying;
+    if (!c) return;
+    var spr = sprite(c.item.theme, c.item.rarity);
+    var bob = Math.sin(G.time*6)*3;
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.drawImage(spr, G.player.x - 26, G.player.y - 62 + bob, 52, 52);
+    ctx.restore();
+  }
+
+  function drawThieves(){
+    for (var i = 1; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      var th = v.thief;
+      if (!th) continue;
+      drawAgent(th.x, th.y, '#ff5460', 1, { seed: i, label: '도둑' });
+      if (th.carrying){
+        var spr = sprite(th.carrying.theme, th.carrying.rarity);
+        ctx.drawImage(spr, th.x - 18, th.y - 46, 36, 36);
+      }
+    }
+  }
+
+  function drawGuards(){
+    for (var i = 1; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      var g = v.guard;
+      var active = v.guardChase && v.guardChase.active;
+      ctx.save();
+      ctx.globalAlpha = active ? 1 : 0.55;
+      drawAgent(g.x, g.y, active ? '#ff8a3c' : v.color, 1, { seed: i*2 });
+      ctx.restore();
+      if (active){
+        ctx.font = '900 10px -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ff9a3c';
+        ctx.fillText('!', g.x, g.y - 26);
+      }
+    }
+  }
+
+  function drawFx(){
+    var i;
+    for (i = 0; i < G.fx.length; i++){
+      var f = G.fx[i];
+      if (f.type === 'beam'){
+        var a = 1 - f.t/f.life;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.strokeStyle = f.color;
+        ctx.shadowColor = f.color; ctx.shadowBlur = 18;
+        ctx.lineWidth = 4*a + 1;
+        ctx.beginPath(); ctx.moveTo(f.x1, f.y1); ctx.lineTo(f.x2, f.y2); ctx.stroke();
+        ctx.restore();
+      }
+    }
+    for (i = 0; i < G.particles.length; i++){
+      var p = G.particles[i];
+      var aa = 1 - p.t/p.life;
+      ctx.globalAlpha = aa;
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    for (i = 0; i < G.floats.length; i++){
+      var fl = G.floats[i];
+      var fa = 1 - fl.t/fl.life;
+      ctx.globalAlpha = fa;
+      ctx.font = '900 13px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = fl.color;
+      ctx.fillText(fl.text, fl.x, fl.y - fl.t*30);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  var PROPS = [
+    [150,150,34],[300,236,24],[1250,150,30],[1096,232,26],
+    [150,1050,32],[236,1254,26],[1250,1050,28],[1160,1250,34],
+    [520,830,24],[880,830,28],[700,1268,30],[300,960,22],
+    [1100,960,24],[336,340,26],[1064,340,22],[700,196,26],
+    [176,700,30],[1224,700,26]
+  ];
+  function drawProps(){
+    for (var i = 0; i < PROPS.length; i++){
+      var px = PROPS[i][0], py = PROPS[i][1], sz = PROPS[i][2];
+      var col = i % 3 === 0 ? '#3a7bff' : (i % 3 === 1 ? '#ff2ebe' : '#00e8ff');
+      ctx.save();
+      ctx.globalAlpha = .8;
+      ctx.fillStyle = 'rgba(16,21,40,.95)';
+      roundRect(px - sz/2, py - sz/2, sz, sz, 6); ctx.fill();
+      ctx.globalAlpha = .8;
+      ctx.strokeStyle = hexA(col, .4);
+      ctx.lineWidth = 1.4;
+      roundRect(px - sz/2, py - sz/2, sz, sz, 6); ctx.stroke();
+      ctx.globalAlpha = .7;
+      ctx.strokeStyle = hexA(col, .45);
+      ctx.beginPath();
+      ctx.moveTo(px - sz/2 + 4, py); ctx.lineTo(px + sz/2 - 4, py);
+      ctx.stroke();
+      ctx.globalAlpha = .9;
+      ctx.fillStyle = hexA(col, .8);
+      ctx.beginPath(); ctx.arc(px, py - sz/2 - 5, 1.8, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawRoads(){
+    var tx = 700, ty = 700;
+    for (var i = 1; i < 4; i++){
+      var v = G.vaults[i];
+      ctx.save();
+      ctx.strokeStyle = hexA(v.color, .16);
+      ctx.lineWidth = 14;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(v.x, v.y); ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.strokeStyle = hexA(v.color, .5);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([12, 14]);
+      ctx.lineDashOffset = -G.time*26;
+      ctx.beginPath(); ctx.moveTo(v.x, v.y); ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.restore();
+    }
+    // 내 기지 ↔ 타워 길
+    var me = G.vaults[0];
+    ctx.save();
+    ctx.strokeStyle = hexA(me.color, .18);
+    ctx.lineWidth = 16;
+    ctx.beginPath(); ctx.moveTo(me.x, me.y - me.h/2); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.strokeStyle = hexA(me.color, .62);
+    ctx.lineWidth = 2.4;
+    ctx.setLineDash([14, 12]);
+    ctx.lineDashOffset = G.time*30;
+    ctx.beginPath(); ctx.moveTo(me.x, me.y - me.h/2); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.restore();
+
+    // 먼지
+    for (var d = 0; d < G.dust.length; d++){
+      var du = G.dust[d];
+      ctx.globalAlpha = du.a;
+      ctx.fillStyle = '#bfe9ff';
+      ctx.beginPath(); ctx.arc(du.x, du.y, du.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawTower(){
+    var tx = 700, ty = 700;
+    var pulse = 1 + Math.sin(G.time*2)*0.06;
+
+    ctx.save();
+    // 바닥 광원
+    var g = ctx.createRadialGradient(tx, ty, 10, tx, ty, 190);
+    g.addColorStop(0, 'rgba(255,60,200,.26)');
+    g.addColorStop(.45, 'rgba(120,60,255,.13)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(tx, ty, 190, 0, Math.PI*2); ctx.fill();
+
+    // 회전 링
+    ctx.strokeStyle = 'rgba(255,90,220,.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(tx, ty, 126, 0, Math.PI*2); ctx.stroke();
+
+    ctx.setLineDash([16, 22]);
+    ctx.lineDashOffset = -G.time*40;
+    ctx.strokeStyle = 'rgba(0,232,255,.35)';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(tx, ty, 108, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4개 테마 뽑기 패드
+    var pads = [
+      { a: -Math.PI/2, icon: '💎', col: '#39e6ff' },
+      { a: 0,          icon: '🦖', col: '#8cff6a' },
+      { a: Math.PI/2,  icon: '🐉', col: '#ff5ad1' },
+      { a: Math.PI,    icon: '🛸', col: '#b48cff' }
+    ];
+    for (var p = 0; p < 4; p++){
+      var pd = pads[p];
+      var px = tx + Math.cos(pd.a)*78, py = ty + Math.sin(pd.a)*78;
+      var pl = 0.9 + Math.sin(G.time*2.4 + p)*0.08;
+      ctx.save();
+      ctx.shadowColor = pd.col; ctx.shadowBlur = 16;
+      ctx.fillStyle = 'rgba(10,14,28,.9)';
+      ctx.beginPath(); ctx.arc(px, py, 21*pl, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = hexA(pd.col, .9);
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(px, py, 21*pl, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+      ctx.font = '16px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(pd.icon, px, py + 5.5);
+    }
+
+    // 코어
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,80,220,.95)';
+    ctx.shadowBlur = 30;
+    var g2 = ctx.createRadialGradient(tx - 6, ty - 8, 2, tx, ty, 30*pulse);
+    g2.addColorStop(0, '#ffffff');
+    g2.addColorStop(.45, '#ff8ae0');
+    g2.addColorStop(1, 'rgba(180,60,255,.05)');
+    ctx.fillStyle = g2;
+    ctx.beginPath(); ctx.arc(tx, ty, 30*pulse, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    ctx.font = '900 11px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,170,245,.95)';
+    ctx.fillText('NEON GACHA', tx, ty - 40);
+  }
+
+  function drawVulnerablePointer(){
+    // 화면 밖의 약탈 가능 금고 방향 표시
+    var best = null, bd = Infinity;
+    for (var i = 1; i < G.vaults.length; i++){
+      var v = G.vaults[i];
+      if (v.shieldOn) continue;
+      if (!v.slots.some(function(s){ return !!s; })) continue;
+      var d = dist(G.player.x, G.player.y, v.x, v.y);
+      if (d < bd){ bd = d; best = v; }
+    }
+    if (!best) return;
+    var sx = (best.x - cam.x)*scale + W/2;
+    var sy = (best.y - cam.y)*scale + H/2;
+    var margin = 54;
+    if (sx > margin && sx < W - margin && sy > margin && sy < H - margin) return;
+
+    var cx = W/2, cy = H/2;
+    var ang = Math.atan2(sy - cy, sx - cx);
+    var rx = Math.min(W/2 - margin, H/2 - margin);
+    var px = cx + Math.cos(ang) * (W/2 - margin);
+    var py = cy + Math.sin(ang) * (H/2 - margin);
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(ang);
+    ctx.fillStyle = 'rgba(255,198,58,.95)';
+    ctx.shadowColor = 'rgba(255,198,58,.9)';
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-10,9); ctx.lineTo(-10,-9); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.font = '900 10px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,220,140,.95)';
+    ctx.fillText('약탈 기회', clamp(px - Math.cos(ang)*30, 44, W-44), clamp(py - Math.sin(ang)*30, 100, H-120));
+  }
+
+  function render(){
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    // 배경
+    var bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#070a16');
+    bg.addColorStop(0.55, '#05070f');
+    bg.addColorStop(1, '#0a0714');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.translate(W/2, H/2);
+    ctx.scale(scale, scale);
+    ctx.translate(-cam.x, -cam.y);
+
+    drawGrid();
+    drawRoads();
+    drawTower();
+
+    // 바닥 안개
+    ctx.save();
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = '#2a6cff';
+    ctx.beginPath(); ctx.arc(700, 700, 620, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    drawProps();
+    for (var i = 0; i < G.vaults.length; i++) drawVault(G.vaults[i]);
+
+    drawThieves();
+    drawGuards();
+    drawCarry();
+    drawAgent(G.player.x, G.player.y, '#00e8ff', G.player.face, { label: '나' });
+    drawFx();
+    ctx.restore();
+
+    // 화면 공간 효과
+    var vg = ctx.createRadialGradient(W/2, H*0.45, Math.min(W,H)*0.28, W/2, H*0.5, Math.max(W,H)*0.78);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,.55)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+
+    drawVulnerablePointer();
+  }
+
+  // ============================================================
+  // 9. HUD
+  // ============================================================
+  var el = {
+    cash: document.getElementById('cash'),
+    income: document.getElementById('income'),
+    stats: document.getElementById('stats'),
+    shieldPanel: document.getElementById('shieldPanel'),
+    shieldTime: document.getElementById('shieldTime'),
+    shieldFill: document.getElementById('shieldFill'),
+    droneLine: document.getElementById('droneLine'),
+    carryBar: document.getElementById('carryBar'),
+    carryName: document.getElementById('carryName'),
+    carryLeft: document.getElementById('carryLeft'),
+    carryFill: document.getElementById('carryFill'),
+    stealBtn: document.getElementById('stealBtn'),
+    hackCd: document.getElementById('hackCd'),
+    hackLbl: document.getElementById('hackLbl'),
+    lockLbl: document.getElementById('lockLbl'),
+    sheetCash: document.getElementById('sheetCash')
+  };
+
+  var lastHUD = 0;
+  function updateHUD(){
+    var now = performance.now();
+    var pv = playerVault();
+    var inc = vaultIncome(pv);
+    el.cash.textContent = '$' + fmt(G.cash);
+    el.income.textContent = '+$' + fmt(inc) + ' /초';
+    el.stats.textContent = '수금 ' + fmt(G.earned) + ' · 훔침 ' + G.steals;
+
+    if (pv.shieldOn){
+      var left = Math.max(0, pv.shieldEnd - G.time);
+      el.shieldPanel.classList.remove('off');
+      el.shieldTime.textContent = Math.ceil(left) + '초';
+      el.shieldFill.style.width = clamp(left/pv.onTime*100, 0, 100) + '%';
+    } else {
+      var left2 = Math.max(0, pv.shieldEnd - G.time);
+      el.shieldPanel.classList.add('off');
+      el.shieldTime.textContent = Math.ceil(left2) + '초';
+      el.shieldFill.style.width = clamp(left2/pv.offTime*100, 0, 100) + '%';
+    }
+
+    // 해킹
+    var cd = Math.max(0, G.hackReady - G.time);
+    if (cd > 0){
+      el.hackLbl.textContent = Math.ceil(cd) + '초';
+      el.hackCd.style.width = (cd/HACK_COOLDOWN*100) + '%';
+    } else {
+      el.hackLbl.textContent = '해킹';
+      el.hackCd.style.width = '0%';
+    }
+    el.droneLine.textContent = '🛸 드론 Lv.' + G.droneBest + (cd > 0 ? ' · 재충전 ' + Math.ceil(cd) + '초' : ' · 해킹 준비');
+
+    // 잠금
+    var lcd = Math.max(0, G.lockReady - G.time);
+    el.lockLbl.textContent = lcd > 0 ? '🔒 ' + Math.ceil(lcd) + '초' : '🔒 잠금';
+
+    // 운반
+    if (G.player.carrying){
+      var cl = Math.max(0, G.player.carrying.endsAt - G.time);
+      el.carryBar.classList.add('show');
+      el.carryName.textContent = '🕵️ ' + G.player.carrying.item.name;
+      el.carryLeft.textContent = Math.ceil(cl) + '초';
+      el.carryFill.style.width = clamp(cl/CARRY_TIME*100, 0, 100) + '%';
+    } else {
+      el.carryBar.classList.remove('show');
+    }
+
+    // 훔치기 버튼
+    if (stealCandidate){
+      el.stealBtn.classList.add('show');
+      el.stealBtn.childNodes[0].nodeValue = '훔치기 — ' + stealCandidate.item.name + ' ';
+    } else {
+      el.stealBtn.classList.remove('show');
+    }
+
+    if (now - lastHUD > 500 && document.getElementById('sheetVeil').classList.contains('show')){
+      el.sheetCash.textContent = '$' + fmt(G.cash);
+    }
+    lastHUD = now;
+  }
+
+  // ============================================================
+  // 10. UI 배선
+  // ============================================================
+  function openVeil(id){ document.getElementById(id).classList.add('show'); }
+  function closeVeil(id){ document.getElementById(id).classList.remove('show'); }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function(btn){
+    btn.addEventListener('click', function(){ closeVeil(btn.getAttribute('data-close')); });
+  });
+
+  document.getElementById('sheetVeil').addEventListener('click', function(e){
+    if (e.target === this) closeVeil('sheetVeil');
+  });
+  document.getElementById('revealVeil').addEventListener('click', function(e){
+    if (e.target === this || e.target.closest('#revealCard')) closeVeil('revealVeil');
+  });
+  document.getElementById('dexVeil').addEventListener('click', function(e){
+    if (e.target === this) closeVeil('dexVeil');
+  });
+
+  function buildThemeList(){
+    var list = document.getElementById('themeList');
+    list.innerHTML = '';
+    THEME_ORDER.forEach(function(key, i){
+      var t = THEMES[key];
+      var card = document.createElement('button');
+      card.className = 'themeCard t' + (i+1);
+      card.setAttribute('data-theme', key);
+      card.innerHTML =
+        '<span class="tcIcon">' + t.icon + '</span>' +
+        '<span class="tcBody">' +
+          '<span class="tcName">' + t.ko + '</span>' +
+          '<span class="tcDesc">기본 +$' + t.incomes[0] + '/초 · 전설 +$' + fmt(t.incomes[3]) + '/초</span>' +
+        '</span>' +
+        '<span class="tcCost">$' + fmt(t.cost) + '</span>';
+      card.addEventListener('click', function(){ doRoll(key); });
+      list.appendChild(card);
+    });
+  }
+
+  function refreshThemeAffordability(){
+    Array.prototype.forEach.call(document.querySelectorAll('.themeCard'), function(card){
+      var key = card.getAttribute('data-theme');
+      var t = THEMES[key];
+      if (G.cash < t.cost) card.classList.add('poor');
+      else card.classList.remove('poor');
+    });
+    el.sheetCash.textContent = '$' + fmt(G.cash);
+  }
+
+  document.getElementById('btnShop').addEventListener('click', function(){
+    refreshThemeAffordability();
+    openVeil('sheetVeil');
+  });
+
+  document.getElementById('btnHack').addEventListener('click', doHack);
+  document.getElementById('btnLock').addEventListener('click', doLock);
+  document.getElementById('stealBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    doSteal();
+  });
+
+  document.getElementById('btnDex').addEventListener('click', function(){
+    buildDex();
+    openVeil('dexVeil');
+  });
+
+  document.getElementById('btnStart').addEventListener('click', function(){
+    closeVeil('introVeil');
+    audioInit();
+    blip(520, 0.1, 'triangle', 0.05);
+    setTimeout(function(){ blip(780, 0.14, 'sine', 0.04); }, 90);
+    toast('🎲 뽑기로 금고를 채우세요! 방어막이 꺼진 금고를 노리세요', 'gold');
+  });
+
+  function buildDex(){
+    var list = document.getElementById('dexList');
+    list.innerHTML = '';
+    THEME_ORDER.forEach(function(key){
+      var t = THEMES[key];
+      var c = G.collection[key];
+      var best = c.best >= 0 ? RARITY[c.best].name : '-';
+      var row = document.createElement('div');
+      row.className = 'colRow';
+      row.innerHTML = '<span class="em">' + t.icon + '</span><span style="flex:1">' +
+        '<span class="cn">' + t.ko + '</span>' +
+        '<span class="cc">보유 ' + c.count + '개 · 최고 등급 <b style="color:' + (c.best>=0?RARITY[c.best].color:'#93a8c8') + '">' + best + '</b></span>' +
+        '</span>';
+      list.appendChild(row);
+    });
+
+    var goals = [
+      ['firstSteal', '첫 약탈 성공'],
+      ['firstLegend', '전설 등급 획득'],
+      ['firstHack', '드론 해킹 성공'],
+      ['rich', '$20,000 돌파']
+    ];
+    var gl = document.getElementById('goalList');
+    gl.innerHTML = '<div style="font-size:11px;color:#93a8c8;font-weight:800;margin-bottom:4px;">🏆 업적</div>';
+    goals.forEach(function(g){
+      var d = document.createElement('div');
+      d.className = 'goalRow' + (G.goals[g[0]] ? ' done' : '');
+      d.innerHTML = '<span>' + (G.goals[g[0]] ? '✔' : '○') + ' ' + g[1] + '</span><span>' + (G.goals[g[0]] ? '완료' : '진행 중') + '</span>';
+      gl.appendChild(d);
+    });
+  }
+
+  // ============================================================
+  // 11. 크기 / 루프
+  // ============================================================
+  function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    scale = Math.min(W/440, H/860);
+    scale = clamp(scale, 0.58, 1.5);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
+
+  var last = 0;
+  function loop(ts){
+    if (!last) last = ts;
+    var dt = (ts - last) / 1000;
+    last = ts;
+    if (dt > 0.1) dt = 0.1;
+    update(dt);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  // ============================================================
+  // 12. 시작
+  // ============================================================
+  resize();
+  newGame();
+  buildThemeList();
+  updateHUD();
+  requestAnimationFrame(loop);
+
+  // 검증용 디버그 핸들 (게임 조작에는 영향 없음)
+  window.__NV = {
+    state: function(){
+      return {
+        time: G.time, cash: G.cash, income: vaultIncome(playerVault()), steals: G.steals,
+        droneBest: G.droneBest, hackReady: G.hackReady,
+        player: { x: G.player.x, y: G.player.y, carrying: G.player.carrying ? G.player.carrying.item.name : null },
+        vaults: G.vaults.map(function(v){
+          return { id: v.id, x: v.x, y: v.y, shieldOn: v.shieldOn, shieldLeft: Math.max(0, v.shieldEnd - G.time),
+                   items: v.slots.filter(function(s){ return !!s; }).map(function(s){ return s.name; }),
+                   income: vaultIncome(v) };
+        }),
+        collection: G.collection, goals: G.goals
+      };
+    },
+    step: function(sec){
+      var n = Math.max(1, Math.round(sec*60));
+      for (var i = 0; i < n; i++) update(1/60);
+      render();
+      return window.__NV.state();
+    },
+    teleport: function(x, y){
+      G.player.x = x; G.player.y = y;
+      G.player.target = null;
+      cam.x = x; cam.y = y;
+      update(0);
+      return window.__NV.state();
+    },
+    dropShield: function(id){
+      var v = G.vaults.filter(function(vv){ return vv.id === id; })[0];
+      if (v){ v.shieldOn = false; v.shieldEnd = G.time + 60; }
+      return window.__NV.state();
+    },
+    setCash: function(n){ G.cash = n; return window.__NV.state(); },
+    thiefInfo: function(){
+      for (var i = 1; i < G.vaults.length; i++){
+        var t = G.vaults[i].thief;
+        if (t) return { vault: G.vaults[i].id, x: t.x, y: t.y, state: t.state, carrying: t.carrying ? t.carrying.name : null };
+      }
+      return null;
+    },
+    setDrone: function(n){ G.droneBest = n; return window.__NV.state(); },
+    world: { vault: function(){ var v = playerVault(); return { x:v.x, y:v.y, w:v.w, h:v.h }; } },
+    screenOf: function(x, y){ return { x: (x - cam.x)*scale + W/2, y: (y - cam.y)*scale + H/2 }; }
+  };
+})();
+</script>
+</body>
+</html>

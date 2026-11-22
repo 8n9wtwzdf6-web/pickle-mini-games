@@ -909,6 +909,9 @@ end
 local pets = {}
 
 local function bestDisplayOf(plot)
+	if plot == nil then
+		return nil
+	end
 	local folder = displaysOf(plot)
 	if folder == nil then
 		return nil
@@ -941,6 +944,12 @@ local function makePetModel(player, templateName)
 	end
 	if model.PrimaryPart == nil then
 		model.PrimaryPart = model:FindFirstChild("Core")
+	end
+	-- 처음부터 캐릭터 옆에 나타나도록 위치를 잡고 부모를 설정합니다.
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if root ~= nil then
+		model:PivotTo(CFrame.new(root.Position + root.CFrame.RightVector * PET_SIDE_OFFSET + Vector3.new(0, PET_HEIGHT, 0)))
 	end
 	model.Parent = Workspace
 	return model

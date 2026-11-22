@@ -2117,7 +2117,7 @@ function render(t){
     }
     else if(it.kind==='c'){
       var cc=it.o;
-      drawFairy(ctx,FD[cc.id],cc.x,cc.y+cc.bob,t,1.02,{wear:wearOf(cc.id),aura:0.9});
+      drawFairy(ctx,FD[cc.id],cc.x,cc.y+cc.bob,t,1.12,{wear:wearOf(cc.id),aura:0.95});
       ctx.fillStyle='rgba(255,255,255,.92)';rr(ctx,cc.x-15,cc.y-58,30,13,6.5);ctx.fill();
       ctx.fillStyle='#c2539a';ctx.font='bold 8.5px -apple-system,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('동행',cc.x,cc.y-51.5);

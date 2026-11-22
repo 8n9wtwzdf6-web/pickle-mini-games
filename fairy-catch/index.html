@@ -5384,12 +5384,6 @@ function drawCustomer(g,cu,t){
     g.fillText(cu.bubble,cu.x,cu.y-49);
   }
 }
-function drawTownScene(g,t){
-  if(!townInView()) return;
-  for(var i=0;i<SHOPS.length;i++) drawShopBuilding(g,i,t);
-  drawAcademy(g,t);
-  for(var d=0;d<DESKS.length;d++) drawDesk(g,DESKS[d],t,d);
-}
 function townShopAt(wx,wy){
   for(var i=0;i<SHOPS.length;i++){
     var cx=SHOP_X[i], by=shopYOf(i);

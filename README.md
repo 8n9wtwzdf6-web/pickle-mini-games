@@ -1,6 +1,6 @@
 # 🎮 미니게임 아케이드 (pickle-mini-games)
 
-아이폰 사파리에서 바로 즐기는 미니게임 4종을 GitHub Pages로 서비스하는 저장소입니다.
+아이폰 사파리에서 바로 즐기는 미니게임 5종을 GitHub Pages로 서비스하는 저장소입니다.
 로켓 타이쿤·스타 디펜스는 **단일 HTML 파일**(외부 라이브러리·CDN 없음)이고,
 네온 볼트는 3D(WebGL) 게임이라 **three.min.js 한 개를 같은 폴더에 함께 올려** CDN 없이도 100% 뜨게 했습니다.
 
@@ -13,6 +13,7 @@
 | 👾 스타 랜덤 디펜스 | https://8n9wtwzdf6-web.github.io/pickle-mini-games/star-defense/ |
 | 🛸 네온 볼트 약탈자 3D | https://8n9wtwzdf6-web.github.io/pickle-mini-games/neon-vault/ |
 | 🧚 매직 하트핑 요정 캐치 | https://8n9wtwzdf6-web.github.io/pickle-mini-games/fairy-catch/ |
+| 🍀 운빨·조합 터렛 디펜스 | https://8n9wtwzdf6-web.github.io/pickle-mini-games/turret-defense/ |
 
 ## 폴더 구성
 
@@ -31,6 +32,10 @@
 | `fairy-catch/preview-fairy-dressup.png` | 새 가구(피아노·욕조·텐트·책장·화장대·목마·디저트 진열장)와 코디한 요정들이 함께 있는 미리보기 |
 | `fairy-catch/preview-fairy-dress.png` | 요정 꾸미기(코디) 화면 — 라이브 프리뷰·슬롯 칩·아이템 목록 |
 | `roblox-fairy-catch/` | 매직 하트핑 Roblox 스타터 키트 (가이드·Luau 4개·아이콘/썸네일) |
+| `turret-defense/index.html` | 🍀 운빨·조합 터렛 디펜스 — **4인 협동 4레인** + 중앙 넥서스 · 랜덤 뽑기 · 합성 진화(신화 ★3) · 보스 공성 · 유물 3지선다 (Three.js 3D) |
+| `turret-defense/three.min.js` | Three.js 로컬 번들 (CDN 의존 없음) |
+| `turret-defense/preview-turret-defense.png` | 터렛 디펜스 미리보기 (390×844) |
+| `roblox-turret-defense/` | 터렛 디펜스 Roblox 4인 협동 키트 (설계서·Luau 4개·가이드) |
 
 ## 배포 방식
 

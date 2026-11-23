@@ -21,6 +21,9 @@ UI(코인·콤팩트 미니게임·도감·하우스·상점)는 **코드가 자
 | `scripts/03_FairyHUD.client.lua` | `StarterPlayer > StarterPlayerScripts` (LocalScript) | 파스텔 HUD · 캐치 미니게임 화면 · 도감 · 하우스 · 상점(가구/의상/악세사리 탭) · **요정 꾸미기 창** · **🏘️ 타운 관리 창(땅 매입·건설·증축·수거·요정 학업/장사/치료/장비)** |
 | `thumbnail_512.png` | — | Roblox 게임 아이콘(512×512) 업로드용 |
 | `thumbnail_wide.png` | — | 체험 썸네일(16:9) 업로드용 |
+| `models/Heartping_Fairy.obj` · `.mtl` | 블렌더 5.3.0 / Studio `Import 3D` | **루비하트핑 요정 3D 모델** (삼각형 9,792 · 파츠 44개) |
+| `models/Heartping_Tiara_Wand.obj` · `.mtl` | 위와 같음 | 황금 티아라 + 별빛 마법 지팡이 (삼각형 2,036 · 요정 위에 그대로 겹침) |
+| `models/README.md` | — | 3D 모델 **블렌더에서 열기 / 로블록스에 넣기** 단계별 안내 |
 | `../fairy-catch/index.html` | — | **아이폰 사파리용 미니 테스트판** (Roblox 없이 게임 루프를 먼저 체험) |
 | `../fairy-catch/preview-fairy-catch.png` | — | 미니 테스트판 화면 미리보기 |
 
@@ -268,3 +271,21 @@ ID를 넣으면 결제 즉시 코인이 지급되고 `ProcessReceipt` 가 정상
 - 실제 Studio 실행: **미검증** (제작 환경에서 Studio를 실행할 수 없습니다)
   → 위 5번 "플레이 테스트" 를 먼저 해 보시고, 오류가 나오면 Output 창의 빨간 줄을 그대로 알려 주세요.
   → 하우스 앞면이 크게 열려 있어(폭 12.8스터드) 밖에서도 가구와 요정이 보입니다. 안으로 걸어 들어가 소파·침대·그네·점프 패드를 확인해 보세요.
+
+
+---
+
+## 11. 🧚 3D 모델 (.obj) — 블렌더 5.3.0 · 로블록스 스튜디오
+
+게임에 넣을 **루비하트핑 요정 3D 모델**을 파일로 만들어 두었습니다. 블렌더에서 열어 색만 바꾸거나, 그대로 스튜디오에 Import 3D 로 넣으면 됩니다.
+
+| 파일 | 삼각형 | 설명 |
+|---|---|---|
+| `models/Heartping_Fairy.obj` + `.mtl` | 9,792 | 큰 머리 2등신 치비 요정 (분홍 머리 · 늘어진 요정 귀 · 프릴 원피스 · 하트 날개) |
+| `models/Heartping_Tiara_Wand.obj` + `.mtl` | 2,036 | 황금 티아라 + 별빛 마법 지팡이 (요정과 같은 좌표계라 머리 위·손에 그대로 겹침) |
+
+- **미리보기**: `models/preview-heartping-3d.png` (정면·측면·대각선), `models/preview-heartping-combined-3d.png` (합본)
+- **브라우저 3D 뷰어**(폰에서 손가락으로 돌려 보기): https://8n9wtwzdf6-web.github.io/pickle-mini-games/roblox-fairy-catch/models/viewer.html
+- **여는 방법·넣는 방법**은 `models/README.md` 에 PC 초보자 기준으로 한 단계씩 적어 두었습니다.
+  - 블렌더: `파일 → 가져오기 → Wavefront (.obj)` (설정은 기본값 그대로)
+  - 스튜디오: `파일 → Import 3D` → **Scale Unit 을 `Meter`** 로 바꾸고 Import

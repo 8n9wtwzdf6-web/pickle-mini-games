@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>매직 하트핑 3D 모델 뷰어</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#f8eefc;
+    font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-user-select:none;user-select:none}
+  #c{display:block;width:100%;height:100%;touch-action:none}
+  .bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;flex-wrap:wrap;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.82);
+    backdrop-filter:blur(10px);border-top:1px solid rgba(190,150,200,.25)}
+  .bar button{flex:1 1 auto;min-width:92px;padding:10px 12px;border-radius:14px;border:0;
+    background:#ffe3f0;color:#a83268;font-size:14px;font-weight:700}
+  .bar button.on{background:#ff6fa5;color:#fff}
+  .hud{position:fixed;left:12px;top:calc(10px + env(safe-area-inset-top));color:#8c5f92;font-size:12px;line-height:1.5}
+  .hud b{display:block;font-size:16px;color:#bb2a68}
+  .hint{position:fixed;right:12px;top:calc(10px + env(safe-area-inset-top));color:#a583ae;font-size:12px;text-align:right}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><b>매직 하트핑 · 루비하트핑</b><span id="stat">불러오는 중…</span></div>
+<div class="hint">끌어서 돌리기 · 두 손가락 확대</div>
+<div class="bar">
+  <button id="bFairy" class="on">요정</button>
+  <button id="bAcc" class="on">티아라+지팡이</button>
+  <button id="bSpin" class="on">자동 회전</button>
+  <button id="bWire">와이어</button>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OBJLoader } from './lib/OBJLoader.js';
+import { MTLLoader } from './lib/MTLLoader.js';
+import { OrbitControls } from './lib/OrbitControls.js';
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0xf0e6fa, 1.0));
+const key = new THREE.DirectionalLight(0xfffdfb, 1.4); key.position.set(-2.4, 4.2, 4.4); scene.add(key);
+const fill = new THREE.DirectionalLight(0xe6f1ff, 0.5); fill.position.set(3.8, 1.6, 2.6); scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffdff0, 0.6); rim.position.set(1.0, 2.2, -4.6); scene.add(rim);
+
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 100);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.target.set(0, 1.06, 0);
+camera.position.set(0, 1.15, 4.6);
+
+const root = new THREE.Group();
+scene.add(root);
+
+let fairy = null, acc = null, spin = true, wire = false;
+
+function loadModel(objUrl, mtlUrl) {
+  return new Promise((res, rej) => {
+    new MTLLoader().load(mtlUrl, (materials) => {
+      materials.preload();
+      new OBJLoader().setMaterials(materials).load(objUrl, res, undefined, rej);
+    }, undefined, rej);
+  });
+}
+
+function prepare(obj) {
+  obj.traverse((o) => {
+    if (!o.isMesh) return;
+    const m = o.material;
+    const std = new THREE.MeshStandardMaterial({
+      color: m.color, roughness: /Gem|Gold|Eye/.test(m.name || '') ? 0.25 : 0.52,
+      metalness: /Gem|Gold/.test(m.name || '') ? 0.45 : 0.03,
+      transparent: m.opacity !== undefined && m.opacity < 1,
+      opacity: m.opacity, side: THREE.DoubleSide,
+    });
+    if (std.transparent) { std.opacity = Math.min(0.8, std.opacity + 0.1); std.depthWrite = false; }
+    o.material = std;
+  });
+  return obj;
+}
+
+const stat = document.getElementById('stat');
+
+Promise.all([
+  loadModel('./Heartping_Fairy.obj', './Heartping_Fairy.mtl'),
+  loadModel('./Heartping_Tiara_Wand.obj', './Heartping_Tiara_Wand.mtl'),
+]).then(([f, a]) => {
+  fairy = prepare(f); acc = prepare(a);
+  root.add(fairy); root.add(acc);
+  const count = (g) => { let t = 0; g.traverse((o) => { if (o.isMesh) t += o.geometry.index ? o.geometry.index.count / 3 : o.geometry.attributes.position.count / 3; }); return Math.round(t); };
+  stat.textContent = '요정 ' + count(fairy).toLocaleString() + ' · 티아라+지팡이 ' + count(acc).toLocaleString() + ' 삼각형';
+  fit();
+}).catch((e) => { stat.textContent = '불러오기 실패: ' + e; });
+
+document.getElementById('bFairy').onclick = (e) => {
+  if (!fairy) return;
+  fairy.visible = !fairy.visible;
+  e.currentTarget.classList.toggle('on', fairy.visible);
+};
+document.getElementById('bAcc').onclick = (e) => {
+  if (!acc) return;
+  acc.visible = !acc.visible;
+  e.currentTarget.classList.toggle('on', acc.visible);
+};
+document.getElementById('bSpin').onclick = (e) => {
+  spin = !spin; e.currentTarget.classList.toggle('on', spin);
+};
+document.getElementById('bWire').onclick = (e) => {
+  wire = !wire;
+  root.traverse((o) => { if (o.isMesh) o.material.wireframe = wire; });
+  e.currentTarget.classList.toggle('on', wire);
+};
+
+const box = new THREE.Box3(new THREE.Vector3(-0.85, 0, -0.55), new THREE.Vector3(0.85, 2.12, 0.6));
+const center = box.getCenter(new THREE.Vector3());
+const size = box.getSize(new THREE.Vector3());
+
+function fit() {
+  const w = innerWidth, h = innerHeight;
+  const vfov = THREE.MathUtils.degToRad(camera.fov);
+  const dH = (size.y * 1.06) / (2 * Math.tan(vfov / 2));
+  const dW = (Math.max(size.x, size.z) * 1.12) / (2 * Math.tan(vfov / 2) * (w / h));
+  const d = Math.max(dH, dW);
+  controls.target.copy(center);
+  camera.position.set(center.x, center.y + 0.05, center.z + d);
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  if (fairy) fit();
+}
+addEventListener('resize', resize);
+resize();
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = clock.getDelta();
+  if (spin) root.rotation.y += dt * 0.5;
+  controls.update();
+  renderer.render(scene, camera);
+});
+window.__VIEWER_READY__ = true;
+</script>
+</body>
+</html>

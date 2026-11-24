@@ -36,8 +36,15 @@
 | `turret-defense/three.min.js` | Three.js 로컬 번들 (CDN 의존 없음) |
 | `turret-defense/preview-turret-defense.png` | 터렛 디펜스 미리보기 (390×844) |
 | `roblox-turret-defense/` | 터렛 디펜스 Roblox 4인 협동 키트 (설계서·Luau 4개·가이드) |
+| `pc-agent-bridge/` | 🖥️ 윈도우 노트북용 자동 동기화 브릿지 — 15초마다 새 커밋을 PC(`C:\PickleGames`)로 받아오고 Discord로 알림 ([안내](pc-agent-bridge/README.md)) |
 
 ## 배포 방식
 
 - 브랜치: `main` (루트)
 - GitHub Pages: `main` 브랜치 루트(`/`)에서 정적 파일 그대로 서비스
+
+## 🖥️ 노트북 자동 동기화 (pc-agent-bridge)
+
+윈도우 노트북에서 `pc-agent-bridge\Start_Pickle_Agent.bat` 을 한 번 더블클릭해 두면,
+이 저장소의 새 커밋(새 게임·3D 모델·스크립트)을 **15초 안에 자동으로 내려받고** 휴대폰 Discord로 알려 줍니다.
+설치·Discord 연결·문제 해결은 **[pc-agent-bridge/README.md](pc-agent-bridge/README.md)** 를 따라 하세요.

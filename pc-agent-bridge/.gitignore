@@ -1,0 +1,6 @@
+# 이 PC 안에만 있어야 하는 개인 설정 (GitHub에 올리지 않음)
+config.json
+
+# 실행 흔적
+agent-log.txt
+*.log

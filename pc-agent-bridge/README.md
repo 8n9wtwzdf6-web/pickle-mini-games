@@ -66,6 +66,8 @@ Start-Process "$d\pickle-mini-games-main\pc-agent-bridge\Start_Pickle_Agent.bat"
 
 > ⚠️ 압축을 푼 폴더(설정 파일이 들어 있는 곳)는 **지우거나 옮기지 마세요.** 옮기면 설정을 다시 물어봅니다.
 
+> 🗑️ `C:\PickleGames\pc-agent-bridge\Start_Pickle_Agent.bat` 실행 후 기존 다운로드/바탕화면 ZIP 폴더는 **삭제해도 됩니다.** (설정은 `C:\PickleGames\pc-agent-bridge` 에 저장됩니다)
+
 ---
 
 ## 2단계 — (선택) 휴대폰 Discord로 알림 받기

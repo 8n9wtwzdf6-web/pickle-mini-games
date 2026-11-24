@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070f">
 <meta name="format-detection" content="telephone=no">
-<meta name="description" content="아이폰 사파리에서 바로 즐기는 미니게임 5종 — 운빨·조합 터렛 디펜스(4인 협동), 로켓 타이쿤, 스타 랜덤 디펜스, 네온 볼트 약탈자, 매직 하트핑 요정 캐치 & 요정 타운 경제">
+<meta name="description" content="아이폰 사파리에서 바로 즐기는 미니게임 6종 — 네온 아케이드 테트리스 — 운빨·조합 터렛 디펜스(4인 협동), 로켓 타이쿤, 스타 랜덤 디펜스, 네온 볼트 약탈자, 매직 하트핑 요정 캐치 & 요정 타운 경제">
 <title>🎮 미니게임 아케이드</title>
 <style>
   :root{
@@ -100,10 +100,17 @@
   .card.fairy{border-color:rgba(255,143,199,.42);}
   .card.fairy .icon{filter:drop-shadow(0 6px 18px rgba(255,120,190,.55));}
   .card.fairy .go{color:#5c0f37;background:linear-gradient(180deg,#ffb3dc,#ff5fa8);}
-  .card.fairy::before{
+  .card.tetris{border-color:rgba(37,229,255,.40);}
+  .card.tetris .icon{filter:drop-shadow(0 6px 18px rgba(37,229,255,.55));}
+  .card.tetris .go{color:#02161f;background:linear-gradient(180deg,#a8f7ff,#25c8ff);}
+  .card.tetris::before{
     content:"NEW";position:absolute;right:18px;top:18px;font-size:10px;font-weight:800;letter-spacing:.12em;
-    color:#5c0f37;background:linear-gradient(180deg,#ffe08a,#ffb347);border-radius:999px;padding:4px 9px;
-    box-shadow:0 4px 14px -6px rgba(255,170,60,.9);
+    color:#02161f;background:linear-gradient(180deg,#a8f7ff,#2fd0ff);border-radius:999px;padding:4px 9px;
+    box-shadow:0 4px 14px -6px rgba(37,190,255,.95);
+  }
+  .card.tetris::after{
+    content:"";position:absolute;right:-50px;top:-70px;width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(37,229,255,.26),transparent 68%);pointer-events:none;
   }
   .card.fairy::after{
     content:"";position:absolute;right:-50px;top:-70px;width:200px;height:200px;border-radius:50%;
@@ -126,10 +133,25 @@
     <header>
       <div class="badge">iPhone Safari · Mini Games</div>
       <h1>🎮 미니게임 아케이드</h1>
-      <p>아이폰 사파리에서 바로 즐기는 게임 5종.<br>아래 카드를 터치하면 바로 시작됩니다.</p>
+      <p>아이폰 사파리에서 바로 즐기는 게임 6종.<br>아래 카드를 터치하면 바로 시작됩니다.</p>
     </header>
 
     <div class="cards">
+      <a class="card tetris" href="./tetris/">
+        <span class="icon">🕹️</span>
+        <h2>네온 아케이드 테트리스</h2>
+        <p class="sub">글로우 블록이 터지는 <b>네온 아케이드</b> 테트리스! <b>고스트 착지선</b>·<b>다음 블록 3개</b>·<b>홀드</b>로 쌓고, 4줄 <b>TETRIS!</b> 폭발과 <b>콤보·레벨업</b>, 최고점수 저장까지. PC 키보드와 아이폰 터치 버튼 모두 지원합니다.</p>
+        <div class="row">
+          <div class="tags">
+            <span class="tag">네온 아케이드</span>
+            <span class="tag">홀드·고스트</span>
+            <span class="tag">콤보·레벨업</span>
+            <span class="tag">터치 버튼</span>
+          </div>
+          <span class="go">플레이 ▶</span>
+        </div>
+      </a>
+
       <a class="card turret" href="./turret-defense/">
         <span class="icon">🍀</span>
         <h2>운빨·조합 터렛 디펜스</h2>

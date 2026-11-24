@@ -16,6 +16,10 @@ param()
 $ErrorActionPreference = 'Continue'
 $ProgressPreference    = 'SilentlyContinue'
 
+# git 이 아이디를 물어보며 창을 멈춰 세우지 않도록 (자동 실행용)
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE     = 'never'
+
 # ------------------------------------------------------------
 # 기본 설정
 # ------------------------------------------------------------
@@ -345,6 +349,7 @@ function Initialize-Repository {
         } elseif ($remote -ne $Script:RepoUrl) {
             Write-Note ('origin 주소: ' + $remote)
         }
+        [void](Invoke-Git @('config', 'core.quotepath', 'false'))
         Write-Ok ('이미 받아 둔 게임 폴더가 있습니다: ' + $Script:WorkFolder)
         return $true
     }
@@ -367,6 +372,7 @@ function Initialize-Repository {
         Write-Note '인터넷 연결을 확인한 뒤 다시 실행해 주세요.'
         return $false
     }
+    [void](Invoke-Git @('config', 'core.quotepath', 'false'))
     Write-Ok '게임 폴더 준비 완료'
     Write-Note ('roblox 게임 폴더: ' + $Script:WorkFolder + '\roblox-*')
     return $true

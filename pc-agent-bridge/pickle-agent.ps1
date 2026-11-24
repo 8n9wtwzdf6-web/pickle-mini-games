@@ -179,7 +179,11 @@ function Send-Discord {
     param([string]$Content)
     if (-not (Test-WebhookUrl $Script:Webhook)) { return $false }
     try {
-        $payload = @{ content = $Content } | ConvertTo-Json -Compress -Depth 4
+        # 폰 Discord 알림 설정이 기본값이어도 푸시 배너가 뜨도록 @everyone 멘션을 붙입니다.
+        $payload = @{
+            content          = ('@everyone ' + $Content)
+            allowed_mentions = @{ parse = @('everyone') }
+        } | ConvertTo-Json -Compress -Depth 4
         $bytes   = [System.Text.Encoding]::UTF8.GetBytes($payload)
         $resp = Invoke-RestMethod -Uri $Script:Webhook -Method Post -ContentType 'application/json; charset=utf-8' -Body $bytes -TimeoutSec 20
         if ($null -ne $resp -and $resp.PSObject.Properties.Name -contains 'code') {

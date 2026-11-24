@@ -1,3 +1,5 @@
+> 💡 PC 자동 동기화 브릿지(Pickle Agent)를 켜 두시면 C:\PickleGames\roblox-turret-defense 폴더가 자동으로 최신 유지됩니다.
+
 # 🍀 운빨·조합 터렛 디펜스 — Roblox 4인 협동 키트
 
 스타 유즈맵 감성 그대로, **4명이 각자 라인을 맡아** 랜덤 뽑기·합성으로 터렛을 키우고

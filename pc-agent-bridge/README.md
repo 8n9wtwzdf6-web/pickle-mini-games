@@ -24,7 +24,7 @@
 ### 방법 A. PowerShell에 붙여넣기 (가장 빠름)
 
 1. 윈도우 시작 버튼 → `PowerShell` 검색 → **Windows PowerShell** 실행
-2. 아래 네 줄을 **통째로 복사**해서 창에 붙여넣고 엔터
+2. 아래 다섯 줄을 **통째로 복사**해서 창에 붙여넣고 엔터
 
 ```powershell
 $d = "$env:USERPROFILE\PickleBridge"

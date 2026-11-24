@@ -89,6 +89,8 @@ Start-Process "$d\pickle-mini-games-main\pc-agent-bridge\Start_Pickle_Agent.bat"
 
 5. 연결되면 **"Pickle Agent 연결 완료"** 메시지가 한 번 옵니다. 폰에서 확인해 보세요.
 
+> 📱 iPhone에 알림이 안 오면: **Discord 채널 상단 `#일반` > 알림 > 모든 메시지 선택 + iOS 알림 허용**
+
 > 🔒 웹후크 URL은 **비밀번호와 같습니다.** 이 주소를 아는 사람은 그 채널에 글을 쓸 수 있습니다.
 > 이 파일은 GitHub에 올라가지 않도록 `.gitignore`로 막아 두었고, **이 PC 안에만** 저장됩니다. 남에게 보내지 마세요.
 

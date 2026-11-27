@@ -2,45 +2,33 @@
   01_MapAndTurrets.server.lua
   🍀 운빨·조합 터렛 디펜스 — 4인 협동 아레나 + 터렛/적 3D 모델
   ------------------------------------------------------------
-  붙여넣는 곳 : ServerScriptService  (일반 Script, 이름 자유)
+  붙여넣는 곳 : ServerScriptService  (일반 Script)
+  먼저 필요한 것 : ReplicatedStorage 의 ModuleScript "TDShared"
   하는 일
     1) P1~P4 4개 라인 아레나 · 분리벽 · 스폰 게이트 · 중앙 넥서스 건설
-    2) 라인당 터렛 패드 4개(총 16) + VIP 5번째 패드 4개
+    2) 라인당 터렛 패드 6칸(1~4 무료 / 5·6 = 추가 슬롯 패스)
     3) 터렛 모델 10종 → ReplicatedStorage.TD_Turrets
-    4) 적 모델 5종   → ReplicatedStorage.TD_Enemies
-  ※ 좌표/수치는 02_WaveGachaMerge.server.lua 와 같아야 합니다.
+    4) 적 모델 5종   → ReplicatedStorage.TD_Enemies.Root : 적이 걸어오는 기준점
+  ※ 좌표는 ReplicatedStorage.TDShared.GEO 한 곳에서만 관리합니다.
   ============================================================ ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
--- ---------------------------------------------------------------
--- CONFIG (02와 동일)
--- ---------------------------------------------------------------
-local LANE_X = { -13.5, -4.5, 4.5, 13.5 }
-local LANE_COLORS = {
-	Color3.fromRGB(79, 216, 255),
-	Color3.fromRGB(92, 255, 176),
-	Color3.fromRGB(176, 123, 255),
-	Color3.fromRGB(255, 194, 77),
-}
-local LANE_NAMES = { "P1", "P2", "P3", "P4" }
+local Shared = require(ReplicatedStorage:WaitForChild("TDShared"))
+local GEO = Shared.GEO
 
-local ARENA_W = 40
-local ARENA_D = 74
-local SLOT_Z = { -20, -6, 8, 22 }
-local VIP_SLOT_Z = 32
-local SLOT_X_OFF = -2.3
-local ENEMY_X_OFF = 2.3
-local NEXUS_POS = Vector3.new(0, 0, 32)
+local LANE_X = GEO.LANE_X
+local LANE_COLORS = GEO.LANE_COLORS
+local LANE_NAMES = GEO.LANE_NAMES
+local ARENA_W = GEO.ARENA_W
+local ARENA_D = GEO.ARENA_D
+local SLOT_Z = GEO.SLOT_Z
+local SLOT_X_OFF = GEO.SLOT_X_OFF
+local ENEMY_X_OFF = GEO.ENEMY_X_OFF
+local NEXUS_POS = GEO.NEXUS_POS
 
-local TIERS = {
-	{ name = "일반", color = Color3.fromRGB(184, 198, 210) },
-	{ name = "희귀", color = Color3.fromRGB(62, 155, 255) },
-	{ name = "영웅", color = Color3.fromRGB(169, 115, 255) },
-	{ name = "전설", color = Color3.fromRGB(255, 194, 77) },
-	{ name = "신화", color = Color3.fromRGB(255, 91, 209) },
-}
+local TIERS = Shared.TIER_COLORS
 
 -- ---------------------------------------------------------------
 -- 공통 헬퍼
@@ -70,12 +58,6 @@ end
 
 local function neon(parent, name, size, cf, color, shape)
 	return part(parent, name, size, cf, color, Enum.Material.Neon, shape)
-end
-
-local function cyl(parent, name, radius, length, cf, color, material)
-	-- X축 실린더 → cf 방향으로
-	local p = part(parent, name, Vector3.new(length, radius * 2, radius * 2), cf, color, material or Enum.Material.Metal, Enum.PartType.Cylinder)
-	return p
 end
 
 local function newModel(folder, name, pos)
@@ -120,6 +102,7 @@ if oldArena then oldArena:Destroy() end
 local arena = Instance.new("Folder")
 arena.Name = "TDArena"
 arena.Parent = Workspace
+arena:SetAttribute("Version", Shared.VERSION)
 
 local ground = Instance.new("Folder")
 ground.Name = "Ground"
@@ -156,6 +139,10 @@ for i = 1, 4 do
 	portal.Shape = Enum.PartType.Cylinder
 	portal.CFrame = CFrame.new(lx + ENEMY_X_OFF, 0.3, -31) * CFrame.Angles(0, 0, math.rad(90))
 	portal.Transparency = 0.35
+
+	-- 보스 경고등 (02 가 색을 바꿔 깜빡입니다)
+	local beacon = neon(laneFolder, "WarnBeacon", Vector3.new(2.2, 2.2, 2.2), CFrame.new(lx + ENEMY_X_OFF, 9.6, -33), shade(col, 0.6), Enum.PartType.Ball)
+	beacon.Transparency = 0.85
 
 	local plate = neon(laneFolder, "GatePlate", Vector3.new(3.4, 1.2, 0.2), CFrame.new(lx + ENEMY_X_OFF, 9.4, -32.7), col)
 	local sg = Instance.new("SurfaceGui")
@@ -200,6 +187,7 @@ for i = 1, 4 do
 end
 
 local crystal = part(nexus, "Crystal", Vector3.new(3.4, 5.2, 3.4), CFrame.new(NEXUS_POS + Vector3.new(0, 6.4, 0)) * CFrame.Angles(math.rad(45), 0, math.rad(45)), Color3.fromRGB(150, 245, 255), Enum.Material.Neon)
+crystal.CastShadow = false
 local shell = neon(nexus, "Shell", Vector3.new(5.4, 5.4, 5.4), CFrame.new(NEXUS_POS + Vector3.new(0, 6.4, 0)), Color3.fromRGB(60, 210, 255), Enum.PartType.Ball)
 shell.Transparency = 0.78
 
@@ -246,13 +234,13 @@ hpText.Font = Enum.Font.GothamBlack
 hpText.Parent = hpBack
 
 -- ---------------------------------------------------------------
--- 2. 터렛 패드
+-- 2. 터렛 패드 (라인당 6칸)
 -- ---------------------------------------------------------------
 local pads = Instance.new("Folder")
 pads.Name = "Pads"
 pads.Parent = arena
 
-local function makePad(lane, slot, pos, vip)
+local function makePad(lane, slot, pos, locked)
 	local pad = Instance.new("Model")
 	pad.Name = "Pad_" .. lane .. "_" .. slot
 	pad.Parent = pads
@@ -260,8 +248,8 @@ local function makePad(lane, slot, pos, vip)
 	root.Transparency = 1
 	pad.PrimaryPart = root
 
-	part(pad, "Base", Vector3.new(5.4, 0.5, 5.4), CFrame.new(pos), vip and Color3.fromRGB(30, 38, 46) or Color3.fromRGB(38, 50, 61), Enum.Material.Metal)
-	local ring = neon(pad, "Ring", Vector3.new(5.0, 0.16, 5.0), CFrame.new(pos + Vector3.new(0, 0.32, 0)), vip and Color3.fromRGB(90, 90, 90) or LANE_COLORS[lane])
+	part(pad, "Base", Vector3.new(5.4, 0.5, 5.4), CFrame.new(pos), locked and Color3.fromRGB(30, 38, 46) or Color3.fromRGB(38, 50, 61), Enum.Material.Metal)
+	local ring = neon(pad, "Ring", Vector3.new(5.0, 0.16, 5.0), CFrame.new(pos + Vector3.new(0, 0.32, 0)), locked and Color3.fromRGB(90, 90, 90) or LANE_COLORS[lane])
 	ring.Shape = Enum.PartType.Cylinder
 	ring.CFrame = CFrame.new(pos + Vector3.new(0, 0.32, 0)) * CFrame.Angles(0, 0, math.rad(90))
 	neon(pad, "RingInner", Vector3.new(3.4, 0.12, 3.4), CFrame.new(pos + Vector3.new(0, 0.36, 0)), Color3.fromRGB(26, 54, 68))
@@ -271,15 +259,17 @@ local function makePad(lane, slot, pos, vip)
 	pad:SetAttribute("Owner", 0)
 	pad:SetAttribute("Tier", 0)
 	pad:SetAttribute("Kind", 0)
-	pad:SetAttribute("Vip", vip and true or false)
+	pad:SetAttribute("Star", 0)
+	pad:SetAttribute("Locked", locked and true or false)
+	pad:SetAttribute("Vip", locked and true or false)
 	return pad
 end
 
 for lane = 1, 4 do
-	for slot = 1, 4 do
-		makePad(lane, slot, Vector3.new(LANE_X[lane] + SLOT_X_OFF, 0.35, SLOT_Z[slot]), false)
+	for slot = 1, #SLOT_Z do
+		local locked = slot > GEO.FREE_SLOTS
+		makePad(lane, slot, Vector3.new(LANE_X[lane] + SLOT_X_OFF, 0.35, SLOT_Z[slot]), locked)
 	end
-	makePad(lane, 5, Vector3.new(LANE_X[lane] + SLOT_X_OFF, 0.35, VIP_SLOT_Z), true)
 end
 
 -- ---------------------------------------------------------------
@@ -296,9 +286,8 @@ local DARK = Color3.fromRGB(40, 50, 60)
 local TRIM = Color3.fromRGB(128, 146, 160)
 
 local function buildTurret(tier, kind)
-	local accent = TIERS[tier].color
+	local accent = TIERS[tier]
 	local model = newModel(turretFolder, "T" .. tier .. "_" .. kind)
-	local root = model.PrimaryPart
 
 	-- 고정 받침대
 	part(model, "Base", Vector3.new(4.4, 0.7, 4.4), CFrame.new(0, 0.35, 0), DARK, Enum.Material.Metal)
@@ -311,22 +300,19 @@ local function buildTurret(tier, kind)
 	end
 
 	-- 회전부 공통
-	local body = place(model, "HeadBody", Vector3.new(2.8, 1.4, 2.8), rel(0, 1.6, 0), STEEL, Enum.Material.Metal)
+	place(model, "HeadBody", Vector3.new(2.8, 1.4, 2.8), rel(0, 1.6, 0), STEEL, Enum.Material.Metal)
 	neon(model, "HeadCore", Vector3.new(1.4, 0.45, 1.4), CFrame.new(0, 2.0, 0), accent)
 	place(model, "HeadShoulderL", Vector3.new(0.45, 1.0, 1.9), rel(-1.6, 1.7, 0), shade(accent, 0.45), Enum.Material.Metal)
 	place(model, "HeadShoulderR", Vector3.new(0.45, 1.0, 1.9), rel(1.6, 1.7, 0), shade(accent, 0.45), Enum.Material.Metal)
 
 	-- 정면은 -Z
 	if tier == 1 and kind == 1 then
-		-- 머린 터렛
 		place(model, "HeadTorso", Vector3.new(2.0, 1.7, 1.8), rel(0, 2.5, 0), TRIM, Enum.Material.Metal)
 		place(model, "HeadVisor", Vector3.new(1.2, 0.35, 0.2), rel(0, 2.9, -0.95), accent, Enum.Material.Neon)
-		local rifle = place(model, "HeadRifle", Vector3.new(0.24, 0.24, 2.8), rel(0.45, 2.5, -1.9), DARK, Enum.Material.Metal)
-		rifle.Material = Enum.Material.Metal
+		place(model, "HeadRifle", Vector3.new(0.24, 0.24, 2.8), rel(0.45, 2.5, -1.9), DARK, Enum.Material.Metal)
 		neon(model, "HeadMuzzle", Vector3.new(0.34, 0.34, 0.3), CFrame.new(0.45, 2.5, -3.3), accent)
 		place(model, "HeadPack", Vector3.new(0.9, 1.0, 0.6), rel(0, 2.5, 1.0), shade(accent, 0.5), Enum.Material.Metal)
 	elseif tier == 1 and kind == 2 then
-		-- 기관총 터렛
 		place(model, "HeadGunBody", Vector3.new(2.4, 1.1, 2.6), rel(0, 2.0, -0.2), STEEL, Enum.Material.Metal)
 		for s = -1, 1, 2 do
 			place(model, "HeadBarrel" .. s, Vector3.new(0.28, 0.28, 3.4), rel(s * 0.4, 2.05, -2.2), DARK, Enum.Material.Metal)
@@ -335,7 +321,6 @@ local function buildTurret(tier, kind)
 		place(model, "HeadAmmo", Vector3.new(0.8, 1.0, 1.2), rel(-1.4, 1.9, 0.3), Color3.fromRGB(92, 108, 76), Enum.Material.Metal)
 		place(model, "HeadBipod", Vector3.new(2.6, 0.2, 0.2), rel(0, 1.2, -1.4), TRIM, Enum.Material.Metal)
 	elseif tier == 2 and kind == 1 then
-		-- 화염방사 터렛
 		for s = -1, 1, 2 do
 			local tank = place(model, "HeadTank" .. s, Vector3.new(0.9, 2.0, 0.9), rel(s * 1.05, 2.2, 0.9), Color3.fromRGB(44, 98, 168), Enum.Material.Metal)
 			tank.Shape = Enum.PartType.Cylinder
@@ -345,7 +330,6 @@ local function buildTurret(tier, kind)
 		place(model, "HeadNozzle", Vector3.new(0.9, 0.9, 2.2), rel(0, 2.0, -1.7), Color3.fromRGB(58, 80, 96), Enum.Material.Metal)
 		neon(model, "HeadFlame", Vector3.new(0.7, 0.7, 1.0), CFrame.new(0, 2.0, -3.1), Color3.fromRGB(255, 150, 60))
 	elseif tier == 2 and kind == 2 then
-		-- 파이어뱃 포탑
 		place(model, "HeadArmor", Vector3.new(3.4, 1.9, 3.0), rel(0, 2.2, 0), shade(accent, 0.55), Enum.Material.Metal)
 		place(model, "HeadShoulderPadL", Vector3.new(1.0, 1.2, 1.6), rel(-1.9, 2.5, 0), TRIM, Enum.Material.Metal)
 		place(model, "HeadShoulderPadR", Vector3.new(1.0, 1.2, 1.6), rel(1.9, 2.5, 0), TRIM, Enum.Material.Metal)
@@ -354,8 +338,7 @@ local function buildTurret(tier, kind)
 			neon(model, "HeadFlame" .. s, Vector3.new(0.6, 0.6, 0.5), CFrame.new(s * 0.55, 2.1, -3.2), Color3.fromRGB(255, 130, 40))
 		end
 	elseif tier == 3 and kind == 1 then
-		-- 미사일 포탑
-		local launcher = place(model, "HeadLauncher", Vector3.new(3.0, 1.9, 2.6), rel(0, 2.4, 0, -14, 0, 0), shade(accent, 0.5), Enum.Material.Metal)
+		place(model, "HeadLauncher", Vector3.new(3.0, 1.9, 2.6), rel(0, 2.4, 0, -14, 0, 0), shade(accent, 0.5), Enum.Material.Metal)
 		for ix = -1, 1, 2 do
 			for iy = -1, 1, 2 do
 				local tube = place(model, "HeadTube" .. ix .. iy, Vector3.new(0.6, 0.6, 2.4), rel(ix * 0.72, 2.4 + iy * 0.5, -1.1, -14, 0, 0), DARK, Enum.Material.Metal)
@@ -369,7 +352,6 @@ local function buildTurret(tier, kind)
 		dish.CFrame = model.PrimaryPart.CFrame * rel(0, 3.2, 0.9, 10, 0, 0)
 		neon(model, "HeadRadarTip", Vector3.new(0.2, 0.5, 0.2), CFrame.new(0, 3.5, 0.9), accent)
 	elseif tier == 3 and kind == 2 then
-		-- 발키리 포탑
 		place(model, "HeadHull", Vector3.new(2.2, 0.8, 4.6), rel(0, 3.0, 0), TRIM, Enum.Material.Metal)
 		place(model, "HeadNose", Vector3.new(1.4, 0.7, 1.2), rel(0, 3.0, -2.6), shade(accent, 0.6), Enum.Material.Metal)
 		for s = -1, 1, 2 do
@@ -379,7 +361,6 @@ local function buildTurret(tier, kind)
 		place(model, "HeadRotor", Vector3.new(6.4, 0.12, 0.4), rel(0, 3.6, 0.2), TRIM, Enum.Material.Metal)
 		neon(model, "HeadEngine", Vector3.new(1.2, 0.4, 0.4), CFrame.new(0, 3.0, 2.5), accent)
 	elseif tier == 4 and kind == 1 then
-		-- 시즈 캐논
 		for s = -1, 1, 2 do
 			place(model, "HeadTread" .. s, Vector3.new(1.1, 1.3, 5.2), rel(s * 1.7, 1.2, 0.2), Color3.fromRGB(28, 36, 44), Enum.Material.DiamondPlate)
 		end
@@ -390,7 +371,6 @@ local function buildTurret(tier, kind)
 		neon(model, "HeadMuzzle", Vector3.new(1.05, 1.05, 0.5), CFrame.new(0, 2.5, -6.6), accent)
 		neon(model, "HeadTrim", Vector3.new(3.5, 0.18, 0.5), CFrame.new(0, 2.95, 0.4), accent)
 	elseif tier == 4 and kind == 2 then
-		-- 배틀크루저 포탑
 		place(model, "HeadHull", Vector3.new(1.8, 0.9, 6.4), rel(0, 3.4, 0), TRIM, Enum.Material.Metal)
 		place(model, "HeadNose", Vector3.new(1.2, 0.8, 1.4), rel(0, 3.4, -3.6), shade(accent, 0.65), Enum.Material.Metal)
 		place(model, "HeadBridge", Vector3.new(1.2, 0.9, 1.8), rel(0, 4.1, 0.4), shade(accent, 0.5), Enum.Material.Metal)
@@ -402,7 +382,6 @@ local function buildTurret(tier, kind)
 		place(model, "HeadLaser", Vector3.new(0.3, 0.3, 1.8), rel(0, 4.6, -0.6), DARK, Enum.Material.Metal)
 		neon(model, "HeadLaserTip", Vector3.new(0.4, 0.4, 0.2), CFrame.new(0, 4.6, -1.6), accent)
 	elseif tier == 5 and kind == 1 then
-		-- 다크 템플러 타워
 		part(model, "HeadObelisk", Vector3.new(1.8, 6.0, 1.8), CFrame.new(0, 3.7, 0), Color3.fromRGB(38, 30, 54), Enum.Material.Metal)
 		neon(model, "HeadObeliskGlow", Vector3.new(0.35, 5.0, 0.35), CFrame.new(0, 3.8, -0.95), accent)
 		local gem = neon(model, "HeadGem", Vector3.new(1.1, 1.6, 1.1), CFrame.new(0, 7.2, 0), accent)
@@ -412,7 +391,6 @@ local function buildTurret(tier, kind)
 			blade.Transparency = 0.15
 		end
 	else
-		-- 아콘 레이저 타워
 		part(model, "HeadPedestal", Vector3.new(1.8, 2.0, 1.8), CFrame.new(0, 1.7, 0), shade(accent, 0.4), Enum.Material.Metal)
 		local orb = neon(model, "HeadOrb", Vector3.new(2.4, 2.4, 2.4), CFrame.new(0, 4.2, 0), accent, Enum.PartType.Ball)
 		orb.Transparency = 0.05
@@ -464,7 +442,6 @@ local function buildZergling()
 	for s = -1, 1, 2 do
 		place(m, "Scythe" .. s, Vector3.new(0.3, 2.4, 0.5), rel(s * 1.2, 1.8, -1.4, 24, 0, s * 18), Color3.fromRGB(206, 180, 140), Enum.Material.Metal)
 	end
-	m:SetAttribute("HP", 60)
 	m:SetAttribute("Speed", 9.5)
 	m:SetAttribute("Reward", 2)
 	m:SetAttribute("CoreDamage", 1)
@@ -484,7 +461,6 @@ local function buildHydra()
 		local z = ((i - 1) % 3) - 1
 		place(m, "Leg" .. i, Vector3.new(0.35, 1.8, 0.35), rel(s * 1.3, 0.8, z), Color3.fromRGB(70, 140, 50), Enum.Material.Metal)
 	end
-	m:SetAttribute("HP", 110)
 	m:SetAttribute("Speed", 7.6)
 	m:SetAttribute("Reward", 3)
 	m:SetAttribute("CoreDamage", 1)
@@ -506,7 +482,6 @@ local function buildRoach()
 		local z = (math.floor((i - 1) / 2) - 1) * 1.0
 		place(m, "Leg" .. i, Vector3.new(0.4, 1.6, 0.4), rel(s * 1.5, 0.7, z), Color3.fromRGB(84, 48, 132), Enum.Material.Metal)
 	end
-	m:SetAttribute("HP", 190)
 	m:SetAttribute("Speed", 6.2)
 	m:SetAttribute("Reward", 4)
 	m:SetAttribute("CoreDamage", 1)
@@ -525,7 +500,6 @@ local function buildMutalisk()
 		w.Transparency = 0.15
 	end
 	place(m, "Tail", Vector3.new(0.5, 0.5, 2.4), rel(0, 5.9, 2.2, 18, 0, 0), Color3.fromRGB(156, 63, 156), Enum.Material.Metal)
-	m:SetAttribute("HP", 95)
 	m:SetAttribute("Speed", 8.6)
 	m:SetAttribute("Reward", 3)
 	m:SetAttribute("CoreDamage", 1)
@@ -550,7 +524,6 @@ local function buildBoss()
 	for i = 1, 4 do
 		place(m, "Spike" .. i, Vector3.new(0.8, 2.4, 0.8), rel(-1.8 + i * 1.2, 5.6, 1.6, -18, 0, 0), Color3.fromRGB(124, 33, 41), Enum.Material.Metal)
 	end
-	m:SetAttribute("HP", 900)
 	m:SetAttribute("Speed", 4.6)
 	m:SetAttribute("Reward", 80)
 	m:SetAttribute("CoreDamage", 4)
@@ -566,4 +539,4 @@ buildRoach()
 buildMutalisk()
 buildBoss()
 
-print("[TD] 01_MapAndTurrets 완료 — 아레나 · 패드 20개 · 터렛 10종 · 적 5종 생성")
+print("[TD] 01_MapAndTurrets 완료 — 아레나 · 패드 " .. (4 * #SLOT_Z) .. "개 · 터렛 10종 · 적 5종 (v" .. Shared.VERSION .. ")")

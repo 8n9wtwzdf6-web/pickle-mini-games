@@ -4,6 +4,15 @@
 > **읽는 사람** 노트북의 AI 에이전트 **Hermes**, 그리고 개발자(재권 님)
 > **저장소** `8n9wtwzdf6-web/pickle-mini-games` · **경로** `roblox-turret-defense/`
 > **상태** 기획 확정 — 이 문서대로 새로 코딩하거나 기존 v3 코드를 개선하면 됩니다.
+> **최근 추가** 2026-11-27 · 재권 님이 Studio에서 직접 플레이해 확인 → **8.5절(시안 이미지 19장)** · **8.6절(필수 비주얼 보완 3가지)** 추가
+
+> ### 🔴 지금 최우선 (2026-11-27 Studio 확인)
+> 재권 님이 Studio에서 플레이해 본 결과 **"시안과 전혀 다릅니다."** 원인은 3가지입니다.
+> ① 하늘이 **밝은 파란 낮**이고 섬 아래로 하늘이 비쳐 우주가 아님 → **검은 우주 Skybox · 성운 · Bloom 네온 발광**
+> ② 5섬이 **바위 절벽도 네온 테두리도 없는 밋밋한 검은 네모 판** → **다각형 부유섬 + 종족별 발광 네온 테두리**
+> ③ `models/*.obj` **18종이 Studio에 안 얹힘**(본진·터렛이 작은 블록) → **`MeshPart` 실제 적용**
+>
+> **→ 코딩을 시작하기 전에 8.5절(시안 이미지)과 8.6절(보완 3가지)을 먼저 읽으세요.**
 
 ---
 
@@ -17,6 +26,7 @@
    - 바꾼 값과 이유를 작업 보고(PR 설명)에 반드시 적으세요.
 4. 이 문서에 없는 기능을 "더 좋을 것 같아서" 임의로 추가하지 마세요. 추가 제안은 코드가 아니라 **보고서의 제안 항목**으로 분리하세요.
 5. 절대 금지 사항은 **10장**, 완료 판정 기준은 **11장**에 있습니다. 코딩 전에 두 장을 먼저 읽으세요.
+6. **목표 화면의 기준은 `concepts/`의 시안 19장(8.5절)**이고, **지금 코드가 시안과 다른 이유 3가지는 8.6절**에 있습니다. 이번 작업의 성공 판정은 "기능이 도는가"가 아니라 **"시안과 같은 화면인가"**입니다.
 
 ### 한 줄 소개
 
@@ -434,11 +444,113 @@ Studio에서 **아래 위치 그대로** 붙여넣으면 동작합니다.
 | `roblox-turret-defense/DESIGN.md` | 게임 설계서(구조·밸런스 목표·연출 원칙) |
 | `roblox-turret-defense/AUDIT.md` | v1 → v2 감사 19개 보완점 |
 | `roblox-turret-defense/README_STUDIO_SETUP.md` | Studio 설치 체크리스트 |
+| `roblox-turret-defense/concepts/` | **확정 시안 이미지 19장** + 인덱스 `README.md` (목표 화면 기준, 8.5절) |
 | `turret-defense/` | 아이폰 사파리 웹 테스트판 (GitHub Pages) |
 | `pc-agent-bridge/` | 노트북 `C:\PickleGames` 15초 자동 동기화 + Discord 알림 |
 
 - 라이브: `https://8n9wtwzdf6-web.github.io/pickle-mini-games/turret-defense/`
 - 저장소: `https://github.com/8n9wtwzdf6-web/pickle-mini-games`
+
+### 8.5 시안 이미지 19장 — `concepts/` (이 폴더가 "목표 화면"의 기준)
+
+2026-11-27 대화에서 재권 님이 한 장씩 확인하고 확정한 시안입니다. **코드를 고치기 전에 이 이미지들을 눈으로 먼저 보고**, 같은 구도·색·발광으로 맞추세요. 1024~1536px PNG 19장 · 약 49MB · 폴더 인덱스는 [`concepts/README.md`](concepts/README.md).
+`main`에 푸시하면 노트북 `C:\PickleGames` 자동 동기화로 **15초 안에** `roblox-turret-defense\concepts\`에 내려옵니다.
+
+#### 파트 1 · 맵 & 월드 (6장)
+
+| 파일 | 보여 주는 것 | 구현에서 지켜야 할 점 |
+|---|---|---|
+| [`roblox-5-floating-islands.png`](concepts/roblox-5-floating-islands.png) | **이 게임의 기준 화면** — 깊은 우주 속 5개 부유섬(오각형) + 내 섬 8×8 자유 배치 그리드 | 섬 사이는 진짜 빈 우주. 섬마다 바위 절벽·종족색 네온 테두리·본진 |
+| [`roblox-center-boss-cross-fusion.png`](concepts/roblox-center-boss-cross-fusion.png) | 중앙 오메가 파괴신 + 5섬 동시 레이저 총공격 + 이종족 합체 유닛 | 보스전 연출·5팀 딜량 경쟁 |
+| [`roblox-all-maps.png`](concepts/roblox-all-maps.png) | 로블록스화 3대 테마(우주 요새 · 판타지 성채 · 사이버펑크) | 테마 전환이 바닥·조명·네온색까지 바뀜 |
+| [`map-concept-sf.png`](concepts/map-concept-sf.png) | 우주 요새 테마 원안(고해상) | 시안 톤·디테일 기준 |
+| [`map-concept-fantasy.png`](concepts/map-concept-fantasy.png) | 판타지 성채 테마 원안 | 테마별 대비·조명 |
+| [`map-concept-cyber.png`](concepts/map-concept-cyber.png) | 사이버펑크 도시 테마 원안 | 네온 밀도·홀로그램 |
+
+#### 파트 2 · 5대 종족 · 모드전환 (8장)
+
+| 파일 | 보여 주는 것 | 구현에서 지켜야 할 점 |
+|---|---|---|
+| [`concept-5-factions.png`](concepts/concept-5-factions.png) | 5대 종족 통합 시안 | 종족이 실루엣만으로 구분 |
+| [`faction-human.png`](concepts/faction-human.png) | 👤 휴먼 — 전술 지휘 벙커, 병력 ↔ 벙커 | 각진 벙커·모래주머니·안테나 |
+| [`faction-mecha.png`](concepts/faction-mecha.png) | 🛡️ 메카 — 중장갑 요새, 워커 ↔ 시즈 | 장갑판·굴뚝·쌍열 포탑 |
+| [`faction-arcane.png`](concepts/faction-arcane.png) | 🔮 아케인 — 부유 수정 첨탑, 타워 ↔ 수호자 | 룬 링·크리스탈·보라 레이저 |
+| [`faction-bio.png`](concepts/faction-bio.png) | 🧬 바이오 — 유기체 하이브, 스파이어 ↔ 괴수 | 포자낭·촉수·초록 산성 |
+| [`faction-drone.png`](concepts/faction-drone.png) | 🛸 드론 — 링형 모함, 로봇 ↔ 드론편대 | 링·도킹 포트·궤도 드론 |
+| [`roblox-all-factions.png`](concepts/roblox-all-factions.png) | 로블록스화 5대 종족 + 본진 5종 | 본진 5종이 완전히 다른 실루엣 |
+| [`roblox-5team-race-impact.png`](concepts/roblox-5team-race-impact.png) | 5팀 동시 경쟁 · 타격 임팩트 강화판 | 타격 이펙트·피격 번쩍임 강도 |
+
+#### 파트 3 · 몬스터 & 보스 (5장)
+
+| 파일 | 보여 주는 것 | 구현에서 지켜야 할 점 |
+|---|---|---|
+| [`concept-monsters-40stages.png`](concepts/concept-monsters-40stages.png) | 40단계 몬스터 라인업 | 단계별 외형 변화 |
+| [`concept-hero-vs-swarm.png`](concepts/concept-hero-vs-swarm.png) | 일반 99마리 vs 2배 크기 영웅 1마리 | 영웅은 크기·오라로 구분 |
+| [`concept-final-boss.png`](concepts/concept-final-boss.png) | 최종 보스 `오메가 파괴신` 원안 | 4팔·날개·뿔 왕관·가슴 코어 |
+| [`roblox-all-bosses.png`](concepts/roblox-all-bosses.png) | 로블록스화 보스 라인업 | 엔진 질감·발광 |
+| [`roblox-engine-preview.png`](concepts/roblox-engine-preview.png) | 로블록스 엔진 적용 예상 프리뷰 | **목표 질감·Bloom 발광 기준** |
+
+**대표 4장 미리보기** (GitHub에서 바로 보입니다)
+
+![우주 5개 부유 섬 + 자유 그리드](concepts/roblox-5-floating-islands.png)
+![로블록스화 5대 종족](concepts/roblox-all-factions.png)
+![로블록스화 보스 라인업](concepts/roblox-all-bosses.png)
+![로블록스 엔진 적용 예상 프리뷰](concepts/roblox-engine-preview.png)
+
+---
+
+### 8.6 🔴 Studio에서 확인된 "시안과 다른 점" 3가지 — 최우선 보완 (2026-11-27)
+
+재권 님이 Studio에서 직접 플레이해 보고 **"시안과 전혀 달라"** 고 했습니다. 기능은 돌지만 화면이 시안과 다릅니다. 원인은 아래 3가지이고, **①·②는 코드만으로, ③은 블렌더→Studio 임포트로** 해결합니다. **② → ① → ③ 순서**로 처리하면 첫 화면이 가장 빨리 시안처럼 됩니다. 목표는 8.5의 `roblox-5-floating-islands.png`와 `roblox-engine-preview.png`입니다.
+
+#### ① 밝은 낮 하늘 → 검은 우주 · 성운 · Bloom 네온 발광
+
+- **지금**: `01_WorldAndUnits.server.lua`의 테마 적용부가 `Lighting.Ambient/OutdoorAmbient/FogColor/ClockTime/Brightness` **속성만** 바꾸고, `Sky`·`Atmosphere`·`BloomEffect` **오브젝트는 아예 만들지 않습니다**. 실제 Studio 플레이 화면은 **밝은 파란 낮 하늘**이었고, 섬 아래로 그 하늘색이 "바다"처럼 보였습니다 — 그건 물이 아니라 **아래쪽으로 보이는 스카이박스**입니다.
+- **목표**: 시안 1·2번처럼 검정·남색 우주, 별·성운, 네온이 실제로 번지는 Bloom.
+- **구현**:
+  1. `Lighting` 안에 **`Sky` 인스턴스를 코드로 생성**(이미 있으면 재사용). 6면(`SkyboxBk/Dn/Ft/Lf/Rt/Up`)에 성운 텍스처(마켓플레이스 "nebula/space skybox"). 텍스처가 없으면 6면을 비우고 `Sky.StarCount = 3000`, `Sky.CelestialBodiesShown = false`(낮 해·달 제거).
+  2. `Lighting.Ambient = Color3.fromRGB(22,24,38)` · `OutdoorAmbient = (10,12,22)` · `Brightness = 0.6` · `ClockTime = 0` · `GlobalShadows = true` · `EnvironmentDiffuseScale = 0.15` · `EnvironmentSpecularScale = 0.35` · `FogColor = (8,10,22)` · **`FogStart = 400` · `FogEnd = 1600`**(지금 120은 너무 가까워 섬이 안개에 먹힙니다).
+  3. **`Atmosphere`**: `Density = 0.35`, `Offset = 0.1`, `Color = (18,20,40)`, `Decay = (106,112,125)`, `Glare = 0.15`, `Haze = 1.2`.
+  4. **`BloomEffect`**: `Intensity = 1.2`, `Size = 32`, `Threshold = 0.9` + **`ColorCorrectionEffect`**(`Saturation = 0.15`, `Contrast = 0.12`). 네온 파트가 시안처럼 번지게 하는 건 이 두 개입니다.
+  5. `Lighting.Technology = Enum.Technology.Future` — **런타임 스크립트로는 바꿀 수 없습니다.** Studio `Lighting` 속성 창에서 `Future`로 직접 지정해야 그림자·발광이 시안처럼 나옵니다.
+  6. 테마 전환 때도 위 값을 테마별로 함께 바꾸되, **낮 하늘은 어떤 테마에도 금지**(판타지·사이버도 우주 배경 위에 얹기).
+  7. 먼저 Studio **Output 창의 빨간 에러**를 확인하세요. 스크립트가 중간에 죽으면 조명·섬 생성이 통째로 적용되지 않습니다.
+
+#### ② 밋밋한 검은 네모 판 → 바위 절벽이 있는 다각형 부유섬 + 종족별 네온 테두리
+
+- **지금**: `buildArena`가 `Plate`(68×3×68 `Part`, `Slate`)와 `UnderPlate`(74×2.2, `Metal`) **두 장의 상자**만 놓습니다. 위에서 보면 **절벽도 네온도 없는 검은 정사각 판**입니다(Studio 사진에서 확인).
+- **목표**: 시안 1번 — 모서리가 깎인 다각형 실루엣, 아래로 뾰족하게 떨어진 바위 절벽, 절벽에 붙은 파편, 가장자리 종족색 네온 라인과 그 빛.
+- **구현** (메시 없이 `Part`/`WedgePart` 조합만으로 가능):
+  1. **실루엣**: 정사각 대신 **8각형** — 판 1장 + 모서리 4개를 45° 회전한 판으로 채워 모서리를 잘라내고, 변 길이를 ±8 studs 정도 다르게 해 자연스럽게.
+  2. **절벽**: 판 아래에 **`WedgePart` 4~8개를 안쪽으로 35~55° 기울여** 붙여 아래로 좁아지는 바위 덩어리. 맨 아래는 뒤집은 `WedgePart` 하나로 **뾰족한 바닥**(떠 있는 바위 느낌). 재질 `Slate`/`Basalt`, 색 `(34,32,42)` 계열, `CastShadow = true`.
+  3. **파편·광맥**: 절벽 표면에 0.5~2.5 studs 파트 20~40개를 붙이고, 종족 `accent`색 `Neon` 3~5개를 섞어 발광 광맥.
+  4. **네온 테두리**: 상판 가장자리를 따라 두께 0.3~0.6 · 높이 0.6 studs 테두리 링(`Neon`, 종족 `accent`)을 4~8개 파트로 이어 붙이고, 안쪽에 `PointLight`(Range 45, Brightness 1.5, `accent`색) 4~6개 → 가장자리가 실제로 빛납니다.
+  5. **상판**: 테마 바닥 재질 유지, 타일 경계는 얇은(0.12 studs) `Neon` 격자. 절벽이 상판 외곽을 **완전히 감싸** 아래로 하늘이 비치지 않게.
+  6. **부유 연출**: 흔들림은 **절벽 파편·링 장식만** `TweenService`로(주기 6초, 0.15 studs). **건설 판·타일 좌표는 고정** — 판을 흔들면 탭 건설·BFS 좌표가 어긋납니다.
+
+#### ③ `models/` 블렌더 3D 모델 18종 → Studio `MeshPart` 실제 적용
+
+- **지금**: 본진·터렛·몬스터가 전부 **파트 조합 도형**입니다. `models/*.obj` 19개 파일(고유 18종)은 저장소에만 있고 Studio에는 안 얹혀 있습니다(8.3절).
+- **목표**: `roblox-all-factions.png`·`roblox-all-bosses.png`처럼 본진 5종·유닛 10종·몬스터/보스 3종이 **실제 3D 메시**로 보이게.
+- **작업 순서**:
+
+1. 블렌더 5.3.0에서 18종 확인 → `FBX` 내보내기(FBX Unit Scale, Z Forward / Y Up, Limit to Selected). 절차는 `models/README_BLENDER_TO_ROBLOX.md`.
+2. Studio `File → Import 3D`(Import Only as Model, Forward=Front, Up=Top, Scale Unit=Studs, Merge Meshes, Anchored) → **`ReplicatedStorage/TDModels`에 파일명 그대로** 저장.
+3. 코드에서 매핑(파일명 = 모델명 그대로):
+
+| 파일 | 교체 대상 |
+|---|---|
+| `nexus_human` · `nexus_mecha` · `nexus_arcane` · `nexus_bio` · `nexus_drone` | `buildNexus()`의 본진 5종 |
+| `unit_human_soldier` · `unit_human_bunker` · `unit_mecha_walker` · `unit_mecha_siege` · `unit_arcane_tower` · `unit_arcane_guardian` · `unit_bio_spire` · `unit_bio_beast` · `unit_drone_robot` · `unit_drone_swarm` | 종족 10모드 유닛 |
+| `monster_regular` | 일반 몬스터 |
+| `monster_hero_boss` | 영웅 몬스터(2배 크기) |
+| `omega_destroyer_boss` | 최종 보스 |
+
+4. 교체 방식: 기존 파트 시각물은 **삭제하지 말고 `Transparency = 1`**로 숨긴 뒤(스크립트가 참조하는 부품이 깨지지 않게) 같은 위치에 `MeshPart`를 `Anchored = true`, `CanCollide = false`, `RenderFidelity = Precise`로 배치. 크기는 `MeshPart:ScaleTo()` 또는 `Size` 비율 유지.
+5. 모드 전환·합성·등급 색은 **`MeshPart.Color` 또는 `Highlight`/`PointLight`**로 표현(메시를 다시 만들지 않음).
+6. 임포트는 됐는데 안 보이면 ① `Anchored` ② 크기(수백 studs로 들어옴) ③ 원점(PivotOffset) 순으로 확인.
+
+**검증**: Studio에서 ① 하늘이 검고 별이 보인다 ② 섬 모서리에 종족색 빛이 번진다 ③ 본진·터렛이 박스가 아니라 메시다 — 이 3개가 보이면 8.6 통과입니다.
 
 ---
 
@@ -486,7 +598,9 @@ Studio에서 **아래 위치 그대로** 붙여넣으면 동작합니다.
 
 ### 반드시
 
-- ✅ 첫 화면에서 **우주 5섬 + 중앙 제단**이 보인다.
+- ✅ 첫 화면에서 **우주 5섬 + 중앙 제단**이 보이고, 하늘은 **검은 우주(별·성운)** 다 — 낮 하늘 금지.
+- ✅ 섬은 **바위 절벽이 있는 다각형 부유섬**이고 가장자리에 **종족색 네온 테두리**가 빛난다 — 밋밋한 검은 네모 판 금지.
+- ✅ 본진 5종·유닛 10종·몬스터/보스 3종은 **`models/`의 `MeshPart`** 로 보인다 — 파트 조합 박스만으로 끝내지 않는다.
 - ✅ 내 섬에서 **원하는 타일을 직접 탭해** 건설한다.
 - ✅ 경로 완전 차단 시 **건설 거부 + 이유 표시**.
 - ✅ 모드 전환은 **외형·이펙트·스탯·스킬**이 모두 바뀐다.
@@ -511,6 +625,9 @@ Studio에서 **아래 위치 그대로** 붙여넣으면 동작합니다.
 
 ### 11.2 Studio 플레이 테스트
 
+- [ ] **하늘이 검은 우주**(별·성운, Bloom 번짐)이고 섬 아래로 하늘이 비치지 않는다 (8.6①)
+- [ ] **섬 5개가 다각형 부유섬**이고 모서리에 종족색 네온 테두리 빛이 번진다 (8.6②)
+- [ ] **본진 5종·유닛·몬스터·보스가 `MeshPart` 3D 모델**로 보인다 (8.6③)
 - [ ] 인트로에서 테마·종족 선택 → 전투 시작
 - [ ] 🔮 유닛 뽑기 2~3회 → 손패 생성
 - [ ] 손패 선택 → 빈 타일 터치 → **터렛 건설 성공**
@@ -538,7 +655,8 @@ Studio에서 **아래 위치 그대로** 붙여넣으면 동작합니다.
 
 1. **Studio 실제 플레이·실결제 미검증** — 이 환경에서는 Studio를 실행할 수 없습니다. 위 11.2는 사람이 PC에서 확인해야 합니다.
 2. **상품·패스 ID가 전부 0** — `Shared.IDS`에 발급값을 넣기 전까지 판매가 꺼져 있습니다.
-3. **3D 모델이 Studio에 임포트되지 않음** — `.obj`/`.fbx`를 `MeshPart`로 얹는 작업이 남아 있습니다.
+3. **3D 모델이 Studio에 임포트되지 않음** — `.obj`/`.fbx`를 `MeshPart`로 얹는 작업이 남아 있습니다(8.6③, 최우선).
+3-1. **하늘·섬 모양이 시안과 다름** — `Sky`/`Atmosphere`/`BloomEffect` 오브젝트가 없고 섬이 사각 판입니다(8.6①·②, 최우선).
 4. **융합 유닛은 모드 전환이 없음** — 전용 스킬·버프만 있습니다.
 5. **AI 4팀은 시뮬레이션** — 실제 5인 매치메이킹이 아닙니다.
 6. **밸런스는 1~12단계 실플레이 + 13~39단계 디버그 점프**로만 확인했습니다. 40단계 완주 실측은 없습니다.

@@ -17,6 +17,8 @@
 > 📌 **처음 설치하는 분은 [`README_STUDIO_SETUP.md`](README_STUDIO_SETUP.md) 만 보세요.** (붙여넣기 체크리스트 + 첫 확인 4단계)
 > 🔍 v2 → v3에서 무엇이 바뀌었는지는 [`AUDIT.md`](AUDIT.md), 설계 의도는 [`DESIGN.md`](DESIGN.md).
 > 📄 **최종 통합 기획·구현 명세서는 [`SPEC_V3.md`](SPEC_V3.md)** — 새로 코딩·개선할 때 이 문서와 코드를 함께 읽으세요.
+> 🎨 **목표 화면은 [`concepts/`](concepts/README.md) 의 확정 시안 19장**이고, **지금 화면이 시안과 다른 이유 3가지와 고치는 법은 `SPEC_V3.md` 8.6절**(검은 우주 Skybox·Bloom / 바위 절벽 부유섬 · 네온 테두리 / `models/*.obj` 18종 `MeshPart` 적용)에 있습니다. 코딩 전에 먼저 읽으세요.
+> 🔴 **현재 상태**: Studio 실플레이 결과 하늘이 밝은 낮이고 섬이 검은 네모 판이며 3D 모델이 안 언혀 **시안과 다릅니다** — 8.6의 3건이 남아 있는 최우선 작업입니다.
 > 📱 아이폰 사파리에서 먼저 해보려면 `../turret-defense/index.html` (같은 기획의 3D 미니판).
 
 ---

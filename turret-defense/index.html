@@ -3907,6 +3907,22 @@ function benefitTab(tab){
   });
 }
 
+/* ---------- 5팀 순위표 상세 ---------- */
+function openRanking(){
+  const rows = teamRows();
+  let html = '<div class="cbar"><span class="cl" style="background:#54e8ff;box-shadow:0 0 8px #54e8ff"></span><span>LIVE RANKING · 5팀 경쟁</span><span class="cv">40 STAGES</span></div><div class="cbody">' +
+    '<h1>실시간 순위</h1><p class="sub">스테이지 → 누적 딜량 순 · 클리어 타임은 40단계 완주 기록입니다.</p><div class="list">';
+  rows.forEach(function(r, i){
+    html += '<div class="item"><div class="ii">'+r.icon+'</div><div class="tx"><b>'+(i+1)+'위 · '+r.name+'</b>'+
+      '<span>스테이지 '+(r.stage>=WAVE_MAX?'FINAL':('S'+r.stage))+' · 클리어 '+fmtTime(r.time)+'</span>'+
+      '<span>누적 딜량 '+fmtNum(r.dmg)+'</span></div>'+
+      '<button class="buy'+(r.me?' free':'')+'">'+(r.me?'나':'AI')+'</button></div>';
+  });
+  html += '</div></div><div style="padding:2px 12px 12px"><button class="cta ghost" id="mClose">닫기</button></div>';
+  openModal(html);
+  $('mClose').onclick = closeModal;
+}
+
 /* ---------- 레시피 ---------- */
 function openRecipes(){
   let html = '<div class="cbar"><span class="cl" style="background:#ffc24d;box-shadow:0 0 8px #ffc24d"></span><span>CROSS-FUSION · 이종족 합체</span><span class="cv">5 RECIPES</span></div><div class="cbody">'+
@@ -4102,6 +4118,7 @@ function bindUI(){
     S.speed = S.speed >= 3 ? 1 : S.speed + 1;
     refreshHud();
   };
+  $('teamStrip').onclick = openRanking;
   $('btnShop').onclick = function(){ shopTab('item'); };
   $('btnBene').onclick = function(){ benefitTab('daily'); };
   $('btnRec').onclick = openRecipes;

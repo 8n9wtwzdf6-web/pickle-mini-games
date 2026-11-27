@@ -2435,6 +2435,7 @@ function placeTurret(col, row, tier, kind, race, opts){
   t.mesh = mesh;
   S.turrets.push(t);
   // 건설 이펙트
+  beep(660 + tier*90, 0.07, 'square', 0.016);
   ringBurst(new THREE.Vector3(p.x, 0.4, p.z), RACE_STYLE[t.race].glow, 2.6, 0.5);
   fxBurst(new THREE.Vector3(p.x, 0.7, p.z), 0x9fe8ff, 8, 3.2, 0.45);
   return t;
@@ -2480,6 +2481,7 @@ function mergeTurrets(a, b){
   const t = placeTurret(col, row, tier, a.kind, a.race, {});
   if(t){ t.star = star; refreshTurretMesh(t); }
   S.merges++;
+  beep(880, 0.12, 'triangle', 0.026);
   questBump('merges', 1);
   toast('⚡ 합성! ' + TIERS[tier].name + ' ' + TDEF[tier][a.kind].short + (star?(' ★'+star):''));
   screenShake(0.25);
@@ -2505,6 +2507,8 @@ function fuseTurrets(a, b){
     refreshTurretMesh(t);
   }
   screenShake(0.55);
+  beep(300, 0.18, 'sawtooth', 0.03);
+  setTimeoutLocal(0.12, function(){ beep(620, 0.22, 'triangle', 0.03); });
   ringBurst(new THREE.Vector3(cellLocal(col,row).x, 0.5, cellLocal(col,row).z), 0xffc24d, 6.5, 0.9);
   fxBurst(new THREE.Vector3(cellLocal(col,row).x, 0.8, cellLocal(col,row).z), 0xffd875, 22, 6.5, 0.8);
   toast('🔀 이종족 합체! ' + rec.name);
@@ -2603,6 +2607,7 @@ function leakCore(e){
   fxBurst(pos, 0xff5f6d, 14, 5, 0.6);
   ringBurst(pos, 0xff5f6d, 4.5, 0.55);
   screenShake(0.5);
+  beep(150, 0.16, 'square', 0.03);
   playerIsland.remove(e.mesh);
   if(S.core <= 0){ S.core = 0; startRevive(); }
 }
@@ -2679,6 +2684,8 @@ function clearStage(){
   questBump('stages', 1);
   banner('STAGE ' + S.stage + ' 클리어', '다음 웨이브 준비 · 💎+' + Math.round(bonus), 1500);
   screenShake(0.2);
+  beep(780, 0.1, 'triangle', 0.022);
+  setTimeoutLocal(0.12, function(){ beep(980, 0.12, 'triangle', 0.02); });
   S.nextT = 2.4;
   if(S.stage >= WAVE_MAX){
     S.nextT = 1.6;
@@ -2855,6 +2862,7 @@ function useSkill(){
   const sd = skillDef();
   if(S.skillT > 0) return;
   S.skillT = sd.cd;
+  beep(440, 0.22, 'sawtooth', 0.02);
   const key = P.race + S.mode;
   const center = new THREE.Vector3(0,0.8,0);
   screenShake(0.5);
@@ -3026,6 +3034,7 @@ function startBossPhase(){
     bossBeams.push({ line:beam, from:from, to:to, ph:i*1.1, col:col, gl:gl });
   }
   screenShake(1.0);
+  beep(90, 0.7, 'sawtooth', 0.045);
   // 5섬에서 중앙으로 에너지 폭발
   for(let i=0;i<5;i++){
     const a = islandAngle(i);

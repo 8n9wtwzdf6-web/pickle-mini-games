@@ -65,6 +65,22 @@ end
 local arenasFolder = world:WaitForChild("Arenas")
 local centerFolder = world:WaitForChild("Center")
 
+-- 01 이 5개 아레나(타일 64 + 넥서스)를 다 만들 때까지 기다립니다 (서버 시작 경합 방지)
+do
+	local t0 = os.clock()
+	while os.clock() - t0 < 40 do
+		local ready = true
+		for slot = 1, 5 do
+			local a = arenasFolder:FindFirstChild("Arena_" .. slot)
+			if not a then ready = false break end
+			local cells = a:FindFirstChild("Cells")
+			if not cells or #cells:GetChildren() < 60 or not a:FindFirstChild("Nexus") then ready = false break end
+		end
+		if ready then break end
+		task.wait(0.25)
+	end
+end
+
 local enemyTemplates = ReplicatedStorage:WaitForChild("TD_Enemies")
 local unitTemplates = ReplicatedStorage:WaitForChild("TD_Units")
 

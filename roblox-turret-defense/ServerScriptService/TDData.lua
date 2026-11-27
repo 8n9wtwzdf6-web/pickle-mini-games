@@ -3,8 +3,8 @@
   붙여넣는 곳 : ServerScriptService  →  ModuleScript, 이름을 정확히 "TDData"
   ------------------------------------------------------------
   플레이어 저장 데이터(DataStore) 한 곳.
-     · 보석 · 최고 웨이브 · 누적 킬 · 출석 · 일일 퀘스트 · 체류 보상
-     · 구매한 패스/스타터팩 · 영구 강화 · 보관 부활권 · 천장 카운터
+     · 보석 · 최고 스테이지 · 누적 킬 · 보스 격파/딜량 · 출석 · 일일 퀘스트 · 체류 보상
+     · 주 종족 · 전장 테마 · 구매한 패스/스타터팩 · 영구 강화 · 보관 부활권 · 천장 카운터
      · 영수증(PurchaseId) 장부 → ProcessReceipt 중복 지급 방지
   안전장치
      · 모든 호출 pcall + 3회 재시도
@@ -46,15 +46,20 @@ end
 -- ---------------------------------------------------------------
 local function defaultProfile()
 	return {
-		v = 2,
+		v = 3,
 		gems = 0,
 		bestWave = 0,
+		bestStage = 0,
 		totalWaves = 0,
 		totalKills = 0,
 		runs = 0,
 		wins = 0,
 		playSeconds = 0,
 		starterPurchased = false,
+		faction = "",          -- 주 종족 (5종족 중 하나, 빈 값이면 첫 접속 시 배정)
+		theme = "sf",         -- 🌌 sf · 🏰 fantasy · 🏙️ cyber
+		bossKills = 0,        -- 최종 보스(오메가 파괴신) 격파 횟수
+		bossDamage = 0,       -- 누적 보스 딜량
 		passes = {},
 		upgrades = { startMinerals = 0, startGas = 0, permAtk = 0 },
 		daily = { day = "", streak = 0, index = 0, claimed = false },
@@ -84,6 +89,12 @@ local function migrate(raw)
 	if type(p.playtime) ~= "table" then p.playtime = { day = "", claimed = {} } end
 	if type(p.receipts) ~= "table" then p.receipts = {} end
 	if type(p.passes) ~= "table" then p.passes = {} end
+	if type(p.faction) ~= "string" then p.faction = "" end
+	if type(p.theme) ~= "string" then p.theme = "sf" end
+	if type(p.bestStage) ~= "number" then p.bestStage = p.bestWave or 0 end
+	if type(p.bossKills) ~= "number" then p.bossKills = 0 end
+	if type(p.bossDamage) ~= "number" then p.bossDamage = 0 end
+	p.v = 3
 	return p
 end
 
@@ -325,6 +336,6 @@ if RunService:IsStudio() then
 	print("[TD][Data] 스튜디오 감지 — Studio에서는 DataStore가 'API Services' 꺼짐이면 저장이 생략됩니다.")
 end
 
-print("[TD] TDData 준비 — DataStore(" .. (RunService:IsStudio() and "Studio" or "Live") .. ") 프로필 v2")
+print("[TD] TDData 준비 — DataStore(" .. (RunService:IsStudio() and "Studio" or "Live") .. ") 프로필 v3 (5종족 · 보스딜량 · 테마)")
 
 return Data

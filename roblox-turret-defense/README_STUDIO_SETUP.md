@@ -1,29 +1,32 @@
-# 🛠️ Studio 설치 체크리스트 (v2 — 수익화·저장·리텐션 풀버전)
+# 🛠️ Studio 설치 체크리스트 (v3 — 우주 5아레나 완성판)
 
 > 이 문서만 위에서 아래로 따라 하면 됩니다. 한 단계씩, 끝나면 체크 ✔.
-> 총 9개 파일 · 처음 하는 분 기준 25~35분.
+> 총 **9개 파일** · 처음 하는 분 기준 **30~40분**.
 
 ---
 
 ## 0. 준비 (1분)
 
 - [ ] **Roblox Studio** 실행 → 로그인
-- [ ] `New` → **Baseplate** 선택 (v1에서 쓰던 파일이 있으면 그 파일을 열어도 됩니다)
-- [ ] 오른쪽 위 **Explorer** 창이 보이게 (View 메뉴 → Explorer 체크)
-- [ ] **Properties** 창도 보이게 (View 메뉴 → Properties 체크)
-- [ ] 상단 `Home` → **Game Settings** → `Security` → **Enable Studio Access to API Services** 를 **켜기**
-      → 이걸 켜야 접속 데이터(보석·출석·최고기록)가 저장됩니다. (안 켜면 플레이할 때만 저장되고 나가면 사라짐)
+- [ ] `New` → **Baseplate** 선택 (v2 파일이 있으면 그 파일을 열어도 됩니다)
+- [ ] 오른쪽 위 **Explorer** 창 보이게 (View → Explorer)
+- [ ] **Properties** 창 보이게 (View → Properties)
+- [ ] 상단 `Home` → **Game Settings** → `Security` → **Enable Studio Access to API Services** 켜기
+      → 접속 데이터(보석·최고 스테이지·출석)가 저장됩니다.
+
+> 01 스크립트가 기본 **Baseplate** 와 **SpawnLocation** 을 자동으로 지우고 우주 공간을 만듭니다. 그대로 두세요.
 
 ---
 
-## 1. v1 파일 정리 (중요!)
+## 1. 예전 파일 정리 (중요)
 
-v1에서 만든 스크립트가 남아 있으면 **HUD가 두 개 뜨거나 오류**가 납니다. 아래 4개를 **지우고** 새 파일로 바꿉니다.
+v2 스크립트가 남아 있으면 HUD가 두 개 뜨거나 오류가 납니다. 아래를 **지웁니다**.
 
-- [ ] `ServerScriptService` 안의 `01_MapAndTurrets` **삭제**
-- [ ] `ServerScriptService` 안의 `02_WaveGachaMerge` **삭제**
-- [ ] `ServerScriptService` 안의 `03_MonetizationPasses` **삭제**
-- [ ] `StarterPlayer > StarterPlayerScripts` 안의 `04_ClientHUD` **삭제**
+- [ ] `ServerScriptService` 의 `01_MapAndTurrets` **삭제**
+- [ ] `ServerScriptService` 의 `02_WaveGachaMerge` **삭제**
+- [ ] `ServerScriptService` 의 `03_MonetizationPasses` · `05_RetentionQuests` · `TDData` 는 **새 파일로 교체** (지우고 다시 넣기)
+- [ ] `ReplicatedStorage` 의 `TDShared` **삭제** (새 v3로 교체)
+- [ ] `StarterPlayer > StarterPlayerScripts` 의 `04_ClientHUD` · `06_ClientShop` · `07_ClientMeta` **삭제**
 
 > 삭제 = Explorer에서 우클릭 → Delete. 잘못 지웠으면 Ctrl+Z.
 
@@ -31,14 +34,14 @@ v1에서 만든 스크립트가 남아 있으면 **HUD가 두 개 뜨거나 오�
 
 ## 2. 파일 9개 붙여넣기 (순서대로)
 
-각 파일 맨 위 주석에 "붙여넣는 곳"이 적혀 있습니다. **이름은 표에 적힌 그대로** 써야 합니다.
+각 파일 맨 위 주석에 "붙여넣는 곳"이 적혀 있습니다. **이름은 표 그대로**.
 
 | 순서 | 내 컴퓨터 파일 | Studio 위치 | 오브젝트 종류 | 이름(정확히) |
 |---|---|---|---|---|
 | ① | `ReplicatedStorage/TDShared.lua` | `ReplicatedStorage` | **ModuleScript** | `TDShared` |
-| ② | `ServerScriptService/01_MapAndTurrets.server.lua` | `ServerScriptService` | **Script** | `01_MapAndTurrets` |
+| ② | `ServerScriptService/01_WorldAndUnits.server.lua` | `ServerScriptService` | **Script** | `01_WorldAndUnits` |
 | ③ | `ServerScriptService/TDData.lua` | `ServerScriptService` | **ModuleScript** | `TDData` |
-| ④ | `ServerScriptService/02_WaveGachaMerge.server.lua` | `ServerScriptService` | **Script** | `02_WaveGachaMerge` |
+| ④ | `ServerScriptService/02_ArenaBattle.server.lua` | `ServerScriptService` | **Script** | `02_ArenaBattle` |
 | ⑤ | `ServerScriptService/03_MonetizationPasses.server.lua` | `ServerScriptService` | **Script** | `03_MonetizationPasses` |
 | ⑥ | `ServerScriptService/05_RetentionQuests.server.lua` | `ServerScriptService` | **Script** | `05_RetentionQuests` |
 | ⑦ | `StarterPlayerScripts/04_ClientHUD.client.lua` | `StarterPlayer > StarterPlayerScripts` | **LocalScript** | `04_ClientHUD` |
@@ -48,98 +51,112 @@ v1에서 만든 스크립트가 남아 있으면 **HUD가 두 개 뜨거나 오�
 ### 붙여넣는 방법 (매 파일 동일)
 
 1. Explorer에서 대상 폴더(`ReplicatedStorage` 등) **우클릭** → `Insert Object`
-2. 종류 선택 → 표의 **오브젝트 종류** (Script / LocalScript / ModuleScript)
-3. 생긴 스크립트를 **더블클릭**해서 열고, 안에 있는 기본 글자(`print("Hello world!")` 등) **전부 지우기**
+2. 종류 선택 → 표의 **오브젝트 종류**
+3. 생긴 스크립트를 **더블클릭**해서 열고 기본 글자(`print("Hello world!")`) **전부 지우기**
 4. 파일 내용 **전체 복사 → 붙여넣기** (Ctrl+A, Ctrl+C, Ctrl+V)
 5. Explorer에서 이름을 표의 **이름**으로 변경 (F2)
 
-> ⚠️ `TDShared`와 `TDData`는 **ModuleScript**(보라색 아이콘)입니다. Script로 만들면 동작하지 않습니다.
+> ⚠️ `TDShared`·`TDData` 는 **ModuleScript**(보라 아이콘)입니다. Script로 만들면 동작하지 않습니다.
 > ⚠️ ①`TDShared`를 **가장 먼저** 넣어야 나머지가 찾습니다.
+> ⚠️ ③`TDData`는 ②보다 뒤에 넣어도 됩니다(02가 실행될 때 기다립니다).
 
-**StarterGui는 비워 두세요.** 화면(상점·미션·HUD)은 04·06·07 스크립트가 실행될 때 직접 만듭니다.
+**StarterGui는 비워 두세요.** 화면은 04·06·07이 실행될 때 직접 만듭니다.
 
 ---
 
-## 3. 실행해서 기본 동작 확인 (3분)
+## 3. 실행해서 확인 — ★ 여기가 제일 중요합니다 (1단계)
 
-- [ ] 상단 **Play** (F5) 눌러보기
-- [ ] 4레인 아레나 · 중앙 넥서스 · 터렛 패드 6칸×4줄이 보이는가
-- [ ] 상단 HUD(WAVE / NEXUS / 미네랄 / 가스 / 보석)가 뜨는가
-- [ ] `Output` 창(Ctrl+F5 아님, View → Output)에 아래 4줄이 보이는가
-      ```
-      [TD] 01_MapAndTurrets 완료 — 아레나 · 패드 24개 · 터렛 10종 · 적 5종 (v2.0)
-      [TD] TDData 준비 — DataStore(...) 프로필 v2
-      [TD] 02_WaveGachaMerge 시작 — 4인 협동 · 20웨이브 ...
-      [TD] 03_MonetizationPasses 로드 — 패스 6종 · 상품 14종 ...
-      [TD] 04_ClientHUD 준비 완료 — 4인 협동 HUD v2.0
-      [TD] 05_RetentionQuests 로드 — 출석 7일 · 체류 보상 5단계 · 일일 퀘스트 3개
-      [TD] 06_ClientShop 준비 완료 — 패스 6종 · 상품 14종
-      [TD] 07_ClientMeta 준비 완료 — 출석 · 체류 보상 · 미션 · 영구 강화
-      ```
-- [ ] 🔮 뽑기 버튼을 눌러 터렛이 생기는가 (미네랄 18 소모)
-- [ ] ⚡ 합성 버튼 → 같은 터렛 2개가 합쳐지는가
-- [ ] 🛍 상점 → 🎁 혜택 → ✕ 닫기 가 되는가
-- [ ] 🎁 혜택 → 출석 탭에서 "오늘 출석 받기"를 눌러 보석이 오르는가
-- [ ] 15초 뒤 WAVE 1이 시작되고 적이 걸어오는가
+- [ ] 상단 **Play** (F5)
+- [ ] **Output** 창 열기 (View → Output)
 
-**4인 협동 테스트**: 상단 `Test` 탭 → `Clients and Servers` → Players **2~4** → Start
+### 3-1. 이 8줄이 보이는가 (순서는 조금 달라도 됨)
+
+```
+[TD] TDData 준비 — DataStore(Studio) 프로필 v3 (5종족 · 보스딜량 · 테마)
+[TD] 01_WorldAndUnits 완료 — 우주 5아레나 · 그리드 8×8×5 · 터렛 유닛 10종+융합 5종 · 적 8종+최종보스 (v3.0)
+[TD] 02_ArenaBattle 시작 — 5아레나 · 40단계 × 100마리 · 중앙 보스 딜량 레이드 (v3.0)
+[TD] 03_MonetizationPasses 로드 — 패스 6종 · 상품 11종 (ID 미입력 시 구매만 비활성) v3.0
+[TD] 05_RetentionQuests 로드 — 출석 7일 · 체류 보상 5단계 · 일일 퀘스트 3개 (v3.0)
+[TD] 04_ClientHUD 준비 완료 — 우주 5아레나 HUD v3.0
+[TD] 06_ClientShop 준비 완료 — 패스 6종 · 상품 11종 (v3.0)
+[TD] 07_ClientMeta 준비 완료 — 출석 · 체류 보상 · 미션 · 영구 강화 (v3.0)
+```
+
+### 3-2. ★ 딱 하나만 확인한다면 — "타일 건설"
+
+1. 인트로 화면에서 **테마**(🌌/🏰/🏙️)와 **종족**(휴먼 등)을 고르고 **⚔ 전투 시작**
+2. 화면 아래 **🔮 유닛 뽑기** 를 2~3번 누른다 → 아래 **손패 칸**에 `T1 👤휴먼` 같은 칸이 생긴다
+3. 손패 칸을 누른 뒤, **아레나 바닥의 빈 타일을 터치**한다
+4. 그 타일 위에 **터렛이 세워지면 성공** (등급 색 링 + 파티클)
+
+이 4단계가 되면 01(월드)·02(서버)·04(클라이언트)·TDShared(데이터)가 모두 연결된 것입니다.
+
+### 3-3. 이어서 확인
+
+- [ ] 14초 뒤 **STAGE 1 / 100기 (영웅 1)** 배너 → 몬스터가 게이트에서 걸어온다
+- [ ] 몬스터가 넥서스에 닿으면 **NEXUS HP**가 줄어든다
+- [ ] 터렛을 누르면 아래 **유닛 패널**이 뜨고 `🔄 모드` `✨ 스킬` `↔ 이동` `💎 판매` 가 동작한다
+- [ ] `↔ 이동` → 다른 타일을 누르면 유닛이 옮겨진다 (길이 막히면 거부 메시지)
+- [ ] 같은 종족·같은 모드·같은 등급 2기를 배치하고 **⚡ 합성** → 등급이 한 단계 오른다
+- [ ] **🧬 융합** → 융합 목록이 뜨고, 타 종족 유닛이 3+2 모이면 `융합` 버튼이 켜진다
+- [ ] 우측 **5팀 순위표**에 5개 팀(내 팀 + AI 4팀)이 스테이지 순으로 표시된다
+- [ ] **🌌 테마** 버튼 → 테마를 바꾸면 바닥·장식·조명·넥서스 색이 바뀐다
+- [ ] **👥 전체뷰** 버튼을 두 번 누르면 우주 전체(5개 부유 아레나 + 중앙 제단)가 보인다
+- [ ] 🛍 상점 → 🎁 혜택 → ✕ 닫기가 된다. 혜택 → 출석 탭에서 "오늘 출석 받기"로 보석이 오른다
+- [ ] **5분 이상** 두면 AI 팀들이 스테이지를 올리고, 40단계 뒤 **중앙 보스**가 뜬다
+      (빠르게 보려면 Studio에서 `02_ArenaBattle` 의 `team.aiStageT = 18` 을 `2` 로 임시 변경)
+
+**여러 명 테스트**: 상단 `Test` → `Clients and Servers` → Players **2~4** → Start
 
 ---
 
 ## 4. ID 넣기 — `TDShared` 한 곳만 (수익화 켜기)
 
-`ReplicatedStorage > TDShared` 를 열면 맨 위에 `Shared.IDS = { ... }` 가 있습니다.
-Studio에서 상품·패스를 만든 뒤 발급된 **숫자 ID**를 여기에 넣으면 즉시 판매가 연결됩니다.
+`ReplicatedStorage > TDShared` 맨 위 `Shared.IDS = { ... }` 에 발급받은 **숫자 ID**를 넣으면 즉시 판매가 연결됩니다.
 
-### 4-1. 게임패스 6종 (`Home` → `Game Passes` → Create a Game Pass)
+### 4-1. 게임패스 6종 (`Home` → `Game Passes`)
 
-| ID 넣을 변수 | 표시 이름 | 권장 가격 | 효과 |
+| 변수 | 표시 이름 | 권장 가격 | 효과 |
 |---|---|---|---|
-| `PASS_VIP` | 👑 VIP | **399 R$** | 모든 미네랄·보석 보상 +20%, VIP 태그 |
-| `PASS_2X` | ⚡ 2배속 | **149 R$** | 내 터렛 공속 +25%, 웨이브 대기 -30% |
-| `PASS_AUTO` | 🧲 자동 합성·자동 배치 | **199 R$** | 합성 자동 · 빈 패드 자동 배치 |
-| `PASS_SLOTS` | 🎰 추가 덱 슬롯 | **249 R$** | 5·6번 패드 해금(터렛 +2기) |
-| `PASS_LUCK` | 🍀 럭키 뽑기 | **299 R$** | 전설+ ×1.8 · 천장 8회 |
-| `PASS_BONUS` | 💰 웨이브 보너스 | **349 R$** | 웨이브 보상 +30% · 유물 4지선다 |
+| `PASS_VIP` | 👑 VIP | **399 R$** | 5대 종족 전체 해금 · 보상 +25% · 순위표 황금 왕관 |
+| `PASS_FUSION` | 🧬 융합 마스터 | **249 R$** | 이종족 융합 3+2 → **2+1** · 융합 유닛 공격력 +20% |
+| `PASS_ARENA` | 🏗️ 아레나 확장 | **199 R$** | 건설 그리드 6×6 → **8×8** (테두리 28칸 추가) |
+| `PASS_2X` | ⚡ 2배속 | **149 R$** | 몬스터 스폰 2배 · 스테이지 대기 -30% |
+| `PASS_AUTO` | 🤖 자동합치기 | **199 R$** | 자동 합성 · 자동 배치 |
+| `PASS_LUCK` | 🍀 러키 뽑기 | **299 R$** | 전설·신화 ×1.8 · 천장 8회 |
 
-> Studio에서 패스를 만들면 **가격은 나중에** `create.roblox.com` → 해당 게임 → Passes 에서 정합니다.
-> 가격을 바꾸면 이 문서의 표는 참고값일 뿐, 실제 결제 금액은 로블록스에 등록한 가격입니다.
+### 4-2. 개발자 상품 11종 (`Home` → `Developer Products`)
 
-### 4-2. 개발자 상품 14종 (`Home` → `Developer Products` → Create)
-
-| ID 넣을 변수 | 표시 이름 | 권장 가격 |
+| 변수 | 표시 이름 | 권장 가격 |
 |---|---|---|
-| `PRODUCT_REVIVE` | 💖 부활권 | **25 R$** |
-| `PRODUCT_BOOST_DMG` | 🔥 2배 데미지 10분 | **35 R$** |
-| `PRODUCT_BOOST_GOLD` | 💎 미네랄 2배 10분 | **35 R$** |
-| `PRODUCT_REROLL` | 🎲 즉시 리롤 | **39 R$** |
-| `PRODUCT_WAVE_SKIP` | ⏭ 웨이브 정리 | **49 R$** |
-| `PRODUCT_TEAM_GOLD` | 🎁 팀 전체 미네랄 +150 | **49 R$** |
-| `PRODUCT_TEAM_SPEED` | 🎁 팀 전체 공속 +50% 5분 | **79 R$** |
-| `PRODUCT_STARTER` | 🚀 스타터팩(1회) | **79 R$** |
+| `PRODUCT_OVERCHARGE` | ⚡ 딜량 2배 과충전 (3분) | **29 R$** |
+| `PRODUCT_REVIVE` | 💖 12초 긴급 부활 | **25 R$** |
+| `PRODUCT_MODE_RESET` | 🔄 모드전환 쿨초기화 | **25 R$** |
+| `PRODUCT_SUMMON` | 🌀 타 종족 지원 소환권 | **39 R$** |
+| `PRODUCT_SABOTAGE` | ☠ 경쟁 1위 팀 방해 투하 | **49 R$** |
+| `PRODUCT_TEAM_BOOST` | 🎁 팀 전체 과충전 선물 | **79 R$** |
+| `PRODUCT_STARTER` | 🚀 스타터팩 (1회 한정) | **79 R$** |
 | `PRODUCT_GEMS_S` | 💠 보석 150 | **99 R$** |
-| `PRODUCT_LUCK10` | 🎯 럭키 10연차 | **149 R$** |
-| `PRODUCT_LEGEND` | 🌟 전설 확정 뽑기 | **199 R$** |
-| `PRODUCT_GEMS_M` | 💠 보석 500 | **249 R$** |
-| `PRODUCT_GEMS_L` | 💠 보석 1,200 | **449 R$** |
-| `PRODUCT_GEMS_XL` | 💠 보석 3,000 | **799 R$** |
+| `PRODUCT_GEMS_M` | 💠 보석 540 | **199 R$** |
+| `PRODUCT_GEMS_L` | 💠 보석 1,320 | **399 R$** |
+| `PRODUCT_GEMS_XL` | 💠 보석 3,450 | **799 R$** |
 
-> ID를 0으로 두면 상점에 **"준비 중"** 으로 표시되고 결제는 일어나지 않습니다. 게임은 정상 동작합니다.
-> **결제는 게시(Publish) 후 실제 서버에서만** 테스트할 수 있습니다. Studio에서는 창이 뜨지 않거나 "체험용"으로 표시됩니다.
+> ID가 0이면 상점에 **"준비 중"** 으로 표시되고 결제는 일어나지 않습니다. 게임은 정상 동작합니다.
+> **실제 결제 테스트는 게시(Publish) 후** 실제 서버에서만 가능합니다. Studio에서는 창이 뜨지 않거나 체험용입니다.
 
 ### 4-3. 가격을 바꾸고 싶으면
-- 로블록스 실제 가격: `create.roblox.com` 에서 수정 (이것이 진짜 결제 금액)
-- 상점 화면에 보이는 숫자: `TDShared` 의 `price = ...` 값 (표시용)
+- 실제 결제 금액: `create.roblox.com` → 해당 게임 → Monetization (여기 가격이 진짜)
+- 상점에 보이는 숫자: `TDShared` 의 `price = ...` (표시용)
 
 ---
 
 ## 5. 게시해서 실제로 돌리기
 
-- [ ] `File` → **Publish to Roblox** → 게임 이름/설명 입력 → Create
-- [ ] `Game Settings` → `Permissions` / `Playability` 확인 (Public)
-- [ ] `create.roblox.com` → 해당 게임 → **Monetization** 에서 위 상품·패스 가격 최종 확인
-- [ ] 휴대폰 Roblox 앱에서 내 게임 검색 → 실제 결제 1건 테스트(가장 싼 25 R$ 부활권)
-- [ ] 결제 후 `보관 부활권` 숫자가 올라가는지 확인 (안 오르면 6번 문제 해결 참고)
+- [ ] `File` → **Publish to Roblox** → 이름/설명 → Create
+- [ ] `Game Settings` → `Permissions` → Public 확인
+- [ ] `create.roblox.com` → Monetization 에서 상품·패스 가격 최종 확인
+- [ ] 휴대폰 Roblox 앱에서 내 게임 검색 → 가장 싼 **25 R$ 부활권**으로 실결제 1건 테스트
+- [ ] 결제 후 `보관 부활권` 숫자가 올라가는지 확인
 
 ---
 
@@ -147,25 +164,28 @@ Studio에서 상품·패스를 만든 뒤 발급된 **숫자 ID**를 여기에 �
 
 | 증상 | 원인 / 해결 |
 |---|---|
-| 아레나가 안 생김 | ①이 `ServerScriptService`의 **Script**(파란 아이콘)인지, 이름이 `01_MapAndTurrets`인지 확인 |
-| `TDShared` 를 찾을 수 없다 | `ReplicatedStorage`에 **ModuleScript** 이름 `TDShared` 로 넣었는지 확인 (대소문자) |
-| `TDData` 를 찾을 수 없다 | `ServerScriptService`에 **ModuleScript** 이름 `TDData` |
-| HUD가 두 개 뜸 | v1 `04_ClientHUD`가 남아 있음 → 지우기 |
-| 버튼을 눌러도 반응 없음 | ④~⑦이 **LocalScript**인지 확인 |
-| 보석/출석이 저장 안 됨 | Game Settings → Security → **Enable Studio Access to API Services** 켜기 |
-| 상점에 전부 "준비 중" | `TDShared` 의 `Shared.IDS` 가 0 → ID 입력 |
-| 결제했는데 지급이 안 됨 | ①게임이 Publish 되었는지 ②`03_MonetizationPasses`가 서버에 있는지 ③Output의 `[TD][Shop]` 경고 확인 |
-| 부활권을 사도 안 써짐 | 넥서스가 붕괴된 12초 안에 💖 부활 버튼을 눌러야 함 |
-| 4인 정원 초과 | 서버당 4명 · 5번째는 안내 후 나감 (재접속) |
-| 적이 안 나옴 | 상단 Play 후 15초 대기 (첫 웨이브 준비 시간) |
+| 아레나가 안 생김 | ②가 `ServerScriptService`의 **Script**(파란 아이콘)이고 이름이 `01_WorldAndUnits` 인지 확인 |
+| `TDShared` 를 찾을 수 없다 | `ReplicatedStorage` 에 **ModuleScript** 이름 `TDShared` (대소문자) |
+| `TDData` 를 찾을 수 없다 | `ServerScriptService` 에 **ModuleScript** 이름 `TDData` |
+| HUD가 두 개 뜸 | v2 `04_ClientHUD` 가 남아 있음 → 삭제 |
+| 버튼을 눌러도 반응 없음 | ⑦~⑨가 **LocalScript** 인지 확인 |
+| 타일을 눌러도 건설이 안 됨 | ① 손패에 유닛이 있는지 ② 잠긴 타일(테두리)인지 ③ "몬스터 길이 막힙니다" 메시지인지 확인 |
+| 보석/출석이 저장 안 됨 | Game Settings → Security → **Enable Studio Access to API Services** |
+| 상점이 전부 "준비 중" | `TDShared.Shared.IDS` 가 0 → 4단계에서 ID 입력 |
+| 결제했는데 지급이 안 됨 | ①게시 여부 ②`03_MonetizationPasses` 가 서버에 있는지 ③Output의 `[TD][Shop]` 경고 |
+| 몬스터가 안 나옴 | Play 후 **14초** 대기 (첫 스테이지 준비) |
+| 5명이 접속 | 5팀 정원 · 6번째는 안내 후 나감 |
+| 보스가 안 뜸 | 40단계를 끝내야 합니다 (AI 최속 13분) 또는 3-3의 임시 값 사용 |
 
 ---
 
 ## 7. 검증 상태 (정직하게)
 
 - ✅ **Luau 문법 검사 0오류** — 9개 파일 전부 (`luaparser` 4.2.0)
-- ✅ **정적 점검** — 미선언 전역 호출 0건, 선언 전 사용 0건
-- ✅ **Roblox API 덤프 대조** — 사용한 클래스/Enum/속성 이름 0오류
+- ✅ **정적 점검** — 미선언 전역 0건 · 선언 전 호출 0건 · 전역 쓰기 0건
+- ✅ **Roblox API 덤프 대조** — 사용한 클래스/Enum/속성/메서드 0오류
+- ✅ **데이터 런타임 검사** — TDShared를 Lua로 실제 실행해 종족 5×2모드 · 등급 5단계 밸런스 · 확률 합 100% · 상품 11종 확인
+- ✅ **길찾기(BFS) 런타임 검사** — 빈 그리드/벽/미로에서 경로 생성·차단 판정 확인
 - ⚠️ **Studio 실제 플레이 테스트는 미검증** — 이 작업 환경에서는 Studio를 실행할 수 없습니다.
-  처음 Play 했을 때 위 3번 체크리스트에서 어긋나는 곳을 알려 주시면 바로 고칩니다.
-- ⚠️ **실제 결제 흐름(ProcessReceipt)은 게시 후에만 확인 가능** — 코드는 중복 지급 방지·미처리 재시도까지 구현되어 있으나, 실결제 1건 테스트로 최종 확인이 필요합니다.
+  Play 했을 때 3-2의 "타일 건설" 4단계가 안 되면 그 화면을 알려 주시면 바로 고칩니다.
+- ⚠️ **실제 결제 흐름(ProcessReceipt)은 게시 후에만 확인 가능** — 코드는 중복 지급 방지·미처리 재시도까지 구현되어 있습니다.

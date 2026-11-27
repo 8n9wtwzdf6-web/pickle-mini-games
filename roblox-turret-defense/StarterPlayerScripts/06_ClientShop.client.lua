@@ -1,6 +1,6 @@
 --[[ ============================================================
   06_ClientShop.client.lua
-  🍀 운빨·조합 터렛 디펜스 — 상점 UI (게임패스 6종 · 상품 14종 · 확률 공개)
+  🍀 터렛 디펜스 v3 — 상점 UI (게임패스 6종 · 상품 11종 · 확률 공개)
   ------------------------------------------------------------
   붙여넣는 곳 : StarterPlayer > StarterPlayerScripts (LocalScript)
   여는 방법 : HUD 오른쪽 🛍 상점 버튼
@@ -205,9 +205,9 @@ end
 -- ② 상품 탭
 -- ---------------------------------------------------------------
 local GROUP_TITLE = {
-	impulse = "⚡ 저가 충동구매 (25~49 R$)",
-	social = "🎁 팀 선물 · 소셜 과금 (49~79 R$)",
-	bundle = "💠 패키지 · 고가 (79~799 R$)",
+	impulse = "⚡ 1위 역전 · 순간 구매 (25~49 R$)",
+	social = "🎁 경쟁 · 선물 (49~79 R$)",
+	bundle = "💠 성장 패키지 (79~799 R$)",
 }
 local productRows = {}
 local order = 0
@@ -257,7 +257,7 @@ do
 		l.TextWrapped = true
 		return row
 	end
-	text(sf, 44, "🎲 터렛 뽑기 확률 (미네랄 " .. Shared.GACHA_COST .. " 소모)", C.cyan, 14, 1)
+	text(sf, 44, "🎲 유닛 뽑기 확률 (미네랄 " .. Shared.GACHA_COST .. " 소모 · 5종족 2모드 중 하나)", C.cyan, 14, 1)
 	for i = 1, 5 do
 		local _, _, pct = Shared.tierOdds(player:GetAttribute("PassLuck") == true, false)
 		text(sf, 26, Shared.TIER_NAMES[i] .. "   " .. string.format("%.2f%%", pct[i]), Shared.TIER_COLORS[i], 13, 1 + i)
@@ -265,7 +265,7 @@ do
 	text(sf, 76,
 		"• 럭키 뽑기 패스 보유 시 전설·신화 확률이 1.8배로 오릅니다.\n"
 		.. "• " .. Shared.PITY_BASE .. "회 안에 희귀 이상 1회 확정(천장), 패스 보유 시 " .. Shared.PITY_PASS .. "회.\n"
-		.. "• 유물 '행운의 뽑기'를 얻으면 희귀 이상 확률이 추가로 오릅니다.",
+		.. "• 등급이 정해진 뒤 내 종족의 두 모드(예: 병력/벙커) 중 하나가 나옵니다.",
 		C.dim, 11, 8)
 	text(sf, 96,
 		"확률 표기는 결제성 재화로 뽑기를 이용할 수 있는 경우를 포함해 항상 공개됩니다. "
@@ -381,4 +381,4 @@ refreshPasses()
 refreshProducts()
 refreshGems()
 
-print("[TD] 06_ClientShop 준비 완료 — 패스 " .. #Shared.PASSES .. "종 · 상품 " .. #Shared.PRODUCTS .. "종")
+print("[TD] 06_ClientShop 준비 완료 — 패스 " .. #Shared.PASSES .. "종 · 상품 " .. #Shared.PRODUCTS .. "종 (v" .. Shared.VERSION .. ")")

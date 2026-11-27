@@ -1,6 +1,6 @@
 --[[ ============================================================
   05_RetentionQuests.server.lua
-  🍀 운빨·조합 터렛 디펜스 — 리텐션 서버
+  🍀 터렛 디펜스 v3 — 리텐션 서버
   ------------------------------------------------------------
   붙여넣는 곳 : ServerScriptService (일반 Script)
   준비물 : ReplicatedStorage "TDShared", ServerScriptService "TDData"
@@ -8,7 +8,7 @@
   이 파일이 하는 일
     · 7일 출석(Daily Streak) — 하루 1회, 7일 완주 보상
     · 체류 시간 보상 — 5/10/15/30/60분 버튼
-    · 일일 퀘스트 3개 — 적 처치·웨이브·합성·보스·뽑기·부활
+    · 일일 퀘스트 3개 — 처치·스테이지·합성·융합·뽑기·영웅·모드전환·부활
     · 영구 강화 상점 (보석 사용)
     · 로블록스 프리미엄 보너스 안내 (+15%)
   ============================================================ ]]
@@ -27,7 +27,7 @@ local RD_Action = remotes.TD_MetaAction
 
 local session = {}   -- [player] = { joinedAt, playSeconds, lastSeen = {}, lastSync = 0 }
 
-local METRICS = { "kills", "wave", "merges", "draws", "bossKills", "revives" }
+local METRICS = { "kills", "stage", "merges", "draws", "fusions", "modes", "bossKills", "revives" }
 
 -- ---------------------------------------------------------------
 -- 도우미
@@ -429,4 +429,4 @@ RD_Action.OnServerEvent:Connect(function(player, action, arg)
 	end
 end)
 
-print("[TD] 05_RetentionQuests 로드 — 출석 7일 · 체류 보상 5단계 · 일일 퀘스트 " .. Shared.QUEST_COUNT .. "개")
+print("[TD] 05_RetentionQuests 로드 — 출석 7일 · 체류 보상 5단계 · 일일 퀘스트 " .. Shared.QUEST_COUNT .. "개 (v" .. Shared.VERSION .. ")")

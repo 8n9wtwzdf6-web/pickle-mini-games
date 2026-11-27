@@ -1,6 +1,6 @@
 --[[ ============================================================
   07_ClientMeta.client.lua
-  🍀 운빨·조합 터렛 디펜스 — 혜택 화면 (출석 · 체류 보상 · 일일 퀘스트 · 영구 강화)
+  🍀 터렛 디펜스 v3 — 혜택 화면 (출석 · 체류 보상 · 일일 퀘스트 · 영구 강화)
   ------------------------------------------------------------
   붙여넣는 곳 : StarterPlayer > StarterPlayerScripts (LocalScript)
   여는 방법 : HUD 오른쪽 🎁 혜택 버튼
@@ -472,4 +472,4 @@ uiOpen.Event:Connect(function(what)
 end)
 
 selectTab("daily")
-print("[TD] 07_ClientMeta 준비 완료 — 출석 · 체류 보상 · 미션 · 영구 강화")
+print("[TD] 07_ClientMeta 준비 완료 — 출석 · 체류 보상 · 미션 · 영구 강화 (v" .. Shared.VERSION .. ")")

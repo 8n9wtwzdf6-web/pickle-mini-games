@@ -1,12 +1,13 @@
 --[[ ============================================================
   03_MonetizationPasses.server.lua
-  🍀 운빨·조합 터렛 디펜스 — 수익화 (게임패스 6종 · 개발자 상품 14종)
+  🍀 터렛 디펜스 v3 — 수익화 (게임패스 6종 · 개발자 상품 11종)
   ------------------------------------------------------------
   붙여넣는 곳 : ServerScriptService (일반 Script)
   준비물 : ReplicatedStorage 의 "TDShared" (ID는 그 파일의 Shared.IDS 한 곳)
   ------------------------------------------------------------
   이 파일이 하는 일
     1) 게임패스 소유 확인(UserOwnsGamePassAsync) → 플레이어 속성으로 게임에 알림
+       👑 VIP 399 · 🧬 융합 마스터 249 · 🏗️ 아레나 확장 199 · ⚡ 2배속 149 · 🤖 자동합치기 199 · 🍀 러키 299
     2) 구매 창구(PromptPass / PromptProduct) — 클라이언트는 "키"만 보내고 ID는 서버가 압니다
     3) ProcessReceipt — 영수증 1건당 정확히 1번 지급 (중복 지급 방지 장부)
     4) 스타터팩 1회 제한 · 보석 팩 지급 · 팀 선물 상품
@@ -264,4 +265,4 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
-print("[TD] 03_MonetizationPasses 로드 — 패스 " .. #Shared.PASSES .. "종 · 상품 " .. #Shared.PRODUCTS .. "종 (ID 미입력 시 구매만 비활성)")
+print("[TD] 03_MonetizationPasses 로드 — 패스 " .. #Shared.PASSES .. "종 · 상품 " .. #Shared.PRODUCTS .. "종 (ID 미입력 시 구매만 비활성) v" .. Shared.VERSION)

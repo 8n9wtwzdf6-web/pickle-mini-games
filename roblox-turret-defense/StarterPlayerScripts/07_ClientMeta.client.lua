@@ -119,7 +119,7 @@ end
 -- ---------------------------------------------------------------
 local layer = frame(gui, UDim2.fromScale(1, 1), UDim2.fromScale(0, 0), Color3.fromRGB(2, 6, 10), 0.35, false, 60)
 layer.Visible = false
-layer.Active = false
+layer.Active = true
 
 local card = frame(layer, UDim2.new(0.95, 0, 0.92, 0), UDim2.new(0.025, 0, 0.04, 0), C.panel, 0, 12, 61)
 stroke(card, C.green, 1.5)

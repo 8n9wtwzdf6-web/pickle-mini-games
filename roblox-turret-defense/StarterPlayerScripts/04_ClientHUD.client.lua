@@ -314,6 +314,7 @@ flash.Visible = false
 
 local relicLayer = frame(gui, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Color3.fromRGB(2, 6, 10), 0.35, false, 20)
 relicLayer.Visible = false
+relicLayer.Active = true
 local relicCard = frame(relicLayer, UDim2.new(0, 320, 0, 350), UDim2.new(0.5, -160, 0.5, -175), C.panel, 0, 10, 21)
 stroke(relicCard, C.gold, 2)
 local relicTitle = label(relicCard, UDim2.new(1, -20, 0, 28), UDim2.new(0, 10, 0, 10), "보스 처치! 유물을 선택하세요", C.gold, FONT, 22)
@@ -329,6 +330,7 @@ end
 
 local resultLayer = frame(gui, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Color3.fromRGB(2, 6, 10), 0.2, false, 20)
 resultLayer.Visible = false
+resultLayer.Active = true
 local resultCard = frame(resultLayer, UDim2.new(0, 320, 0, 230), UDim2.new(0.5, -160, 0.5, -115), C.panel, 0, 10, 21)
 stroke(resultCard, C.cyan, 2)
 local resultTitle = label(resultCard, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 16), "", C.text, FONT, 22)
@@ -343,6 +345,7 @@ local resultClose = button(resultCard, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10
 -- 부활 창구 (넥서스 붕괴 12초)
 local reviveLayer = frame(gui, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Color3.fromRGB(30, 4, 8), 0.15, false, 25)
 reviveLayer.Visible = false
+reviveLayer.Active = true
 local reviveCard = frame(reviveLayer, UDim2.new(0, 320, 0, 230), UDim2.new(0.5, -160, 0.5, -115), C.panel, 0, 10, 26)
 stroke(reviveCard, C.red, 2)
 local reviveTitle = label(reviveCard, UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 14), "💥 넥서스 붕괴!", C.red, FONT, 27)

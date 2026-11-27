@@ -405,6 +405,9 @@ end
 local function rebuildPath(team)
 	local path = findPath(team, nil) or { { U.GOAL_CELL.col, U.GOAL_CELL.row } }
 	local pts = {}
+	-- 스폰 포털에서 첫 타일로 들어옵니다
+	local spawnCF = team.cf * CFrame.new(U.SPAWN_LOCAL.X, 0.1, U.SPAWN_LOCAL.Z)
+	table.insert(pts, spawnCF.Position)
 	for _, c in ipairs(path) do
 		local cell = team.cells[cellKey(c[1], c[2])]
 		if cell then
@@ -857,7 +860,7 @@ local function startStage(team)
 	end
 end
 
-local function clearStageReward(team)
+function clearStageReward(team)
 	team.waveActive = false
 	local stage = team.stage
 	local minGain = math.floor((110 + stage * 30) * rewardMultiplier(team))
@@ -1553,7 +1556,7 @@ function damageCore(team, amount, silent)
 	end
 end
 
-local function reviveNow(team, player, paid)
+function reviveNow(team, player, paid)
 	team.downed = false
 	team.core = math.max(8, math.floor(team.coreMax * 0.6))
 	team.reviveEnds = 0

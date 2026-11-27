@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = require(ReplicatedStorage:WaitForChild("TDShared"))
@@ -193,15 +194,18 @@ local function resolveArena()
 	arenaModel = arenas:FindFirstChild("Arena_" .. S.team)
 	if not arenaModel then return end
 	arenaCF = arenaModel:GetPivot()
-	local n = Shared.UNIVERSE.NEXUS_LOCAL
+	-- 세로 화면(폰)에서는 아레나가 다 보이도록 카메라를 더 멀리
+	local vp = camera.ViewportSize
+	local portrait = (vp.X / math.max(1, vp.Y)) < 1.2
+	local k = portrait and 1.5 or 1.0
 	if S.view == 1 then
-		wantPos = (arenaCF * CFrame.new(0, 66, -52)).Position
+		wantPos = (arenaCF * CFrame.new(0, 66 * k, -52 * k)).Position
 		wantLook = (arenaCF * CFrame.new(0, 0, 4)).Position
 	elseif S.view == 2 then
-		wantPos = (arenaCF * CFrame.new(0, 120, -110)).Position
+		wantPos = (arenaCF * CFrame.new(0, 120 * k, -110 * k)).Position
 		wantLook = (arenaCF * CFrame.new(0, 0, 20)).Position
 	else
-		wantPos = Vector3.new(0, 260, -300)
+		wantPos = Vector3.new(0, 260 * k, -300 * k)
 		wantLook = Vector3.new(0, 0, 0)
 	end
 end
@@ -226,70 +230,78 @@ end)
 -- ---------------------------------------------------------------
 -- 상단 HUD
 -- ---------------------------------------------------------------
-local top = frame(gui, UDim2.new(1, -12, 0, 100), UDim2.new(0, 6, 0, 6), C.panel, 0.05, 10)
+local top = frame(gui, UDim2.new(1, -12, 0, 106), UDim2.new(0, 6, 0, 6), C.panel, 0.05, 10)
 stroke(top, C.cyan, 1)
 gradient(top, Color3.fromRGB(28, 44, 58), Color3.fromRGB(8, 12, 18), 90)
 
-local stageBox = frame(top, UDim2.new(0, 108, 0, 44), UDim2.new(0, 6, 0, 6), C.bg, 0.15, 6)
+-- 1줄 : STAGE · NEXUS · 미네랄 (화면 폭에 비례)
+local stageBox = frame(top, UDim2.new(0.25, -4, 0, 44), UDim2.new(0, 4, 0, 4), C.bg, 0.15, 6)
 stroke(stageBox, C.line, 1)
 label(stageBox, UDim2.new(1, -10, 0, 12), UDim2.new(0, 5, 0, 3), "STAGE", C.green, FONT2)
 local stageLabel = label(stageBox, UDim2.new(1, -10, 0, 24), UDim2.new(0, 5, 0, 14), "0 / 40", C.text, FONT)
 local stageSub = label(stageBox, UDim2.new(1, -10, 0, 10), UDim2.new(0, 5, 0, 34), "", C.dim, FONT2)
 
-local coreBox = frame(top, UDim2.new(1, -350, 0, 44), UDim2.new(0, 120, 0, 6), C.bg, 0.15, 6)
+local coreBox = frame(top, UDim2.new(0.46, -4, 0, 44), UDim2.new(0.25, 1, 0, 4), C.bg, 0.15, 6)
 stroke(coreBox, C.line, 1)
-label(coreBox, UDim2.new(0, 76, 0, 12), UDim2.new(0, 6, 0, 3), "NEXUS", C.cyan, FONT2)
-local coreText = label(coreBox, UDim2.new(0, 90, 0, 12), UDim2.new(0.55, 0, 0, 3), "30 / 30", C.text, FONT2)
+label(coreBox, UDim2.new(0, 70, 0, 12), UDim2.new(0, 6, 0, 3), "NEXUS", C.cyan, FONT2)
+local coreText = label(coreBox, UDim2.new(0, 86, 0, 12), UDim2.new(0.48, 0, 0, 3), "30 / 30", C.text, FONT2)
 local coreBg = frame(coreBox, UDim2.new(1, -12, 0, 12), UDim2.new(0, 6, 0, 20), Color3.fromRGB(8, 12, 16), 0, 4)
 local coreFill = frame(coreBg, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), C.green, 0, 4)
 gradient(coreFill, Color3.fromRGB(90, 255, 170), Color3.fromRGB(255, 201, 77), 0)
 local waveLabel = label(coreBox, UDim2.new(1, -12, 0, 10), UDim2.new(0, 6, 0, 34), "", C.dim, FONT2)
 
-local minBox = frame(top, UDim2.new(0, 84, 0, 44), UDim2.new(1, -222, 0, 6), C.bg, 0.15, 6)
+local minBox = frame(top, UDim2.new(0.29, -4, 0, 44), UDim2.new(0.71, 3, 0, 4), C.bg, 0.15, 6)
 stroke(minBox, C.line, 1)
 label(minBox, UDim2.new(1, -8, 0, 12), UDim2.new(0, 4, 0, 3), "💎 미네랄", C.dim, FONT2)
 local minLabel = label(minBox, UDim2.new(1, -8, 0, 22), UDim2.new(0, 4, 0, 15), "100", C.text, FONT)
 
-local gasBox = frame(top, UDim2.new(0, 64, 0, 44), UDim2.new(1, -134, 0, 6), C.bg, 0.15, 6)
+-- 2줄 : 가스 · 보석 · 팀
+local gasBox = frame(top, UDim2.new(0.24, -4, 0, 22), UDim2.new(0, 4, 0, 52), C.bg, 0.2, 5)
 stroke(gasBox, C.line, 1)
-label(gasBox, UDim2.new(1, -8, 0, 12), UDim2.new(0, 4, 0, 3), "⛽ 가스", C.dim, FONT2)
-local gasLabel = label(gasBox, UDim2.new(1, -8, 0, 22), UDim2.new(0, 4, 0, 15), "30", C.green, FONT)
+local gasLabel = label(gasBox, UDim2.new(1, -8, 1, 0), UDim2.new(0, 4, 0, 0), "⛽ 30", C.green, FONT2)
 
-local gemBox = frame(top, UDim2.new(0, 62, 0, 44), UDim2.new(1, -66, 0, 6), C.bg, 0.15, 6)
+local gemBox = frame(top, UDim2.new(0.24, -4, 0, 22), UDim2.new(0.24, 1, 0, 52), C.bg, 0.2, 5)
 stroke(gemBox, C.line, 1)
-label(gemBox, UDim2.new(1, -8, 0, 12), UDim2.new(0, 4, 0, 3), "💠", C.dim, FONT2)
-local gemLabel = label(gemBox, UDim2.new(1, -8, 0, 22), UDim2.new(0, 4, 0, 15), "0", C.text, FONT)
+local gemLabel = label(gemBox, UDim2.new(1, -8, 1, 0), UDim2.new(0, 4, 0, 0), "💠 0", C.gold, FONT2)
 
-local statusLabel = label(top, UDim2.new(1, -16, 0, 14), UDim2.new(0, 8, 0, 56), "", C.dim, FONT2)
-local buffLabel = label(top, UDim2.new(1, -16, 0, 14), UDim2.new(0, 8, 0, 72), "", C.gold, FONT2)
-local teamLabel = label(top, UDim2.new(0, 240, 0, 14), UDim2.new(0, 8, 0, 86), "", C.cyan, FONT2)
+local teamLabel = label(top, UDim2.new(0.51, -6, 0, 22), UDim2.new(0.48, 3, 0, 52), "", C.cyan, FONT2)
+teamLabel.TextScaled = false
+teamLabel.TextSize = 12
 
--- 스테이지 진행 바
-local stageBarBg = frame(gui, UDim2.new(0.55, 0, 0, 8), UDim2.new(0.22, 0, 0, 110), C.bg, 0.2, 4)
+-- 3줄 : 상태 · 버프
+local statusLabel = label(top, UDim2.new(1, -12, 0, 14), UDim2.new(0, 6, 0, 76), "", C.dim, FONT2)
+statusLabel.TextScaled = false
+statusLabel.TextSize = 12
+local buffLabel = label(top, UDim2.new(1, -12, 0, 13), UDim2.new(0, 6, 0, 90), "", C.gold, FONT2)
+buffLabel.TextScaled = false
+buffLabel.TextSize = 11
+
+-- 스테이지 진행 바 (상단 패널 맨 아래)
+local stageBarBg = frame(gui, UDim2.new(1, -12, 0, 5), UDim2.new(0, 6, 0, 112), C.bg, 0.25, 4)
 local stageBar = frame(stageBarBg, UDim2.new(0, 0, 1, 0), UDim2.new(0, 0, 0, 0), C.green, 0, 4)
 gradient(stageBar, Color3.fromRGB(90, 255, 170), Color3.fromRGB(79, 216, 255), 0)
 
 -- ---------------------------------------------------------------
 -- 5팀 순위표
 -- ---------------------------------------------------------------
-local rankPanel = frame(gui, UDim2.new(0, 236, 0, 174), UDim2.new(1, -246, 0, 114), C.panel, 0.08, 10)
+local rankPanel = frame(gui, UDim2.new(0, 198, 0, 162), UDim2.new(1, -204, 0, 122), C.panel, 0.08, 10)
 stroke(rankPanel, C.gold, 1.2)
 local rankTitle = label(rankPanel, UDim2.new(1, -12, 0, 16), UDim2.new(0, 6, 0, 3), "🏁 5 TEAM RANK", C.gold, FONT)
-local rankMode = label(rankPanel, UDim2.new(1, -12, 0, 12), UDim2.new(0, 6, 0, 18), "STAGE RACE", C.dim, FONT2)
+local rankMode = label(rankPanel, UDim2.new(1, -12, 0, 11), UDim2.new(0, 6, 0, 18), "STAGE RACE", C.dim, FONT2)
 local rankRows = {}
 for i = 1, 5 do
-	local row = frame(rankPanel, UDim2.new(1, -10, 0, 27), UDim2.new(0, 5, 0, 32 + (i - 1) * 28), C.bg, 0.35, 5)
+	local row = frame(rankPanel, UDim2.new(1, -10, 0, 24), UDim2.new(0, 5, 0, 31 + (i - 1) * 25), C.bg, 0.35, 5)
 	stroke(row, C.line, 1)
 	local medal = label(row, UDim2.new(0, 20, 1, 0), UDim2.new(0, 3, 0, 0), tostring(i), C.gold, FONT)
 	local icon = label(row, UDim2.new(0, 20, 1, 0), UDim2.new(0, 22, 0, 0), "👤", C.text, FONT2)
-	local nameL = label(row, UDim2.new(0, 92, 1, 0), UDim2.new(0, 42, 0, 0), "휴먼", C.text, FONT2)
-	local valL = label(row, UDim2.new(0, 60, 1, 0), UDim2.new(1, -66, 0, 0), "", C.dim, FONT2)
+	local nameL = label(row, UDim2.new(0, 74, 1, 0), UDim2.new(0, 40, 0, 0), "휴먼", C.text, FONT2)
+	local valL = label(row, UDim2.new(0, 78, 1, 0), UDim2.new(1, -80, 0, 0), "", C.dim, FONT2)
 	valL.TextXAlignment = Enum.TextXAlignment.Right
 	rankRows[i] = { row = row, medal = medal, icon = icon, nameL = nameL, valL = valL }
 end
 
 -- 보스 HP 바
-local bossBar = frame(gui, UDim2.new(0.46, 0, 0, 40), UDim2.new(0.02, 0, 0, 118), C.bg, 0.1, 8)
+local bossBar = frame(gui, UDim2.new(1, -218, 0, 36), UDim2.new(0, 6, 0, 122), C.bg, 0.1, 8)
 stroke(bossBar, Color3.fromRGB(255, 90, 110), 2)
 local bossName = label(bossBar, UDim2.new(1, -12, 0, 14), UDim2.new(0, 8, 0, 2), "👁️ 오메가 파괴신", Color3.fromRGB(255, 170, 180), FONT)
 local bossBg = frame(bossBar, UDim2.new(1, -12, 0, 12), UDim2.new(0, 6, 0, 20), Color3.fromRGB(40, 8, 14), 0, 4)
@@ -365,7 +377,7 @@ local shopBtn = button(side, UDim2.new(1, 0, 0, 50), UDim2.new(0, 0, 0, 0), "�
 local metaBtn = button(side, UDim2.new(1, 0, 0, 50), UDim2.new(0, 0, 0, 56), "🎁\n혜택", Color3.fromRGB(28, 48, 40))
 local reviveBtn = button(side, UDim2.new(1, 0, 0, 50), UDim2.new(0, 0, 0, 112), "💖\n부활 0", Color3.fromRGB(52, 28, 34))
 local themeBtn = button(side, UDim2.new(1, 0, 0, 50), UDim2.new(0, 0, 0, 168), "🌌\n테마", Color3.fromRGB(32, 38, 62))
-local viewBtn = button(side, UDim2.new(1, 0, 0, 50), UDim2.new(0, 0, 0, 224), "👥\n전체뷰", Color3.fromRGB(30, 44, 52))
+local viewBtn = button(side, UDim2.new(1, 0, 0, 50), UDim2.new(0, 0, 0, 224), "👥\n아레나", Color3.fromRGB(30, 44, 52))
 
 -- ---------------------------------------------------------------
 -- 토스트 / 배너 / 플래시
@@ -681,7 +693,8 @@ local function clickWorld(pos)
 	if not arenaModel then return end
 	local cells = arenaModel:FindFirstChild("Cells")
 	if not cells then return end
-	local ray = camera:ViewportPointToRay(pos.X, pos.Y)
+	local inset = select(1, GuiService:GetGuiInset())
+	local ray = camera:ViewportPointToRay(pos.X - (inset and inset.X or 0), pos.Y - (inset and inset.Y or 0))
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Include
 	params.FilterDescendantsInstances = { cells }

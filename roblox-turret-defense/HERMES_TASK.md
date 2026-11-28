@@ -88,6 +88,8 @@ local function buildThemeDecor(arena, slot, themeKey)
 
 > `decorFolders`를 쓰는 곳은 `applyTheme` 한 곳뿐이라 이 교체로 충분합니다. `GetAttribute("Home")` / `SetAttribute("Home", …)`는 코드에서 **완전히 사라져야** 합니다.
 
+> ⚠️ **예외**: Studio Output에 이 에러가 **없고** `[TD] 01_WorldAndUnits 완료`가 이미 뜬다면, 이 버그는 이미 해결된 것이니 H1은 건너뛰고 HERMES_REPORT.md에 "Output 에러 없음(H1 해당 없음)"이라고 근거와 함께 적은 뒤 H2로 넘어가세요. 그래도 `SetAttribute("Home", …)` 형태는 남기지 않습니다(다른 기기·버전에서 터질 수 있음).
+
 ### 완료 판정 (H1)
 - [ ] `01` 안에 `SetAttribute("Home"` / `GetAttribute("Home"` 문자열이 0건
 - [ ] Output에 `[TD] 01_WorldAndUnits 완료 …`가 뜸, 빨간 에러 0건

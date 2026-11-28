@@ -55,11 +55,16 @@ local function makePart(parent, name, size, cf, color, material, opts)
 	return p
 end
 
+local function pivotOf(parent)
+	if parent and parent:IsA("Model") and parent.PrimaryPart then
+		return parent.PrimaryPart.CFrame
+	end
+	return CFrame.new()
+end
+
 local function neon(parent, name, size, cf, color, opts)
-	opts = opts or {}
-	opts.shape = opts.shape
-	opts.transparency = opts.transparency or 0
-	return makePart(parent, name, size, cf, color, Enum.Material.Neon, opts)
+	if typeof(opts) == "EnumItem" then opts = { shape = opts } end
+	return makePart(parent, name, size, pivotOf(parent) * cf, color, Enum.Material.Neon, opts)
 end
 
 local function newModel(folder, name)
@@ -88,7 +93,7 @@ local function disc(parent, name, radius, thickness, cf, color, material, opts)
 	-- 실린더를 눕혀서 원판으로 사용
 	opts = opts or {}
 	local size = Vector3.new(thickness, radius * 2, radius * 2)
-	local p = makePart(parent, name, size, cf * CFrame.Angles(0, 0, math.rad(90)), color, material, opts)
+	local p = makePart(parent, name, size, pivotOf(parent) * cf * CFrame.Angles(0, 0, math.rad(90)), color, material, opts)
 	p.Shape = Enum.PartType.Cylinder
 	return p
 end
@@ -107,6 +112,42 @@ local function reg(part, role)
 end
 
 local currentTheme = "sf"
+
+-- ── 우주 조명 오브젝트 (SPEC 8.6①) ─────────────────────────
+local function ensureFx(class, name)
+	local o = Lighting:FindFirstChild(name)
+	if not o then
+		o = Instance.new(class)
+		o.Name = name
+		o.Parent = Lighting
+	end
+	return o
+end
+
+local TDSky = ensureFx("Sky", "TDSky")
+TDSky.SkyboxBk = ""
+TDSky.SkyboxDn = ""
+TDSky.SkyboxFt = ""
+TDSky.SkyboxLf = ""
+TDSky.SkyboxRt = ""
+TDSky.SkyboxUp = ""
+TDSky.CelestialBodiesShown = false   -- 해·달 제거 (낮 하늘 금지)
+TDSky.StarCount = 5000
+
+local TDAtmosphere = ensureFx("Atmosphere", "TDAtmosphere")
+TDAtmosphere.Density = 0.35
+TDAtmosphere.Offset = 0.1
+TDAtmosphere.Glare = 0.15
+TDAtmosphere.Haze = 1.2
+TDAtmosphere.Decay = Color3.fromRGB(106, 112, 125)
+
+local TDBloom = ensureFx("BloomEffect", "TDBloom")
+TDBloom.Size = 32
+TDBloom.Threshold = 0.9
+
+local TDColor = ensureFx("ColorCorrectionEffect", "TDColorCorrection")
+TDColor.Saturation = 0.15
+TDColor.Contrast = 0.12
 
 local function applyTheme(key)
 	local t = THEMES[key] or THEMES.sf
@@ -139,25 +180,33 @@ local function applyTheme(key)
 		end
 	end
 	for themeKey, list in pairs(decorFolders) do
-		for _, folder in ipairs(list) do
+		for _, rec in ipairs(list) do
 			if themeKey == t.key then
-				folder.Parent = folder:GetAttribute("Home")
+				rec.folder.Parent = rec.home
 			else
-				folder.Parent = nil
+				rec.folder.Parent = nil
 			end
 		end
 	end
-	-- 조명
+
+	-- 조명 (SPEC 8.6① — 어떤 테마에도 낮 하늘 금지)
 	local L = t.lighting
 	Lighting.Ambient = L.ambient
 	Lighting.OutdoorAmbient = L.outdoor
 	Lighting.FogColor = L.fog
-	Lighting.FogEnd = L.fogEnd
-	Lighting.FogStart = 120
-	Lighting.Brightness = 1.1
-	Lighting.ClockTime = 0
-	Lighting.EnvironmentDiffuseScale = 0.3
-	Lighting.EnvironmentSpecularScale = 0.2
+	Lighting.FogEnd = L.fogEnd or 1600
+	Lighting.FogStart = 400            -- 120 은 너무 가까워 섬이 안개에 먹힘
+	Lighting.Brightness = L.brightness or 0.6
+	Lighting.ClockTime = 0             -- 자정 고정
+	Lighting.GlobalShadows = true
+	Lighting.EnvironmentDiffuseScale = 0.15
+	Lighting.EnvironmentSpecularScale = 0.35
+	Lighting.ExposureCompensation = 0.3 -- 너무 어두우면 0.5까지
+
+	TDSky.StarCount = L.stars or 3000
+	TDAtmosphere.Color = L.atmo or Color3.fromRGB(18, 20, 40)
+	TDBloom.Intensity = L.bloom or 1.2
+	TDColor.TintColor = L.tint or Color3.fromRGB(255, 255, 255)
 
 	Workspace:SetAttribute("TDTheme", t.key)
 end
@@ -188,6 +237,7 @@ centerFolder.Parent = world
 local spaceFolder = Instance.new("Folder")
 spaceFolder.Name = "Space"
 spaceFolder.Parent = world
+applyTheme("sf")
 
 -- ---------------------------------------------------------------
 -- 2. 우주 공간 (별 · 성운)
@@ -283,7 +333,7 @@ local function buildNexus(arena, faction, slot)
 			local px, pz = math.cos(a) * 4.4, math.sin(a) * 4.4
 			local barrel = place(nexus, "Cannon" .. i, Vector3.new(1.5, 1.5, 6.2), rel(px, 6.2, pz), shade(faction.hull, 0.8), Enum.Material.Metal)
 			barrel.CFrame = nexus.PrimaryPart.CFrame * rel(px, 6.2, pz, 0, i * 90, 0)
-			neon(nexus, "CannonTip" .. i, Vector3.new(1.0, 1.0, 0.5), barrel.CFrame * CFrame.new(0, 0, -3.2), coreColor)
+			neon(nexus, "CannonTip" .. i, Vector3.new(1.0, 1.0, 0.5), rel(px, 6.2, pz, 0, i * 90, 0) * CFrame.new(0, 0, -3.2), coreColor)
 		end
 		neon(nexus, "Core", Vector3.new(4.2, 4.2, 4.2), rel(0, 6.8, 0), coreColor, { shape = Enum.PartType.Ball, transparency = 0.05 })
 		neon(nexus, "CoreHalo", Vector3.new(7, 7, 7), rel(0, 6.8, 0), shade(coreColor, 1.1), { shape = Enum.PartType.Ball, transparency = 0.86 })
@@ -371,9 +421,8 @@ local function buildThemeDecor(arena, slot, themeKey)
 	local folder = Instance.new("Folder")
 	folder.Name = "Decor_" .. themeKey
 	folder.Parent = arena
-	folder:SetAttribute("Home", arena)
 	decorFolders[themeKey] = decorFolders[themeKey] or {}
-	table.insert(decorFolders[themeKey], folder)
+	table.insert(decorFolders[themeKey], { folder = folder, home = arena })
 	folder.Parent = nil -- applyTheme 가 켭니다
 	local t = THEMES[themeKey]
 
@@ -440,39 +489,93 @@ local function buildArena(slot, faction)
 	rootPart(arena, cf)
 	arena.PrimaryPart.CFrame = cf
 
-	-- 판 · 아래 구조
-	local plate = place(arena, "Plate", Vector3.new(U.PLATE, 3, U.PLATE), rel(0, -1.5, 0), THEMES.sf.plate, Enum.Material.Slate, { shadow = true })
-	reg(plate, "plate")
-	local under = place(arena, "UnderPlate", Vector3.new(U.PLATE + 6, 2.2, U.PLATE + 6), rel(0, -3.9, 0), THEMES.sf.plate2, Enum.Material.Metal)
-	reg(under, "plate2")
-	-- 아래로 흐르는 뾰족한 바위(부유섬 느낌)
-	local spike = place(arena, "Spike", Vector3.new(26, 20, 26), rel(0, -14, 0), shade(THEMES.sf.plate2, 0.8), Enum.Material.Slate)
-	spike.CFrame = arena.PrimaryPart.CFrame * rel(0, -14, 0, 0, 45, 0)
-	reg(spike, "plate2")
-	for i = 1, 4 do
-		local a = math.rad((i - 1) * 90 + 45)
-		local fin = place(arena, "Fin" .. i, Vector3.new(3, 12, 16), rel(math.cos(a) * 26, -8, math.sin(a) * 26), THEMES.sf.plate2, Enum.Material.Slate)
-		fin.CFrame = arena.PrimaryPart.CFrame * rel(math.cos(a) * 26, -8, math.sin(a) * 26, 0, math.deg(a), 12)
-		reg(fin, "plate2")
+	-- ── 8각 상판 (SPEC 8.6②) ──────────────────────────────────
+	-- AP=중심~변 거리. 64칸(±24.5)을 모두 덮도록 68 정사각보다 조금 크게 둡니다.
+	local AP = 36
+	local SIDE = 2 * AP * math.tan(math.rad(22.5))   -- ≈ 29.8 (8각 한 변 길이)
+
+	for k = 0, 7 do
+		local a = math.rad(45 * k)
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local c = Vector3.new(dir.X * AP * 0.5, -1.5 + (k % 2) * 0.01, dir.Z * AP * 0.5)
+		local bar = place(arena, "PlateBar" .. k, Vector3.new(SIDE, 3, AP),
+			CFrame.lookAt(c, c - dir), THEMES.sf.plate, Enum.Material.Slate, { shadow = true })
+		reg(bar, "plate")
 	end
 
-	-- 테두리 네온
-	local edge = U.PLATE / 2 + 0.2
-	for i = 1, 4 do
-		local alongX = (i <= 2)
-		local sign = (i % 2 == 0) and 1 or -1
-		local pos = alongX and Vector3.new(0, 0.2, sign * edge) or Vector3.new(sign * edge, 0.2, 0)
-		local size = alongX and Vector3.new(U.PLATE + 0.4, 0.25, 0.5) or Vector3.new(0.5, 0.25, U.PLATE + 0.4)
-		neon(arena, "Trim" .. i, size, rel(pos.X, pos.Y, pos.Z), THEMES.sf.trim)
+	-- 절벽 3단 (아래로 좁아지는 바위 덩어리)
+	local RINGS = {
+		{ ap = 34, top = -3, h = 5 },
+		{ ap = 24, top = -8, h = 6 },
+		{ ap = 13, top = -14, h = 7 },
+	}
+	for r, ring in ipairs(RINGS) do
+		local side = 2 * ring.ap * math.tan(math.rad(22.5))
+		for k = 0, 7 do
+			local a = math.rad(45 * k)
+			local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+			local c = Vector3.new(dir.X * ring.ap * 0.5, ring.top - ring.h * 0.5, dir.Z * ring.ap * 0.5)
+			local p = place(arena, "Cliff" .. r .. "_" .. k, Vector3.new(side, ring.h, ring.ap),
+				CFrame.lookAt(c, c - dir), shade(THEMES.sf.plate2, 0.8), Enum.Material.Slate, { shadow = true })
+			reg(p, "plate2")
+		end
 	end
-	-- 모서리 기둥
+
+	-- 맨 아래 뾰족한 바위 끝
+	local tip = place(arena, "IslandTip", Vector3.new(9, 9, 9), rel(0, -21.5, 0, 0, 22.5, 0),
+		shade(THEMES.sf.plate2, 0.55), Enum.Material.Slate, { shadow = true })
+	reg(tip, "plate2")
+
+	-- 절벽 파편 22개 (시드 고정 → 다시 켜도 같은 모양)
+	local rng = Random.new(slot * 7919)
+	for i = 1, 22 do
+		local a = rng:NextNumber(0, math.pi * 2)
+		local ap = rng:NextNumber(18, 33)
+		local y = rng:NextNumber(-15, -2)
+		local s = rng:NextNumber(0.7, 2.4)
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local p = place(arena, "Shard" .. i, Vector3.new(s, s * 1.4, s),
+			CFrame.new(dir.X * ap, y, dir.Z * ap) * CFrame.Angles(rng:NextNumber(0, 3), rng:NextNumber(0, 3), rng:NextNumber(0, 3)),
+			shade(THEMES.sf.plate2, 0.9), Enum.Material.Slate)
+		reg(p, "plate2")
+	end
+
+	-- 절벽의 종족색 발광 광맥 5개
+	for i = 1, 5 do
+		local a = math.rad(i * 72)
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local y = rng:NextNumber(-12, -5)
+		neon(arena, "Vein" .. i, Vector3.new(0.4, rng:NextNumber(3, 6), 0.4),
+			rel(dir.X * 29, y, dir.Z * 29), faction.accent, { transparency = 0.15 })
+	end
+
+	-- 8변 종족색 네온 테두리 + 가장자리 빛
+	for k = 0, 7 do
+		local a = math.rad(45 * k)
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local c = Vector3.new(dir.X * (AP + 0.3), 0.15, dir.Z * (AP + 0.3))
+		neon(arena, "Rim" .. k, Vector3.new(SIDE + 0.6, 0.5, 0.6), CFrame.lookAt(c, c + dir), faction.accent)
+	end
+	for k = 0, 3 do
+		local a = math.rad(90 * k + 45)
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local anchor = neon(arena, "RimLight" .. k, Vector3.new(0.6, 0.6, 0.6),
+			rel(dir.X * (AP - 1), 0.4, dir.Z * (AP - 1)), faction.accent, { shape = Enum.PartType.Ball })
+		local pl = Instance.new("PointLight")
+		pl.Color = faction.accent
+		pl.Range = 45
+		pl.Brightness = 1.5
+		pl.Parent = anchor
+	end
+
 	for i = 1, 4 do
-		local sx = (i <= 2) and -1 or 1
-		local sz = (i % 2 == 0) and 1 or -1
-		local px, pz = sx * (U.PLATE / 2 - 1), sz * (U.PLATE / 2 - 1)
-		local pillar = place(arena, "CornerPillar" .. i, Vector3.new(2.2, 9, 2.2), rel(px, 4.2, pz), THEMES.sf.decor, Enum.Material.Metal)
+		local a = math.rad(45 + (i - 1) * 90)
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local pillar = place(arena, "CornerPillar" .. i, Vector3.new(2.2, 9, 2.2),
+			rel(dir.X * (AP - 4), 4.2, dir.Z * (AP - 4)), THEMES.sf.decor, Enum.Material.Metal)
 		reg(pillar, "decor")
-		neon(arena, "CornerGlow" .. i, Vector3.new(2.4, 0.4, 2.4), rel(px, 8.9, pz), faction.color)
+		neon(arena, "CornerGlow" .. i, Vector3.new(2.4, 0.4, 2.4),
+			rel(dir.X * (AP - 4), 8.9, dir.Z * (AP - 4)), faction.color)
 	end
 
 	-- 자유 건설 그리드 (8×8)
@@ -499,13 +602,15 @@ local function buildArena(slot, faction)
 
 	-- 스폰 게이트 (바깥쪽)
 	local spawnPos = U.SPAWN_LOCAL
+	local dock = place(arena, "SpawnDock", Vector3.new(16, 2, 14), rel(spawnPos.X, -1.0, spawnPos.Z + 2),
+		shade(THEMES.sf.plate2, 0.85), Enum.Material.Slate, { shadow = true })
+	reg(dock, "plate2")
 	for s = -1, 1, 2 do
 		place(arena, "GatePillar" .. s, Vector3.new(1.6, 11, 1.6), rel(spawnPos.X + s * 5.4, 5.5, spawnPos.Z + 2), THEMES.sf.decor, Enum.Material.Metal)
 		neon(arena, "GateGlow" .. s, Vector3.new(1.7, 0.6, 1.7), rel(spawnPos.X + s * 5.4, 11.3, spawnPos.Z + 2), faction.color)
 	end
 	neon(arena, "GateBar", Vector3.new(11.6, 0.6, 0.5), rel(spawnPos.X, 11.6, spawnPos.Z + 2), faction.color)
-	local portal = neon(arena, "Portal", Vector3.new(7.6, 0.3, 7.6), rel(spawnPos.X, 0.4, spawnPos.Z), faction.color, { shape = Enum.PartType.Cylinder, transparency = 0.35 })
-	portal.CFrame = cf * rel(spawnPos.X, 0.4, spawnPos.Z) * CFrame.Angles(0, 0, math.rad(90))
+	local portal = neon(arena, "Portal", Vector3.new(7.6, 0.3, 7.6), rel(spawnPos.X, 0.4, spawnPos.Z) * CFrame.Angles(0, 0, math.rad(90)), faction.color, { shape = Enum.PartType.Cylinder, transparency = 0.35 })
 	portal:SetAttribute("Spin", 0.5)
 	-- 보스 경고등 (02 가 색을 바꿉니다)
 	local beacon = neon(arena, "WarnBeacon", Vector3.new(3, 3, 3), rel(spawnPos.X, 13.4, spawnPos.Z + 2), shade(faction.color, 0.6), { shape = Enum.PartType.Ball, transparency = 0.85 })
@@ -520,7 +625,7 @@ local function buildArena(slot, faction)
 	end
 
 	-- AI 표시등 (사람이 들어오면 02 가 끕니다)
-	neon(arena, "AILight", Vector3.new(2, 2, 2), cf * rel(0, 16.6, -40), Color3.fromRGB(255, 190, 80), { shape = Enum.PartType.Ball, transparency = 0.2 })
+	neon(arena, "AILight", Vector3.new(2, 2, 2), rel(0, 16.6, -40), Color3.fromRGB(255, 190, 80), { shape = Enum.PartType.Ball, transparency = 0.2 })
 
 	return arena
 end
@@ -903,7 +1008,7 @@ do
 	place(m, "Head", Vector3.new(0.9, 0.7, 1.4), rel(0, 4.1, -2.2), Color3.fromRGB(245, 120, 145), Enum.Material.Metal)
 	neon(m, "Eye", Vector3.new(0.4, 0.14, 0.1), CFrame.new(0, 4.15, -2.85), Color3.fromRGB(255, 220, 140))
 	for s = -1, 1, 2 do
-		local wing = neon(m, "Wing" .. s, Vector3.new(2.8, 0.16, 1.8), rel(s * 2.2, 3.2, 0.2), Color3.fromRGB(255, 150, 180), Enum.Material.Neon)
+		local wing = neon(m, "Wing" .. s, Vector3.new(2.8, 0.16, 1.8), rel(s * 2.2, 3.2, 0.2), Color3.fromRGB(255, 150, 180))
 		wing.CFrame = m.PrimaryPart.CFrame * rel(s * 2.2, 3.2, 0.2, 0, 0, s * 16)
 		wing.Transparency = 0.25
 		place(m, "Leg" .. s, Vector3.new(0.3, 1.1, 0.3), rel(s * 0.7, 1.6, 0.4), Color3.fromRGB(150, 40, 60), Enum.Material.Metal)

@@ -540,13 +540,17 @@ local function buildArena(slot, faction)
 		reg(p, "plate2")
 	end
 
-	-- 절벽의 종족색 발광 광맥 5개
+	-- 절벽의 종족색 발광 광맥 5개 — 1단 절벽(ap 34) 바깥면에 붙입니다.
+	-- 45°×k 는 8각의 '면 중심' 방향이라 반지름 34.2가 항상 벽면 밖 0.2 입니다.
+	-- (72° 간격이면 모서리(반지름 36.8)에 걸려 바위 속으로 들어갑니다.)
+	local VEIN_FACES = { 0, 2, 4, 6, 1 }
 	for i = 1, 5 do
-		local a = math.rad(i * 72)
+		local a = math.rad(45 * VEIN_FACES[i])
 		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
-		local y = rng:NextNumber(-12, -5)
-		neon(arena, "Vein" .. i, Vector3.new(0.4, rng:NextNumber(3, 6), 0.4),
-			rel(dir.X * 29, y, dir.Z * 29), faction.accent, { transparency = 0.15 })
+		local h = rng:NextNumber(2.4, 3.4)
+		local cy = rng:NextNumber(-6.1, -4.8)   -- 1단 띠(-3 ~ -8) 안쪽, 위아래로 삐져나오지 않게
+		neon(arena, "Vein" .. i, Vector3.new(0.5, h, 0.5),
+			rel(dir.X * 34.2, cy, dir.Z * 34.2), faction.accent, { transparency = 0.15 })
 	end
 
 	-- 8변 종족색 네온 테두리 + 가장자리 빛
@@ -602,7 +606,8 @@ local function buildArena(slot, faction)
 
 	-- 스폰 게이트 (바깥쪽)
 	local spawnPos = U.SPAWN_LOCAL
-	local dock = place(arena, "SpawnDock", Vector3.new(16, 2, 14), rel(spawnPos.X, -1.0, spawnPos.Z + 2),
+	-- 윗면을 상판(0.000)보다 0.05 위로 올려 z-파이팅을 없앱니다 (착륙 패드가 살짝 높은 느낌).
+	local dock = place(arena, "SpawnDock", Vector3.new(16, 2, 14), rel(spawnPos.X, -0.95, spawnPos.Z + 2),
 		shade(THEMES.sf.plate2, 0.85), Enum.Material.Slate, { shadow = true })
 	reg(dock, "plate2")
 	for s = -1, 1, 2 do
